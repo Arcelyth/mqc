@@ -23,10 +23,12 @@ type Channel
 
 type Gate
 pub fn Gate::arity(Self) -> Int32
+pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex], max_dimension? : Int32) -> Self raise QuantumError
 pub fn Gate::dimension(Self) -> Int32
 pub fn Gate::dimensions(Self) -> Array[UInt32]
 pub fn Gate::from_kernel(String, Array[UInt32], &UnitaryKernel, max_dimension? : Int32) -> Self raise QuantumError
 pub fn Gate::kernel(Self) -> &UnitaryKernel
+pub fn Gate::monomial(String, Array[UInt32], Array[Int32], Array[@maths.Complex], max_dimension? : Int32) -> Self raise QuantumError
 pub fn Gate::name(Self) -> String
 pub fn Gate::parameters(Self) -> Array[String]
 pub fn Gate::to_repr(Self) -> @debug.Repr

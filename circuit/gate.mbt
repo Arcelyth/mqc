@@ -107,6 +107,59 @@ pub fn Gate::from_kernel(
 }
 
 ///|
+/// Constructs a monomial unitary gate from a column permutation and phase factors.
+pub fn Gate::monomial(
+  name : String,
+  dimensions : Array[UInt32],
+  columns : Array[Int32],
+  phases : Array[@maths.Complex],
+  max_dimension~ : Int32 = 1048576,
+) -> Gate raise QuantumError {
+  let size = space_size(dimensions, max_size=max_dimension)
+  if columns.length() != size || phases.length() != size {
+    raise InvalidGate("permutation size does not match the shape")
+  }
+  let seen = Array::make(size, false)
+  for row, col in columns {
+    if col < 0 || col >= size || seen[col] {
+      raise InvalidGate("columns must be a permutation")
+    }
+    seen[col] = true
+    let phase = phases[row]
+    if !phase.is_finite() || (phase.norm_squared() - 1.0).abs() > 1.0e-10 {
+      raise InvalidGate("phases must have unit magnitude")
+    }
+  }
+  {
+    label: name,
+    shape: dimensions.copy(),
+    kernel_value: MonomialKernel::{
+      columns: columns.copy(),
+      phases: phases.copy(),
+    },
+    size,
+  }
+}
+
+///|
+/// Create a diagonal unitary from one phase per basis state.
+pub fn Gate::diagonal(
+  name : String,
+  dimensions : Array[UInt32],
+  phases : Array[@maths.Complex],
+  max_dimension~ : Int32 = 1048576,
+) -> Gate raise QuantumError {
+  let size = space_size(dimensions, max_size=max_dimension)
+  Gate::monomial(
+    name,
+    dimensions,
+    Array::makei(size, fn(i) { i }),
+    phases,
+    max_dimension~,
+  )
+}
+
+///|
 pub impl Debug for Gate with fn to_repr(self) {
   Debug::to_repr((self.label, self.shape))
 }
