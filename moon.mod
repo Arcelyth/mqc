@@ -4,12 +4,12 @@ version = "0.1.0"
 
 readme = "README.mbt.md"
 
-repository = ""
+repository = "https://github.com/Arcelyth/mqc"
 
 license = "MIT"
 
-keywords = []
+keywords = [ "quantum", "qubits", "qudits", "simulation" ]
 
 preferred_target = "wasm"
 
-description = ""
+description = "Quantum circuits, state-vector simulation for MoonBit."
