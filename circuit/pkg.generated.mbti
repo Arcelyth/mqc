@@ -1,0 +1,89 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/circuit"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+#derive(@debug.Debug)
+pub(all) suberror QuantumError {
+  InvalidDimension(UInt32)
+}
+pub fn QuantumError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+type Channel
+
+type Gate
+pub fn Gate::arity(Self) -> Int32
+pub fn Gate::dimension(Self) -> Int32
+pub fn Gate::dimensions(Self) -> Array[UInt32]
+pub fn Gate::name(Self) -> String
+pub fn Gate::to_repr(Self) -> @debug.Repr
+pub fn Gate::try_adjoint(Self) -> &Effect? raise QuantumError
+pub fn Gate::try_channel(Self) -> Channel?
+pub fn Gate::try_decompose(Self) -> Program? raise QuantumError
+pub fn Gate::try_unitary(Self) -> Self?
+pub impl Effect for Gate
+pub impl @debug.Debug for Gate
+
+type Instruction
+pub fn Instruction::effect(Self) -> &Effect
+pub fn Instruction::targets(Self) -> Array[Int32]
+
+pub(all) struct KernelArgs {
+}
+
+type Program
+
+#derive(Compare, Eq, Hash, @debug.Debug)
+pub(all) struct QubitId(UInt64)
+pub fn QubitId::compare(Self, Self) -> Int32
+pub fn QubitId::dimension(Self) -> UInt32
+pub fn QubitId::equal(Self, Self) -> Bool
+pub fn QubitId::hash(Self) -> Int32
+pub fn QubitId::hash_combine(Self, Hasher) -> Unit
+pub fn QubitId::not_equal(Self, Self) -> Bool
+pub fn QubitId::op_ge(Self, Self) -> Bool
+pub fn QubitId::op_gt(Self, Self) -> Bool
+pub fn QubitId::op_le(Self, Self) -> Bool
+pub fn QubitId::op_lt(Self, Self) -> Bool
+pub fn QubitId::to_repr(Self) -> @debug.Repr
+pub impl Qid for QubitId
+
+#derive(Eq, Hash, @debug.Debug)
+type QuditId
+pub fn QuditId::dimension(Self) -> UInt32
+pub fn QuditId::equal(Self, Self) -> Bool
+pub fn QuditId::hash(Self) -> Int32
+pub fn QuditId::hash_combine(Self, Hasher) -> Unit
+pub fn QuditId::new(UInt64, UInt32) -> Self raise QuantumError
+pub fn QuditId::not_equal(Self, Self) -> Bool
+pub fn QuditId::to_repr(Self) -> @debug.Repr
+pub fn QuditId::value(Self) -> UInt64
+pub impl Qid for QuditId
+
+// Type aliases
+
+// Traits
+pub(open) trait Effect {
+  fn name(Self) -> String
+  fn dimensions(Self) -> Array[UInt32]
+  fn arity(Self) -> Int32 = _
+  fn try_unitary(Self) -> Gate? = _
+  fn try_channel(Self) -> Channel? = _
+  fn try_decompose(Self) -> Program? raise QuantumError = _
+  fn try_adjoint(Self) -> &Effect? raise QuantumError = _
+}
+
+pub(open) trait Qid : Eq + Hash {
+  fn dimension(Self) -> UInt32
+}
+
+pub(open) trait UnitaryKernel {
+  fn dimension(Self) -> Int32
+  fn apply(Self, KernelArgs) -> Unit
+}
