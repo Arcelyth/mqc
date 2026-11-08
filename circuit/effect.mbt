@@ -36,6 +36,10 @@ pub(open) trait Effect {
   /// For a unitary, this is its inverse. Unbound symbols may stay symbolic.
   /// General noisy channels need not have an adjoint that is a valid effect.
   fn try_adjoint(Self) -> &Effect? raise QuantumError = _
+
+  /// Free parameter names, without duplicates, in lexical order.
+  /// Parameters let you build a circuit with values you will supply later, such as a rotation angle.
+  fn parameters(Self) -> Array[String] = _
 }
 
 ///|
@@ -63,6 +67,11 @@ impl Effect with fn try_adjoint(_self) -> &Effect? raise QuantumError {
   None
 }
 
+///|
+impl Effect with fn parameters(_self) -> Array[String] {
+  []
+}
+
 /// ----- Implement Effect for Gate -----
 
 ///|
@@ -88,4 +97,5 @@ pub extend Gate with Effect::{
   try_channel,
   try_decompose,
   try_adjoint,
+  parameters,
 }

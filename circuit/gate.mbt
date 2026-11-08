@@ -3,6 +3,7 @@
 struct Gate {
   label : String
   shape : Array[UInt32]
+  /// Immutable numerical kernel, shared by derived values when possible.
   kernel_value : &UnitaryKernel
   size : Int32
 }

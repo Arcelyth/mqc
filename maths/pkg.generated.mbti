@@ -1,0 +1,39 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/maths"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) struct Complex {
+  re : Double
+  im : Double
+}
+pub fn Complex::add(Self, Self) -> Self
+pub fn Complex::conjugate(Self) -> Self
+pub fn Complex::equal(Self, Self) -> Bool
+pub fn Complex::is_finite(Self) -> Bool
+pub fn Complex::mul(Self, Self) -> Self
+pub fn Complex::neg(Self) -> Self
+pub fn Complex::new(Double, Double) -> Self
+pub fn Complex::norm_squared(Self) -> Double
+pub fn Complex::not_equal(Self, Self) -> Bool
+pub fn Complex::phase(Double) -> Self
+pub fn Complex::real(Double) -> Self
+pub fn Complex::scale(Self, Double) -> Self
+pub fn Complex::sub(Self, Self) -> Self
+pub fn Complex::to_repr(Self) -> @debug.Repr
+pub impl Add for Complex
+pub impl Mul for Complex
+pub impl Neg for Complex
+pub impl Sub for Complex
+
+// Type aliases
+
+// Traits

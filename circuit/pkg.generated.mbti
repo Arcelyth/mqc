@@ -22,6 +22,7 @@ pub fn Gate::arity(Self) -> Int32
 pub fn Gate::dimension(Self) -> Int32
 pub fn Gate::dimensions(Self) -> Array[UInt32]
 pub fn Gate::name(Self) -> String
+pub fn Gate::parameters(Self) -> Array[String]
 pub fn Gate::to_repr(Self) -> @debug.Repr
 pub fn Gate::try_adjoint(Self) -> &Effect? raise QuantumError
 pub fn Gate::try_channel(Self) -> Channel?
@@ -77,6 +78,7 @@ pub(open) trait Effect {
   fn try_channel(Self) -> Channel? = _
   fn try_decompose(Self) -> Program? raise QuantumError = _
   fn try_adjoint(Self) -> &Effect? raise QuantumError = _
+  fn parameters(Self) -> Array[String] = _
 }
 
 pub(open) trait Qid : Eq + Hash {
