@@ -2,15 +2,19 @@
 package "Arcelyth/mqc/circuit"
 
 import {
+  "Arcelyth/mqc/maths",
   "moonbitlang/core/debug",
 }
 
 // Values
+pub fn space_size(Array[UInt32], max_size? : Int32) -> Int32 raise QuantumError
 
 // Errors
 #derive(@debug.Debug)
 pub(all) suberror QuantumError {
   InvalidDimension(UInt32)
+  SizeLimit(Int32)
+  InvalidGate(String)
 }
 pub fn QuantumError::to_repr(Self) -> @debug.Repr
 
@@ -21,6 +25,8 @@ type Gate
 pub fn Gate::arity(Self) -> Int32
 pub fn Gate::dimension(Self) -> Int32
 pub fn Gate::dimensions(Self) -> Array[UInt32]
+pub fn Gate::from_kernel(String, Array[UInt32], &UnitaryKernel, max_dimension? : Int32) -> Self raise QuantumError
+pub fn Gate::kernel(Self) -> &UnitaryKernel
 pub fn Gate::name(Self) -> String
 pub fn Gate::parameters(Self) -> Array[String]
 pub fn Gate::to_repr(Self) -> @debug.Repr
@@ -28,6 +34,7 @@ pub fn Gate::try_adjoint(Self) -> &Effect? raise QuantumError
 pub fn Gate::try_channel(Self) -> Channel?
 pub fn Gate::try_decompose(Self) -> Program? raise QuantumError
 pub fn Gate::try_unitary(Self) -> Self?
+pub fn Gate::unitary(String, Array[UInt32], Array[@maths.Complex], tolerance? : Double, max_dimension? : Int32) -> Self raise QuantumError
 pub impl Effect for Gate
 pub impl @debug.Debug for Gate
 
