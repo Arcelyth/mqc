@@ -15,11 +15,22 @@ pub(all) suberror QuantumError {
   InvalidDimension(UInt32)
   SizeLimit(Int32)
   InvalidGate(String)
+  DuplicateQid(Int32)
+  TargetCount(Int32, Int32)
+  DimensionMismatch(Int32, UInt32, UInt32)
 }
 pub fn QuantumError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 type Channel
+
+type Circuit[Q]
+pub fn[Q] Circuit::dimensions(Self[Q]) -> Array[UInt32]
+pub fn[Q : Qid] Circuit::index_of(Self[Q], Q) -> Int32?
+pub fn[Q] Circuit::length(Self[Q]) -> Int32
+pub fn[Q : Qid] Circuit::new(Array[Q]) -> Self[Q] raise QuantumError
+pub fn[Q] Circuit::operations(Self[Q]) -> Iter[Operation[Q]]
+pub fn[Q] Circuit::qids(Self[Q]) -> Array[Q]
 
 type Gate
 pub fn Gate::arity(Self) -> Int32
@@ -50,6 +61,14 @@ pub(all) struct KernelArgs {
   output_re : MutArrayView[Double]
   output_im : MutArrayView[Double]
 }
+
+type Operation[Q]
+pub fn[Q] Operation::effect(Self[Q]) -> &Effect
+pub fn[Q] Operation::gate(Self[Q]) -> Gate?
+pub fn[Q : Qid] Operation::new(&Effect, Array[Q]) -> Self[Q] raise QuantumError
+pub fn[Q] Operation::targets(Self[Q]) -> Array[Q]
+pub fn[Q : @debug.Debug] Operation::to_repr(Self[Q]) -> @debug.Repr
+pub impl[Q : @debug.Debug] @debug.Debug for Operation[Q]
 
 type Program
 

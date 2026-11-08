@@ -7,6 +7,13 @@ pub(all) suberror QuantumError {
   SizeLimit(Int32)
   /// Gate data or a gate capability violates its contract; carries the reason.
   InvalidGate(String)
+  /// A logical ID repeats; carries its position in the supplied array.
+  DuplicateQid(Int32)
+  /// Target count mismatch; carries expected and actual wire counts.
+  TargetCount(Int32, Int32)
+  /// Wire shape mismatch; carries target position, expected dimension, and actual
+  /// dimension.
+  DimensionMismatch(Int32, UInt32, UInt32)
 }
 
 ///|
