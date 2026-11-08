@@ -43,6 +43,10 @@ pub fn Instruction::effect(Self) -> &Effect
 pub fn Instruction::targets(Self) -> Array[Int32]
 
 pub(all) struct KernelArgs {
+  input_re : ArrayView[Double]
+  input_im : ArrayView[Double]
+  output_re : MutArrayView[Double]
+  output_im : MutArrayView[Double]
 }
 
 type Program
@@ -95,4 +99,5 @@ pub(open) trait Qid : Eq + Hash {
 pub(open) trait UnitaryKernel {
   fn dimension(Self) -> Int32
   fn apply(Self, KernelArgs) -> Unit
+  fn adjoint(Self) -> &UnitaryKernel
 }
