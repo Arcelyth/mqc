@@ -1,0 +1,37 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/gates"
+
+import {
+  "Arcelyth/mqc/circuit",
+}
+
+// Values
+pub fn h() -> @circuit.Gate
+
+pub fn i() -> @circuit.Gate
+
+pub fn phase(Double) -> @circuit.Gate raise @circuit.QuantumError
+
+pub fn rx(Double) -> @circuit.Gate raise @circuit.QuantumError
+
+pub fn ry(Double) -> @circuit.Gate raise @circuit.QuantumError
+
+pub fn rz(Double) -> @circuit.Gate raise @circuit.QuantumError
+
+pub fn s() -> @circuit.Gate
+
+pub fn t() -> @circuit.Gate
+
+pub fn x() -> @circuit.Gate
+
+pub fn y() -> @circuit.Gate
+
+pub fn z() -> @circuit.Gate
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
