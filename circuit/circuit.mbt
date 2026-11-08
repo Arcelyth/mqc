@@ -2,15 +2,15 @@
 /// Represent a quantum circuit which shares the operation sequence.
 struct Circuit[Q] {
   /// Logical wire identifiers in basis order.
-  wires : Array[Q]
+  mut wires : Array[Q]
   /// Ordered wire dimensions.
-  shape : Array[UInt32]
+  mut shape : Array[UInt32]
   /// Positions for each local id.
-  indices : Map[Q, Int32]
+  mut indices : Map[Q, Int32]
   /// Instruction sequence in execution order.
-  ops : @vector.Vector[Operation[Q]]
+  mut ops : @vector.Vector[Operation[Q]]
   /// The union of names from every effect in current circuit.
-  parameter_names : @hashset.HashSet[String]
+  mut parameter_names : @hashset.HashSet[String]
 }
 
 ///|
@@ -36,6 +36,84 @@ pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise QuantumError {
     ops: @vector.Vector::new(),
     parameter_names: @hashset.HashSet::new(),
   }
+}
+
+///|
+/// Build a circuit from bound operations in execution order.
+pub fn[Q : Qid] Circuit::from_op(
+  operations : Array[Operation[Q]],
+) -> Circuit[Q] raise QuantumError {
+  let circuit = Circuit::new([])
+  circuit.extend_ops(operations)
+  circuit
+}
+
+///|
+/// Copy this circuit.
+pub fn[Q] Circuit::copy(self : Circuit[Q]) -> Circuit[Q] {
+  {
+    wires: self.wires,
+    shape: self.shape,
+    indices: self.indices,
+    ops: self.ops,
+    parameter_names: self.parameter_names,
+  }
+}
+
+///|
+/// Append an operation in place.
+pub fn[Q : Qid] Circuit::append(
+  self : Circuit[Q],
+  operation : Operation[Q],
+) -> Unit raise QuantumError {
+  self.extend_ops([operation])
+}
+
+///|
+/// Append a list of operations in place, in the supplied order.
+pub fn[Q : Qid] Circuit::extend_ops(
+  self : Circuit[Q],
+  operations : Array[Operation[Q]],
+) -> Unit raise QuantumError {
+  let mut wires = self.wires
+  let mut shape = self.shape
+  let mut indices = self.indices
+  let mut copied_wires = false
+  let mut ops = self.ops
+  let mut parameter_names = self.parameter_names
+  for operation in operations {
+    for i, qid in operation.wires {
+      let dimension = qid.dimension()
+      match indices.get(qid) {
+        Some(index) =>
+          if dimension != shape[index] {
+            raise DimensionMismatch(i, shape[index], dimension)
+          }
+        None => {
+          if dimension < 2U {
+            raise InvalidDimension(dimension)
+          }
+          // Copy when first new Qid appears.
+          if !copied_wires {
+            wires = wires.copy()
+            shape = shape.copy()
+            indices = indices.copy()
+            copied_wires = true
+          }
+          indices[qid] = wires.length()
+          wires.push(qid)
+          shape.push(dimension)
+        }
+      }
+    }
+    ops = ops.push(operation)
+    parameter_names = add_names(parameter_names, operation.effect.parameters())
+  }
+  self.wires = wires
+  self.shape = shape
+  self.indices = indices
+  self.ops = ops
+  self.parameter_names = parameter_names
 }
 
 ///|
