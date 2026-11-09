@@ -1,6 +1,11 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "Arcelyth/mqc/simulator/result_data"
 
+import {
+  "Arcelyth/mqc/circuit",
+  "Arcelyth/mqc/maths",
+}
+
 // Values
 
 // Errors
@@ -11,6 +16,16 @@ pub struct StateVector {
   re : Array[Double]
   im : Array[Double]
 }
+pub fn StateVector::amplitude(Self, Int32) -> @maths.Complex raise @circuit.QuantumError
+pub fn StateVector::amplitudes(Self) -> Array[@maths.Complex]
+pub fn StateVector::basis(Array[UInt32], Int32) -> Self raise @circuit.QuantumError
+pub fn StateVector::dimension(Self) -> Int32
+pub fn StateVector::dimensions(Self) -> Array[UInt32]
+pub fn StateVector::from_amplitudes(Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise @circuit.QuantumError
+pub fn StateVector::inner_product(Self, Self) -> @maths.Complex raise @circuit.QuantumError
+pub fn StateVector::norm_squared(Self) -> Double
+pub fn StateVector::probabilities(Self) -> Array[Double]
+pub fn StateVector::zero(Array[UInt32]) -> Self raise @circuit.QuantumError
 
 // Type aliases
 

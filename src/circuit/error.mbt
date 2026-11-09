@@ -14,29 +14,13 @@ pub(all) suberror QuantumError {
   /// Wire shape mismatch; carries target position, expected dimension, and actual
   /// dimension.
   DimensionMismatch(Int32, UInt32, UInt32)
-}
-
-///|
-/// Return the product of the dimensions, with a check before each multiply.
-/// An empty shape has one basis state.
-pub fn space_size(
-  shape : Array[UInt32],
-  max_size~ : Int32 = 2147483647,
-) -> Int32 raise QuantumError {
-  if max_size < 1 {
-    raise SizeLimit(max_size)
-  }
-  let mut size = 1
-  for dim in shape {
-    if dim < 2U {
-      raise InvalidDimension(dim)
-    }
-    if dim > (max_size / size).reinterpret_as_uint() {
-      raise SizeLimit(max_size)
-    }
-    size = size * dim.reinterpret_as_int()
-  }
-  size
+  /// Ordered wire dimensions or required logical IDs differ.
+  RegisterMismatch
+  /// An index or basis digit is out of range; carries the rejected value.
+  InvalidBasis(Int32)
+  /// State data or numerical output violates its contract; carries the reason.
+  InvalidState(String)
+  /// A save instruction has an invalid label, wire binding, or representation.
 }
 
 ///|

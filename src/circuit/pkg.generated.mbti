@@ -18,6 +18,9 @@ pub(all) suberror QuantumError {
   DuplicateQid(Int32)
   TargetCount(Int32, Int32)
   DimensionMismatch(Int32, UInt32, UInt32)
+  RegisterMismatch
+  InvalidBasis(Int32)
+  InvalidState(String)
 }
 pub fn QuantumError::to_repr(Self) -> @debug.Repr
 
