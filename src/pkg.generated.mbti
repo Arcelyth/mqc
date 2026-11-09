@@ -41,7 +41,7 @@ pub using @circuit {type QubitId}
 
 pub using @circuit {type QuditId}
 
-pub using @result {type ResultData}
+pub using @result_data {type ResultData}
 
 pub using @result {type ResultError}
 
@@ -51,7 +51,7 @@ pub using @circuit {trait Effect}
 
 pub using @circuit {trait Qid}
 
-pub using @result {trait ResultValue}
+pub using @result_data {trait ResultValue}
 
 pub using @circuit {trait UnitaryKernel}
 

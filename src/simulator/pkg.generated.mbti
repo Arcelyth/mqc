@@ -19,12 +19,12 @@ pub using @result {type ExecutionStatus}
 
 pub using @result {type ExperimentResult}
 
-pub using @result {type ResultData}
+pub using @result_data {type ResultData}
 
 pub using @result {type ResultError}
 
 pub using @result_data {type StateVector}
 
-pub using @result {trait ResultValue}
+pub using @result_data {trait ResultValue}
 
 // Traits

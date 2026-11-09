@@ -40,20 +40,13 @@ pub fn ExecutionStatus::not_equal(Self, Self) -> Bool
 pub fn ExecutionStatus::to_repr(Self) -> @debug.Repr
 
 type ExperimentResult
-pub fn ExperimentResult::completed(@circuit.Program, ResultData) -> Self
-pub fn ExperimentResult::data(Self) -> ResultData
+pub fn ExperimentResult::completed(@circuit.Program, @result_data.ResultData) -> Self
+pub fn ExperimentResult::data(Self) -> @result_data.ResultData
 pub fn ExperimentResult::dimensions(Self) -> Array[UInt32]
 pub fn ExperimentResult::is_completed(Self) -> Bool
 pub fn ExperimentResult::name(Self) -> String
 pub fn ExperimentResult::status(Self) -> ExecutionStatus
 
-type ResultData
-pub fn ResultData::new() -> Self
-
 // Type aliases
 
 // Traits
-pub(open) trait ResultValue {
-  fn type_name(Self) -> String
-  fn try_statevector(Self) -> @result_data.StateVector? = _
-}

@@ -3,17 +3,17 @@ pub(open) trait ResultValue {
   /// A display name for current representation.
   fn type_name(Self) -> String
   /// Try to offer pure state.
-  fn try_statevector(Self) -> @result_data.StateVector? = _
+  fn try_statevector(Self) -> StateVector? = _
 }
 
 ///|
-impl ResultValue with fn try_statevector(_self) -> @result_data.StateVector? {
+impl ResultValue with fn try_statevector(_self) -> StateVector? {
   None
 }
 
 ///|
 /// Named output data from one experiment. Only requested outputs are stored.
-struct ResultData {
+pub struct ResultData {
   values : @hashmap.HashMap[String, &ResultValue]
 }
 

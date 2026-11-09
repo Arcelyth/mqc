@@ -6,7 +6,7 @@ struct ExperimentResult {
   /// Ordered input dimensions.
   shape : Array[UInt32]
   /// Explicitly saved values from a successful experiment.
-  outputs : ResultData
+  outputs : @result_data.ResultData
   /// Error cause when current experiment failed.
   failure : @circuit.QuantumError?
 }
@@ -15,7 +15,7 @@ struct ExperimentResult {
 /// Record a successful execution of this program with its requested outputs.
 pub fn ExperimentResult::completed(
   program : @circuit.Program,
-  data : ResultData,
+  data : @result_data.ResultData,
 ) -> ExperimentResult {
   {
     program_name: program.name(),
@@ -55,6 +55,6 @@ pub fn ExperimentResult::status(self : ExperimentResult) -> ExecutionStatus {
 
 ///|
 /// Return current experiment's immutable named output collection.
-pub fn ExperimentResult::data(self : ExperimentResult) -> ResultData {
+pub fn ExperimentResult::data(self : ExperimentResult) -> @result_data.ResultData {
   self.outputs
 }

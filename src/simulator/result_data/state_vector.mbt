@@ -150,3 +150,21 @@ pub fn StateVector::inner_product(
   }
   { re, im, }
 }
+
+///|
+pub impl ResultValue for StateVector with fn type_name(_self) -> String {
+  "statevector"
+}
+
+///|
+pub impl ResultValue for StateVector with fn try_statevector(self) -> StateVector? {
+  Some(self)
+}
+
+///|
+/// Expose saved-value capabilities on immutable pure states.
+pub extend StateVector with ResultValue::{
+  type_name,
+  try_statevector,
+}
+

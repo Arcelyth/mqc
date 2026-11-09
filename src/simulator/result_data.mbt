@@ -1,2 +1,2 @@
 ///|
-pub using @result_data {type StateVector}
+pub using @result_data {type StateVector, type ResultData, trait ResultValue}

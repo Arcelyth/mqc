@@ -1,4 +1,5 @@
 import {
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/maths",
+  "moonbitlang/core/immut/hashmap",
 }
