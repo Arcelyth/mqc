@@ -75,6 +75,9 @@ pub fn[Q : @debug.Debug] Operation::to_repr(Self[Q]) -> @debug.Repr
 pub impl[Q : @debug.Debug] @debug.Debug for Operation[Q]
 
 type Program
+pub fn Program::dimensions(Self) -> Array[UInt32]
+pub fn Program::length(Self) -> Int32
+pub fn Program::name(Self) -> String
 
 #derive(Compare, Eq, Hash, @debug.Debug)
 pub(all) struct QubitId(UInt64)

@@ -21,3 +21,18 @@ struct Program {
   shape : Array[UInt32]
   ops : @vector.Vector[Instruction]
 }
+
+///|
+pub fn Program::dimensions(self : Program) -> Array[UInt32] {
+  self.shape.copy()
+}
+
+///|
+pub fn Program::name(self : Program) -> String {
+  self.label
+}
+
+///|
+pub fn Program::length(self : Program) -> Int32 {
+  self.ops.length()
+}
