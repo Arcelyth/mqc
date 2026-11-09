@@ -1,61 +1,12 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "Arcelyth/mqc/simulator"
 
-import {
-  "Arcelyth/mqc/circuit",
-  "moonbitlang/core/debug",
-}
-
 // Values
 
 // Errors
-#derive(@debug.Debug)
-pub suberror ResultError {
-  MissingExperiment(Int32)
-  ExperimentFailed(Int32)
-  MissingData(String)
-  WrongDataType(String, String)
-}
-pub fn ResultError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
-type ExecutionResult
-pub fn ExecutionResult::backend_name(Self) -> String
-pub fn ExecutionResult::experiment(Self, Int32) -> ExperimentResult raise ResultError
-pub fn ExecutionResult::is_completed(Self) -> Bool
-pub fn ExecutionResult::length(Self) -> Int32
-pub fn ExecutionResult::new(String, Array[ExperimentResult]) -> Self
-pub fn ExecutionResult::results(Self) -> Array[ExperimentResult]
-pub fn ExecutionResult::status(Self) -> ExecutionStatus
-
-#derive(Eq, @debug.Debug)
-pub(all) enum ExecutionStatus {
-  Empty
-  Completed
-  PartialCompleted
-  Error
-}
-pub fn ExecutionStatus::equal(Self, Self) -> Bool
-pub fn ExecutionStatus::not_equal(Self, Self) -> Bool
-pub fn ExecutionStatus::to_repr(Self) -> @debug.Repr
-
-type ExperimentResult
-pub fn ExperimentResult::completed(@circuit.Program, ResultData) -> Self
-pub fn ExperimentResult::data(Self) -> ResultData
-pub fn ExperimentResult::dimensions(Self) -> Array[UInt32]
-pub fn ExperimentResult::is_completed(Self) -> Bool
-pub fn ExperimentResult::name(Self) -> String
-pub fn ExperimentResult::status(Self) -> ExecutionStatus
-
-type ResultData
-pub fn ResultData::new() -> Self
-
-type StateVector
 
 // Type aliases
 
 // Traits
-pub(open) trait ResultValue {
-  fn type_name(Self) -> String
-  fn try_statevector(Self) -> StateVector? = _
-}

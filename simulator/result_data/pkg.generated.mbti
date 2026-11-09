@@ -1,0 +1,17 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/simulator/result_data"
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct StateVector {
+  shape : Array[UInt32]
+  re : Array[Double]
+  im : Array[Double]
+}
+
+// Type aliases
+
+// Traits

@@ -1,3 +1,4 @@
+///|
 /// A quantum state represented by a complex state vector.
 ///
 /// For example, a two-qubit state |ψ⟩ = (|00⟩ + |11⟩) / √2:
@@ -8,7 +9,7 @@
 ///
 /// The entries are stored in basis-state order:
 ///   |00⟩, |01⟩, |10⟩, |11⟩.
-struct StateVector {
+pub struct StateVector {
   /// Ordered wire dimensions.
   shape : Array[UInt32]
   /// Real components of the state amplitudes.
