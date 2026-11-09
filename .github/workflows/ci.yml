@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request: 
+    branches: 
+      - "main"
+
+jobs:
+  test_and_check:
+    name: Test ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest] 
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Moonbit
+        uses: hustcer/setup-moonbit@v1
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      - name: moon check
+        run: |
+          moon check 
+
+      - name: moon test
+        run: |
+          moon test 
+
+      - name: lint
+        run: |
+          moon fmt && git diff --exit-code
+          moon info && git diff --exit-code
