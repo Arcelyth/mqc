@@ -1,0 +1,58 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc"
+
+import {
+  "Arcelyth/mqc/circuit",
+  "Arcelyth/mqc/maths",
+  "Arcelyth/mqc/simulator/result",
+  "Arcelyth/mqc/simulator/result_data",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @circuit {type Channel}
+
+pub using @circuit {type Circuit}
+
+pub using @maths {type Complex}
+
+pub using @result {type ExecutionResult}
+
+pub using @result {type ExecutionStatus}
+
+pub using @result {type ExperimentResult}
+
+pub using @circuit {type Gate}
+
+pub using @circuit {type Instruction}
+
+pub using @circuit {type Operation}
+
+pub using @circuit {type Program}
+
+pub using @circuit {type QuantumError}
+
+pub using @circuit {type QubitId}
+
+pub using @circuit {type QuditId}
+
+pub using @result {type ResultData}
+
+pub using @result {type ResultError}
+
+pub using @result_data {type StateVector}
+
+pub using @circuit {trait Effect}
+
+pub using @circuit {trait Qid}
+
+pub using @result {trait ResultValue}
+
+pub using @circuit {trait UnitaryKernel}
+
+// Traits

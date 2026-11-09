@@ -13,3 +13,5 @@ keywords = [ "quantum", "qubits", "qudits", "simulation" ]
 preferred_target = "wasm"
 
 description = "Quantum circuits, state-vector simulation for MoonBit."
+
+source = "src"

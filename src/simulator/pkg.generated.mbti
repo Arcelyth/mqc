@@ -1,0 +1,30 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/simulator"
+
+import {
+  "Arcelyth/mqc/simulator/result",
+  "Arcelyth/mqc/simulator/result_data",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @result {type ExecutionResult}
+
+pub using @result {type ExecutionStatus}
+
+pub using @result {type ExperimentResult}
+
+pub using @result {type ResultData}
+
+pub using @result {type ResultError}
+
+pub using @result_data {type StateVector}
+
+pub using @result {trait ResultValue}
+
+// Traits
