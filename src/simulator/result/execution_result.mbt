@@ -91,6 +91,14 @@ pub fn ExecutionResult::experiment(
 }
 
 ///|
+/// Return a copy of the experiment list.
+pub fn ExecutionResult::results(
+  self : ExecutionResult,
+) -> Array[ExperimentResult] {
+  self.experiments.copy()
+}
+
+///|
 pub extend ExecutionStatus with Eq::{equal, not_equal}
 
 ///|

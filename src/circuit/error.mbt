@@ -20,7 +20,6 @@ pub(all) suberror QuantumError {
   InvalidBasis(Int32)
   /// State data or numerical output violates its contract; carries the reason.
   InvalidState(String)
-  /// A save instruction has an invalid label, wire binding, or representation.
 }
 
 ///|

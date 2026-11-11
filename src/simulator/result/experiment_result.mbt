@@ -32,7 +32,6 @@ pub fn ExperimentResult::name(self : ExperimentResult) -> String {
 }
 
 ///|
-/// Return a copy of the input program's ordered wire dimensions.
 pub fn ExperimentResult::dimensions(self : ExperimentResult) -> Array[UInt32] {
   self.shape.copy()
 }

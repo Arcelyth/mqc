@@ -2,4 +2,5 @@ import {
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator",
+  "Arcelyth/mqc/gates",
 }
