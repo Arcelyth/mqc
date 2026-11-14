@@ -41,6 +41,8 @@ type ExperimentResult
 pub fn ExperimentResult::completed(@circuit.Program, @result_data.ResultData) -> Self
 pub fn ExperimentResult::data(Self) -> @result_data.ResultData
 pub fn ExperimentResult::dimensions(Self) -> Array[UInt32]
+pub fn ExperimentResult::error(Self) -> @circuit.QuantumError?
+pub fn ExperimentResult::failed(@circuit.Program, @circuit.QuantumError) -> Self
 pub fn ExperimentResult::is_completed(Self) -> Bool
 pub fn ExperimentResult::name(Self) -> String
 pub fn ExperimentResult::status(Self) -> ExecutionStatus

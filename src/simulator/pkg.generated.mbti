@@ -23,9 +23,13 @@ pub(all) struct SamplerResult {
 pub fn SamplerResult::new(params? : ParamBinding, @maths.Array3[Int32]) -> Self
 
 type StateVectorSimulator
+pub fn StateVectorSimulator::name(Self) -> String
 pub fn StateVectorSimulator::new(seed? : UInt64) -> Self
-pub fn[Q : @circuit.Qid] StateVectorSimulator::run(Self, @circuit.Circuit[Q], repetitions? : Int32) -> SamplerResult raise @circuit.QuantumError
-pub fn[Q : @circuit.Qid] StateVectorSimulator::simulate(Self, @circuit.Circuit[Q]) -> @result_data.StateVector raise @circuit.QuantumError
+pub fn StateVectorSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @circuit.QuantumError
+pub fn StateVectorSimulator::simulate(Self, @circuit.Program) -> @result_data.StateVector raise @circuit.QuantumError
+pub fn StateVectorSimulator::simulate_batch(Self, Array[@circuit.Program]) -> @result.ExecutionResult
+pub impl Sampler for StateVectorSimulator
+pub impl Simulator for StateVectorSimulator
 
 // Type aliases
 pub using @result {type ExecutionResult}
@@ -44,11 +48,11 @@ pub using @result_data {trait ResultValue}
 
 // Traits
 pub(open) trait Sampler {
-  fn run(Self, ParamBinding?, UInt32) -> SamplerResult
+  fn run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @circuit.QuantumError
 }
 
 pub(open) trait Simulator {
   fn name(Self) -> String
-  fn run(Self, @circuit.Program) -> @result.ExecutionResult
-  fn run_batch(Self, Array[@circuit.Program]) -> @result.ExecutionResult = _
+  fn simulate(Self, @circuit.Program) -> @result_data.StateVector raise @circuit.QuantumError
+  fn simulate_batch(Self, Array[@circuit.Program]) -> @result.ExecutionResult = _
 }

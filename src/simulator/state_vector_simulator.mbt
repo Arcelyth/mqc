@@ -15,26 +15,33 @@ pub fn StateVectorSimulator::new(seed? : UInt64) -> StateVectorSimulator {
   { random, }
 }
 
+/// ===== Implement Simulator for StateVectorSimulator =====
+
 ///|
-/// Returns the pure state before terminal measurements, starting from all zeros.
-pub fn[Q : @circuit.Qid] StateVectorSimulator::simulate(
-  _self : StateVectorSimulator,
-  circuit : @circuit.Circuit[Q],
-) -> StateVector raise @circuit.QuantumError {
-  @result_data.evolve(circuit.compile())
+pub impl Simulator for StateVectorSimulator with fn name(_self) -> String {
+  "statevector_simulator"
 }
 
 ///|
-pub fn[Q : @circuit.Qid] StateVectorSimulator::run(
-  self : StateVectorSimulator,
-  circuit : @circuit.Circuit[Q],
-  repetitions~ : Int32 = 1,
+pub impl Simulator for StateVectorSimulator with fn simulate(_self, program) -> StateVector raise @circuit.QuantumError {
+  @result_data.evolve(program)
+}
+
+/// ===== ===== 
+
+/// ===== Implement Sampler for StateVectorSimulator =====
+
+///|
+pub impl Sampler for StateVectorSimulator with fn run(
+  self,
+  program,
+  repetitions?,
 ) -> SamplerResult raise @circuit.QuantumError {
+  let repetitions = repetitions.unwrap_or(1)
   if repetitions < 0 {
     raise @circuit.InvalidState("repetitions must be nonnegative")
   }
 
-  let program = circuit.compile()
   let targets : Array[Int32] = []
   // Collects every measured wire into targets
   for instruction in program.instructions() {
@@ -93,3 +100,11 @@ pub fn[Q : @circuit.Qid] StateVectorSimulator::run(
   }
   SamplerResult::new(records)
 }
+
+/// ===== =====
+
+///|
+pub extend StateVectorSimulator with Sampler::{run}
+
+///|
+pub extend StateVectorSimulator with Simulator::{name, simulate, simulate_batch}

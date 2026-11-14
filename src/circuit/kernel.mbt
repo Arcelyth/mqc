@@ -28,7 +28,7 @@ priv struct DenseKernel {
   size : Int32
 }
 
-// ----- Implement UnitaryKernel for DenseKernel -----
+// ===== Implement UnitaryKernel for DenseKernel =====
 
 ///|
 impl UnitaryKernel for DenseKernel with fn dimension(self) -> Int32 {
@@ -59,9 +59,9 @@ impl UnitaryKernel for DenseKernel with fn adjoint(self) -> &UnitaryKernel {
   DenseKernel::{ data, size: self.size, }
 }
 
-// ----- -----
+// ===== ===== 
 
-// ----- Implement UnitaryKernel for MonomialKernel -----
+// ===== Implement UnitaryKernel for MonomialKernel =====
 
 ///|
 /// Represents a matrix with exactly one nonzero entry in each row and column.
@@ -105,7 +105,7 @@ impl UnitaryKernel for MonomialKernel with fn adjoint(self) -> &UnitaryKernel {
   MonomialKernel::{ columns, phases, }
 }
 
-// ----- -----
+// ===== =====
 
 ///|
 /// Select a kernel based on the matrix's sparsity structure.

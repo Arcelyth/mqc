@@ -16,7 +16,9 @@ pub fn evolve(@circuit.Program) -> StateVector raise @circuit.QuantumError
 pub struct ResultData {
   values : @hashmap.HashMap[String, &ResultValue]
 }
+pub fn ResultData::from_statevector(StateVector) -> Self
 pub fn ResultData::new() -> Self
+pub fn ResultData::statevector(Self) -> StateVector?
 
 pub struct StateVector {
   shape : Array[UInt32]

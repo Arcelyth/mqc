@@ -59,3 +59,23 @@ pub fn ExperimentResult::data(
 ) -> @result_data.ResultData {
   self.outputs
 }
+
+///|
+pub fn ExperimentResult::failed(
+  program : @circuit.Program,
+  error : @circuit.QuantumError,
+) -> ExperimentResult {
+  {
+    program_name: program.name(),
+    shape: program.dimensions(),
+    outputs: @result_data.ResultData::new(),
+    failure: Some(error),
+  }
+}
+
+///|
+pub fn ExperimentResult::error(
+  self : ExperimentResult,
+) -> @circuit.QuantumError? {
+  self.failure
+}

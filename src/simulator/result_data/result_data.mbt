@@ -21,3 +21,17 @@ pub struct ResultData {
 pub fn ResultData::new() -> ResultData {
   { values: @hashmap.HashMap::new(), }
 }
+
+///|
+/// Store the state produced by a simulation.
+pub fn ResultData::from_statevector(state : StateVector) -> ResultData {
+  { values: @hashmap.HashMap::singleton("statevector", state), }
+}
+
+///|
+pub fn ResultData::statevector(self : ResultData) -> StateVector? {
+  match self.values.get("statevector") {
+    Some(value) => value.try_statevector()
+    None => None
+  }
+}
