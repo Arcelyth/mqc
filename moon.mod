@@ -1,6 +1,6 @@
 name = "Arcelyth/mqc"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.mbt.md"
 
@@ -8,10 +8,16 @@ repository = "https://github.com/Arcelyth/mqc"
 
 license = "MIT"
 
-keywords = [ "quantum", "qubits", "qudits", "simulation" ]
+keywords = [
+  "quantum",
+  "qubits",
+  "quantum-simulation",
+  "state-vector",
+  "quantum-computing",
+]
 
 preferred_target = "wasm"
 
-description = "Quantum circuits, state-vector simulation for MoonBit."
+description = "Quantum computing library for MoonBit."
 
 source = "src"
