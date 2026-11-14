@@ -6,6 +6,9 @@ import {
 }
 
 // Values
+#alias(cx)
+pub fn cnot() -> @circuit.Gate
+
 pub fn h() -> @circuit.Gate
 
 pub fn i() -> @circuit.Gate

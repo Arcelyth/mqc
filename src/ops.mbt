@@ -78,3 +78,20 @@ pub fn[Q : @circuit.Qid] phase(
 ) -> @circuit.Operation[Q] raise @circuit.QuantumError {
   @circuit.Operation::new(@gates.phase(angle), [target])
 }
+
+///|
+#alias(cx)
+pub fn[Q : @circuit.Qid] cnot(
+  control : Q,
+  target : Q,
+) -> @circuit.Operation[Q] raise @circuit.QuantumError {
+  @circuit.Operation::new(@gates.cnot(), [control, target])
+}
+
+///|
+pub fn[Q : @circuit.Qid] measure(
+  targets : Array[Q],
+  key~ : String = "m",
+) -> @circuit.Operation[Q] raise @circuit.QuantumError {
+  @circuit.measure(targets, key~)
+}

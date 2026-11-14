@@ -4,14 +4,20 @@ package "Arcelyth/mqc"
 import {
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/maths",
+  "Arcelyth/mqc/simulator",
   "Arcelyth/mqc/simulator/result",
   "Arcelyth/mqc/simulator/result_data",
 }
 
 // Values
+#alias(cx)
+pub fn[Q : @circuit.Qid] cnot(Q, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
 pub fn[Q : @circuit.Qid] h(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
 
 pub fn[Q : @circuit.Qid] i(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] measure(Array[Q], key? : String) -> @circuit.Operation[Q] raise @circuit.QuantumError
 
 pub fn[Q : @circuit.Qid] phase(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
 
@@ -66,7 +72,11 @@ pub using @result_data {type ResultData}
 
 pub using @result {type ResultError}
 
+pub using @simulator {type SamplerResult}
+
 pub using @result_data {type StateVector}
+
+pub using @simulator {type StateVectorSimulator}
 
 pub using @circuit {trait Effect}
 

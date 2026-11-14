@@ -180,3 +180,15 @@ pub fn phase(angle : Double) -> @circuit.Gate raise @circuit.QuantumError {
     @maths.Complex::phase(angle),
   ])
 }
+
+///|
+/// Controlled X, with the control wire first.
+#alias(cx)
+pub fn cnot() -> @circuit.Gate {
+  try! @circuit.Gate::monomial(
+    "CNOT",
+    [2U, 2U],
+    [0, 1, 3, 2],
+    Array::make(4, real(1.0)),
+  )
+}

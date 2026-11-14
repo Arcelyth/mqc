@@ -26,4 +26,6 @@ pub using @simulator {
   type ExecutionStatus,
   type ResultData,
   type ResultError,
+  type StateVectorSimulator,
+  type SamplerResult,
 }
