@@ -36,3 +36,8 @@ pub fn Program::name(self : Program) -> String {
 pub fn Program::length(self : Program) -> Int32 {
   self.ops.length()
 }
+
+///|
+pub fn Program::instructions(self : Program) -> Iter[Instruction] {
+  self.ops.iter()
+}

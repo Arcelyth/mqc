@@ -6,6 +6,7 @@
 /// operation's target wires when it is added to a program or circuit.
 pub(open) trait Effect {
   /// A label for display and error messages.
+  fn measurement_key(Self) -> String? = _
   fn name(Self) -> String
 
   /// Returns the dimensions of the local quantum wires acted upon by
@@ -72,6 +73,11 @@ impl Effect with fn parameters(_self) -> Array[String] {
   []
 }
 
+///|
+impl Effect with fn measurement_key(_self) -> String? {
+  None
+}
+
 /// ----- Implement Effect for Gate -----
 
 ///|
@@ -93,6 +99,7 @@ pub impl Effect for Gate with fn try_unitary(self) -> Gate? {
 
 ///|
 pub extend Gate with Effect::{
+  measurement_key,
   try_unitary,
   try_channel,
   try_decompose,

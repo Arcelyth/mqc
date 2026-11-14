@@ -145,3 +145,17 @@ pub fn[Q] Circuit::length(self : Circuit[Q]) -> Int32 {
 pub fn[Q : Qid] Circuit::index_of(self : Circuit[Q], qid : Q) -> Int32? {
   self.indices.get(qid)
 }
+
+///|
+/// Compile circuit to program.
+pub fn[Q : Qid] Circuit::compile(
+  self : Circuit[Q],
+  name~ : String = "circuit",
+) -> Program {
+  let mut ops = @vector.Vector::new()
+  for operation in self.ops {
+    let wires = operation.wires.map(fn(q) { self.indices[q] })
+    ops = ops.push(Instruction::{ effect_value: operation.effect, wires, })
+  }
+  { label: name, shape: self.shape.copy(), ops, }
+}

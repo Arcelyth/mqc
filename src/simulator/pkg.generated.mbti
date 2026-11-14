@@ -2,6 +2,7 @@
 package "Arcelyth/mqc/simulator"
 
 import {
+  "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator/result",
   "Arcelyth/mqc/simulator/result_data",
@@ -21,6 +22,11 @@ pub(all) struct SamplerResult {
 }
 pub fn SamplerResult::new(params? : ParamBinding, @maths.Array3[Int32]) -> Self
 
+type StateVectorSimulator
+pub fn StateVectorSimulator::new(seed? : UInt64) -> Self
+pub fn[Q : @circuit.Qid] StateVectorSimulator::run(Self, @circuit.Circuit[Q], repetitions? : Int32) -> SamplerResult raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] StateVectorSimulator::simulate(Self, @circuit.Circuit[Q]) -> @result_data.StateVector raise @circuit.QuantumError
+
 // Type aliases
 pub using @result {type ExecutionResult}
 
@@ -39,4 +45,10 @@ pub using @result_data {trait ResultValue}
 // Traits
 pub(open) trait Sampler {
   fn run(Self, ParamBinding?, UInt32) -> SamplerResult
+}
+
+pub(open) trait Simulator {
+  fn name(Self) -> String
+  fn run(Self, @circuit.Program) -> @result.ExecutionResult
+  fn run_batch(Self, Array[@circuit.Program]) -> @result.ExecutionResult = _
 }

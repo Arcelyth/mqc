@@ -7,6 +7,8 @@ import {
 }
 
 // Values
+pub fn[Q : Qid] measure(Array[Q], key? : String) -> Operation[Q] raise QuantumError
+
 pub fn space_size(Array[UInt32], max_size? : Int32) -> Int32 raise QuantumError
 
 // Errors
@@ -29,6 +31,7 @@ type Channel
 
 type Circuit[Q]
 pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise QuantumError
+pub fn[Q : Qid] Circuit::compile(Self[Q], name? : String) -> Program
 pub fn[Q] Circuit::copy(Self[Q]) -> Self[Q]
 pub fn[Q] Circuit::dimensions(Self[Q]) -> Array[UInt32]
 pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise QuantumError
@@ -46,6 +49,7 @@ pub fn Gate::dimension(Self) -> Int32
 pub fn Gate::dimensions(Self) -> Array[UInt32]
 pub fn Gate::from_kernel(String, Array[UInt32], &UnitaryKernel, max_dimension? : Int32) -> Self raise QuantumError
 pub fn Gate::kernel(Self) -> &UnitaryKernel
+pub fn Gate::measurement_key(Self) -> String?
 pub fn Gate::monomial(String, Array[UInt32], Array[Int32], Array[@maths.Complex], max_dimension? : Int32) -> Self raise QuantumError
 pub fn Gate::name(Self) -> String
 pub fn Gate::parameters(Self) -> Array[String]
@@ -79,6 +83,7 @@ pub impl[Q : @debug.Debug] @debug.Debug for Operation[Q]
 
 type Program
 pub fn Program::dimensions(Self) -> Array[UInt32]
+pub fn Program::instructions(Self) -> Iter[Instruction]
 pub fn Program::length(Self) -> Int32
 pub fn Program::name(Self) -> String
 
@@ -113,6 +118,7 @@ pub impl Qid for QuditId
 
 // Traits
 pub(open) trait Effect {
+  fn measurement_key(Self) -> String? = _
   fn name(Self) -> String
   fn dimensions(Self) -> Array[UInt32]
   fn arity(Self) -> Int32 = _
