@@ -2,6 +2,7 @@
 package "Arcelyth/mqc/simulator"
 
 import {
+  "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator/result",
   "Arcelyth/mqc/simulator/result_data",
 }
@@ -11,6 +12,14 @@ import {
 // Errors
 
 // Types and methods
+type ParamBinding
+pub fn ParamBinding::empty() -> Self
+
+pub(all) struct SamplerResult {
+  params : ParamBinding
+  records : @maths.Array3[Int32]
+}
+pub fn SamplerResult::new(params? : ParamBinding, @maths.Array3[Int32]) -> Self
 
 // Type aliases
 pub using @result {type ExecutionResult}
@@ -28,3 +37,6 @@ pub using @result_data {type StateVector}
 pub using @result_data {trait ResultValue}
 
 // Traits
+pub(open) trait Sampler {
+  fn run(Self, ParamBinding?, UInt32) -> SamplerResult
+}

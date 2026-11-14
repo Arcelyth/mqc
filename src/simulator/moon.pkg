@@ -1,4 +1,6 @@
 import {
   "Arcelyth/mqc/simulator/result_data",
   "Arcelyth/mqc/simulator/result",
+  "Arcelyth/mqc/maths",
+  "moonbitlang/core/immut/hashmap",
 }

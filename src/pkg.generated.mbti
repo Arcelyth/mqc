@@ -9,6 +9,27 @@ import {
 }
 
 // Values
+pub fn[Q : @circuit.Qid] h(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] i(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] phase(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] rx(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] ry(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] rz(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] s(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] t(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] x(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] y(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+
+pub fn[Q : @circuit.Qid] z(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
 
 // Errors
 

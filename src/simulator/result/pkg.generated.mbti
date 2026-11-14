@@ -13,9 +13,6 @@ import {
 #derive(@debug.Debug)
 pub suberror ResultError {
   MissingExperiment(Int32)
-  ExperimentFailed(Int32)
-  MissingData(String)
-  WrongDataType(String, String)
 }
 pub fn ResultError::to_repr(Self) -> @debug.Repr
 
@@ -26,6 +23,7 @@ pub fn ExecutionResult::experiment(Self, Int32) -> ExperimentResult raise Result
 pub fn ExecutionResult::is_completed(Self) -> Bool
 pub fn ExecutionResult::length(Self) -> Int32
 pub fn ExecutionResult::new(String, Array[ExperimentResult]) -> Self
+pub fn ExecutionResult::results(Self) -> Array[ExperimentResult]
 pub fn ExecutionResult::status(Self) -> ExecutionStatus
 
 #derive(Eq, @debug.Debug)

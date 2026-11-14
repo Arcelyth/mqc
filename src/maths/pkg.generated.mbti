@@ -10,6 +10,16 @@ import {
 // Errors
 
 // Types and methods
+type Array3[T]
+pub fn[T] Array3::copy(Self[T]) -> Self[T]
+pub fn[T] Array3::get(Self[T], Int32, Int32, Int32) -> T?
+pub fn[T] Array3::length(Self[T]) -> Int32
+pub fn[T] Array3::make(Int32, Int32, Int32, T) -> Self[T]
+pub fn[T] Array3::makei(Int32, Int32, Int32, (Int32, Int32, Int32) -> T) -> Self[T]
+pub fn[T] Array3::set(Self[T], Int32, Int32, Int32, T) -> Bool
+pub fn[T] Array3::shape(Self[T]) -> (Int32, Int32, Int32)
+pub fn[T] Array3::to_array(Self[T]) -> Array[T]
+
 #derive(Eq, @debug.Debug)
 pub(all) struct Complex {
   re : Double

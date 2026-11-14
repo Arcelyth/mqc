@@ -16,9 +16,9 @@ pub(all) enum ExecutionStatus {
 #derive(Debug)
 pub suberror ResultError {
   MissingExperiment(Int32)
-  ExperimentFailed(Int32)
-  MissingData(String)
-  WrongDataType(String, String)
+  //  ExperimentFailed(Int32)
+  //  MissingData(String)
+  //  WrongDataType(String, String)
 }
 
 ///|

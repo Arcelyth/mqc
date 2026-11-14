@@ -54,6 +54,8 @@ pub fn ExperimentResult::status(self : ExperimentResult) -> ExecutionStatus {
 
 ///|
 /// Return current experiment's immutable named output collection.
-pub fn ExperimentResult::data(self : ExperimentResult) -> @result_data.ResultData {
+pub fn ExperimentResult::data(
+  self : ExperimentResult,
+) -> @result_data.ResultData {
   self.outputs
 }
