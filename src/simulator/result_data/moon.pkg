@@ -5,3 +5,7 @@ import {
   "moonbitlang/core/quickcheck/splitmix",
   "moonbitlang/core/random",
 }
+
+import {
+  "Arcelyth/mqc/gates",
+} for "test"

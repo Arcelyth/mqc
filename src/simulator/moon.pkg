@@ -6,3 +6,7 @@ import {
   "Arcelyth/mqc/circuit",
   "moonbitlang/core/immut/hashmap",
 }
+
+import {
+  "Arcelyth/mqc/gates",
+} for "test"
