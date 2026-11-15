@@ -1,27 +1,70 @@
 ///|
-/// A backend that exposes simulated states.
-pub(open) trait Simulator {
-  fn name(Self) -> String
-  /// Return the pure state before terminal measurements.
-  fn simulate(Self, @circuit.Program) -> StateVector raise @circuit.QuantumError
-  /// Keep input order and record each failure without stopping later programs.
-  fn simulate_batch(Self, Array[@circuit.Program]) -> ExecutionResult = _
+/// Execute programs using a backend state implementation.
+struct Simulator[S] {
+  label : String
+  initialize : (Array[UInt32]) -> S raise @circuit.QuantumError
 }
 
 ///|
-impl Simulator with fn simulate_batch(self, programs) -> ExecutionResult {
-  let experiments = []
-  for program in programs {
-    let experiment = try {
-      let state = self.simulate(program)
-      ExperimentResult::completed(
-        program,
-        @result_data.ResultData::from_statevector(state),
-      )
-    } catch {
-      error => ExperimentResult::failed(program, error)
+pub fn[S] Simulator::new(
+  name : String,
+  initialize : (Array[UInt32]) -> S raise @circuit.QuantumError,
+) -> Simulator[S] {
+  { label: name, initialize, }
+}
+
+///|
+pub fn[S] Simulator::name(self : Simulator[S]) -> String {
+  self.label
+}
+
+///|
+pub fn[S : SimulationState] Simulator::simulate(
+  self : Simulator[S],
+  program : @circuit.Program,
+) -> TrialResult[S] raise @circuit.QuantumError {
+  self.execute(program)
+}
+
+///|
+/// Deliver a state snapshot after each instruction without retaining all steps.
+pub fn[S : SimulationState] Simulator::simulate_steps(
+  self : Simulator[S],
+  program : @circuit.Program,
+  visit : (StepResult[S]) -> Unit raise @circuit.QuantumError,
+) -> TrialResult[S] raise @circuit.QuantumError {
+  self.execute(program, visit~)
+}
+
+///|
+fn[S : SimulationState] Simulator::execute(
+  self : Simulator[S],
+  program : @circuit.Program,
+  visit? : (StepResult[S]) -> Unit raise @circuit.QuantumError,
+) -> TrialResult[S] raise @circuit.QuantumError {
+  let state = (self.initialize)(program.dimensions())
+  let mut index = 0
+  for instruction in program.instructions() {
+    state.apply(instruction)
+    if visit is Some(callback) {
+      state.validate()
+      callback({ instruction_index: index, state: state.copy(), })
     }
-    experiments.push(experiment)
+    index += 1
   }
-  ExecutionResult::new(self.name(), experiments)
+  state.validate()
+  { state, params: ParamBinding::empty(), records: state.records(), }
+}
+
+///|
+/// Keep typed trials and errors in input order, continuing after failures.
+pub fn[S : SimulationState] Simulator::simulate_batch(
+  self : Simulator[S],
+  programs : Array[@circuit.Program],
+) -> Array[Result[TrialResult[S], @circuit.QuantumError]] {
+  programs.map(fn(program) {
+    Ok(self.simulate(program)) catch {
+      error => Err(error)
+    }
+  })
 }

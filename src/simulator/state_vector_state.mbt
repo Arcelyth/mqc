@@ -1,0 +1,26 @@
+///|
+pub impl SimulationState for @result_data.StateVectorState with fn apply(
+  self,
+  instruction,
+) -> Unit raise @circuit.QuantumError {
+  self.apply(instruction)
+}
+
+///|
+pub impl SimulationState for @result_data.StateVectorState with fn copy(self) -> @result_data.StateVectorState {
+  self.copy()
+}
+
+///|
+pub impl SimulationState for @result_data.StateVectorState with fn records(self) -> @maths.Array3[
+  Int32,
+] {
+  self.records()
+}
+
+///|
+pub impl SimulationState for @result_data.StateVectorState with fn validate(
+  self,
+) -> Unit raise @circuit.QuantumError {
+  self.validate()
+}

@@ -1,6 +1,7 @@
 ///|
 struct StateVectorSimulator {
   random : @random.Rand
+  engine : Simulator[StateVectorState]
 }
 
 ///|
@@ -12,24 +13,52 @@ pub fn StateVectorSimulator::new(seed? : UInt64) -> StateVectorSimulator {
       )
     None => @random.Rand()
   }
-  { random, }
-}
-
-/// ===== Implement Simulator for StateVectorSimulator =====
-
-///|
-pub impl Simulator for StateVectorSimulator with fn name(_self) -> String {
-  "statevector_simulator"
+  {
+    random,
+    engine: Simulator::new("statevector", shape => {
+      @result_data.StateVectorState::new(shape, seed=random.uint64())
+    }),
+  }
 }
 
 ///|
-pub impl Simulator for StateVectorSimulator with fn simulate(_self, program) -> StateVector raise @circuit.QuantumError {
-  @result_data.evolve(program)
+pub fn StateVectorSimulator::simulator(
+  self : StateVectorSimulator,
+) -> Simulator[StateVectorState] {
+  self.engine
 }
 
-/// ===== ===== 
+///|
+pub fn StateVectorSimulator::name(self : StateVectorSimulator) -> String {
+  self.engine.name()
+}
 
-/// ===== Implement Sampler for StateVectorSimulator =====
+///|
+pub fn StateVectorSimulator::simulate(
+  self : StateVectorSimulator,
+  program : @circuit.Program,
+) -> TrialResult[StateVectorState] raise @circuit.QuantumError {
+  self.engine.simulate(program)
+}
+
+///|
+pub fn StateVectorSimulator::simulate_steps(
+  self : StateVectorSimulator,
+  program : @circuit.Program,
+  visit : (StepResult[StateVectorState]) -> Unit raise @circuit.QuantumError,
+) -> TrialResult[StateVectorState] raise @circuit.QuantumError {
+  self.engine.simulate_steps(program, visit)
+}
+
+///|
+pub fn StateVectorSimulator::simulate_batch(
+  self : StateVectorSimulator,
+  programs : Array[@circuit.Program],
+) -> Array[Result[TrialResult[StateVectorState], @circuit.QuantumError]] {
+  self.engine.simulate_batch(programs)
+}
+
+// ===== Implement Sampler for StateVectorSimulator =====
 
 ///|
 pub impl Sampler for StateVectorSimulator with fn run(
@@ -101,10 +130,7 @@ pub impl Sampler for StateVectorSimulator with fn run(
   SamplerResult::new(records)
 }
 
-/// ===== =====
+// ===== =====
 
 ///|
 pub extend StateVectorSimulator with Sampler::{run}
-
-///|
-pub extend StateVectorSimulator with Simulator::{name, simulate, simulate_batch}

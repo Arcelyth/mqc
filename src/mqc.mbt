@@ -26,6 +26,13 @@ pub using @simulator {
   type ExecutionStatus,
   type ResultData,
   type ResultError,
+  type Simulator,
+  trait SimulationState,
+  type SimulationStateBase,
+  type StepResult,
+  type TrialResult,
+  type StateVectorState,
+  trait Sampler,
   type StateVectorSimulator,
   type SamplerResult,
 }

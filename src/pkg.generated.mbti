@@ -74,15 +74,29 @@ pub using @result {type ResultError}
 
 pub using @simulator {type SamplerResult}
 
+pub using @result_data {type SimulationStateBase}
+
+pub using @simulator {type Simulator}
+
 pub using @result_data {type StateVector}
 
 pub using @simulator {type StateVectorSimulator}
+
+pub using @result_data {type StateVectorState}
+
+pub using @simulator {type StepResult}
+
+pub using @simulator {type TrialResult}
 
 pub using @circuit {trait Effect}
 
 pub using @circuit {trait Qid}
 
 pub using @result_data {trait ResultValue}
+
+pub using @simulator {trait Sampler}
+
+pub using @simulator {trait SimulationState}
 
 pub using @circuit {trait UnitaryKernel}
 

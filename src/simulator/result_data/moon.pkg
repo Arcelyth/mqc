@@ -2,4 +2,6 @@ import {
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/maths",
   "moonbitlang/core/immut/hashmap",
+  "moonbitlang/core/quickcheck/splitmix",
+  "moonbitlang/core/random",
 }

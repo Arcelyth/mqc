@@ -20,6 +20,13 @@ pub fn ResultData::from_statevector(StateVector) -> Self
 pub fn ResultData::new() -> Self
 pub fn ResultData::statevector(Self) -> StateVector?
 
+type SimulationStateBase
+pub fn SimulationStateBase::copy(Self) -> Self
+pub fn SimulationStateBase::draw(Self) -> Double
+pub fn SimulationStateBase::new(seed? : UInt64) -> Self
+pub fn SimulationStateBase::record(Self, ArrayView[Int32]) -> Unit
+pub fn SimulationStateBase::records(Self) -> @maths.Array3[Int32]
+
 pub struct StateVector {
   shape : Array[UInt32]
   re : Array[Double]
@@ -38,6 +45,14 @@ pub fn StateVector::try_statevector(Self) -> Self?
 pub fn StateVector::type_name(Self) -> String
 pub fn StateVector::zero(Array[UInt32]) -> Self raise @circuit.QuantumError
 pub impl ResultValue for StateVector
+
+type StateVectorState
+pub fn StateVectorState::apply(Self, @circuit.Instruction) -> Unit raise @circuit.QuantumError
+pub fn StateVectorState::copy(Self) -> Self
+pub fn StateVectorState::new(Array[UInt32], seed? : UInt64) -> Self raise @circuit.QuantumError
+pub fn StateVectorState::records(Self) -> @maths.Array3[Int32]
+pub fn StateVectorState::statevector(Self) -> StateVector
+pub fn StateVectorState::validate(Self) -> Unit raise @circuit.QuantumError
 
 // Type aliases
 

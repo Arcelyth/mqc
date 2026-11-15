@@ -4,11 +4,15 @@
 pub fn evolve(
   program : @circuit.Program,
 ) -> StateVector raise @circuit.QuantumError {
-  let state = StateVector::zero(program.dimensions())
-  let strides = wire_strides(state.shape)
-  execute_instructions(state, strides, program)
-  validate_norm(state)
-  state
+  // This path skips measurements and never draws random values.
+  let state = StateVectorState::new(program.dimensions(), seed=0UL)
+  for instruction in program.instructions() {
+    if !state.check_instruction(instruction) {
+      execute_gate(state.vector, state.strides, instruction)
+    }
+  }
+  state.validate()
+  state.vector
 }
 
 ///|
@@ -21,36 +25,6 @@ fn wire_strides(shape : Array[UInt32]) -> Array[Int32] {
     stride *= shape[i].reinterpret_as_int()
   }
   strides
-}
-
-///|
-/// Apply instructions in order and check terminal measurement rules.
-fn execute_instructions(
-  state : StateVector,
-  strides : Array[Int32],
-  program : @circuit.Program,
-) -> Unit raise @circuit.QuantumError {
-  let mut measuring = false
-  let keys : Map[String, Bool] = Map([])
-  for instruction in program.instructions() {
-    let effect = instruction.effect()
-    if effect.parameters().length() != 0 {
-      raise @circuit.InvalidState("TODO: unbound parameters are not supported")
-    }
-    if effect.measurement_key() is Some(key) {
-      if keys.contains(key) {
-        raise @circuit.InvalidState("measurement keys must be unique")
-      }
-      keys[key] = true
-      measuring = true
-      continue
-    }
-
-    if measuring {
-      raise @circuit.InvalidState("only terminal measurements are supported")
-    }
-    execute_gate(state, strides, instruction)
-  }
 }
 
 ///|
