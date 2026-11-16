@@ -4,7 +4,7 @@ struct ExperimentResult {
   /// Display name of the submitted program.
   program_name : String
   /// Ordered input dimensions.
-  shape : Array[UInt32]
+  shape : @internal.Shape
   /// Explicitly saved values from a successful experiment.
   outputs : @result_data.ResultData
   /// Error cause when current experiment failed.
@@ -19,7 +19,7 @@ pub fn ExperimentResult::completed(
 ) -> ExperimentResult {
   {
     program_name: program.name(),
-    shape: program.dimensions(),
+    shape: program.shape(),
     outputs: data,
     failure: None,
   }
@@ -32,8 +32,8 @@ pub fn ExperimentResult::name(self : ExperimentResult) -> String {
 }
 
 ///|
-pub fn ExperimentResult::dimensions(self : ExperimentResult) -> Array[UInt32] {
-  self.shape.copy()
+pub fn ExperimentResult::dim(self : ExperimentResult) -> Array[UInt32] {
+  self.shape.to_array()
 }
 
 ///|
@@ -67,7 +67,7 @@ pub fn ExperimentResult::failed(
 ) -> ExperimentResult {
   {
     program_name: program.name(),
-    shape: program.dimensions(),
+    shape: program.shape(),
     outputs: @result_data.ResultData::new(),
     failure: Some(error),
   }

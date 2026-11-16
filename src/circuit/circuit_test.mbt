@@ -9,7 +9,7 @@ test "circuit discovers wires and compiles targets in operation order" {
   circuit.append(@circuit.measure([c, b], key="second"))
   circuit.extend_ops([@circuit.measure([a], key="third")])
   assert_eq(circuit.qids(), [b, a, c])
-  assert_eq(circuit.dimensions(), [3U, 2U, 2U])
+  assert_eq(circuit.dim(), [3U, 2U, 2U])
   assert_eq(circuit.index_of(a), Some(1))
   assert_eq(circuit.index_of(c), Some(2))
 
@@ -19,7 +19,7 @@ test "circuit discovers wires and compiles targets in operation order" {
   }
   assert_eq(keys, [Some("first"), Some("second"), Some("third")])
   let program = circuit.compile()
-  assert_eq(program.dimensions(), [3U, 2U, 2U])
+  assert_eq(program.dim(), [3U, 2U, 2U])
   let targets = []
   for instruction in program.instructions() {
     targets.push(instruction.targets())
@@ -54,7 +54,7 @@ test "concatenation retains idle wires and remapping preserves local target posi
     @circuit.QubitId(q.0 + 10UL)
   })
   assert_eq(calls, 3)
-  assert_eq(mapped.dimensions(), [2U, 2U, 2U])
+  assert_eq(mapped.dim(), [2U, 2U, 2U])
   let targets = []
   for instruction in mapped.compile().instructions() {
     targets.push(instruction.targets())

@@ -1,0 +1,25 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/internal"
+
+// Values
+
+// Errors
+
+// Types and methods
+#derive(Eq)
+pub struct Shape {
+  dimensions : Array[UInt32]
+}
+pub fn Shape::equal(Self, Self) -> Bool
+#alias(op_get)
+pub fn Shape::get(Self, Int32) -> UInt32
+pub fn Shape::length(Self) -> Int32
+pub fn Shape::new(Array[UInt32]) -> Self
+pub fn Shape::not_equal(Self, Self) -> Bool
+pub fn Shape::size(Self) -> Int32
+pub fn Shape::strides(Self) -> Array[Int32]
+pub fn Shape::to_array(Self) -> Array[UInt32]
+
+// Type aliases
+
+// Traits

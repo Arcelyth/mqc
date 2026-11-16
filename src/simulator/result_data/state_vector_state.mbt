@@ -8,14 +8,14 @@ struct StateVectorState {
 
 ///|
 pub fn StateVectorState::new(
-  shape : Array[UInt32],
+  dimensions : Array[UInt32],
   seed? : UInt64,
-) -> StateVectorState raise @circuit.QuantumError {
-  let vector = StateVector::zero(shape)
+) -> StateVectorState {
+  let vector = StateVector::zero(dimensions)
   {
     base: SimulationStateBase::new(seed?),
     vector,
-    strides: wire_strides(vector.shape),
+    strides: vector.shape.strides(),
   }
 }
 

@@ -18,7 +18,7 @@ pub(open) trait Effect {
   ///
   /// The order is significant: `[2, 3]` and `[3, 2]` describe
   /// different ordered wire shapes.
-  fn dimensions(Self) -> Array[UInt32]
+  fn dim(Self) -> Array[UInt32]
 
   /// The number of local wires, not the product of their dimensions.
   fn arity(Self) -> Int32 = _
@@ -45,7 +45,7 @@ pub(open) trait Effect {
 
 ///|
 impl Effect with fn arity(self) -> Int32 {
-  self.dimensions().length()
+  self.dim().length()
 }
 
 ///|

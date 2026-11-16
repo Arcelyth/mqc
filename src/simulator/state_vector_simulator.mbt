@@ -104,13 +104,8 @@ pub impl Sampler for StateVectorSimulator with fn run(
     total += probabilities[i]
     probabilities[i] = total
   }
-  let shape = program.dimensions()
-  let strides = Array::make(shape.length(), 1)
-  let mut stride = 1
-  for i = shape.length() - 1; i >= 0; i = i - 1 {
-    strides[i] = stride
-    stride *= shape[i].reinterpret_as_int()
-  }
+  let shape = program.shape()
+  let strides = shape.strides()
   let records = @maths.Array3::make(repetitions, 1, width, 0)
   for shot in 0..<repetitions {
     let draw = self.random.double() * total

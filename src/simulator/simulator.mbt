@@ -42,7 +42,7 @@ fn[S : SimulationState] Simulator::execute(
   program : @circuit.Program,
   visit? : (StepResult[S]) -> Unit raise @circuit.QuantumError,
 ) -> TrialResult[S] raise @circuit.QuantumError {
-  let state = (self.initialize)(program.dimensions())
+  let state = (self.initialize)(program.dim())
   let mut index = 0
   for instruction in program.instructions() {
     state.apply(instruction)

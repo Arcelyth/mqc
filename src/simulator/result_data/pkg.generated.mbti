@@ -3,6 +3,7 @@ package "Arcelyth/mqc/simulator/result_data"
 
 import {
   "Arcelyth/mqc/circuit",
+  "Arcelyth/mqc/internal",
   "Arcelyth/mqc/maths",
   "moonbitlang/core/immut/hashmap",
 }
@@ -28,28 +29,28 @@ pub fn SimulationStateBase::record(Self, ArrayView[Int32]) -> Unit
 pub fn SimulationStateBase::records(Self) -> @maths.Array3[Int32]
 
 pub struct StateVector {
-  shape : Array[UInt32]
+  shape : @internal.Shape
   re : Array[Double]
   im : Array[Double]
 }
 pub fn StateVector::amplitude(Self, Int32) -> @maths.Complex raise @circuit.QuantumError
 pub fn StateVector::amplitudes(Self) -> Array[@maths.Complex]
 pub fn StateVector::basis(Array[UInt32], Int32) -> Self raise @circuit.QuantumError
+pub fn StateVector::dim(Self) -> Array[UInt32]
 pub fn StateVector::dimension(Self) -> Int32
-pub fn StateVector::dimensions(Self) -> Array[UInt32]
 pub fn StateVector::from_amplitudes(Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise @circuit.QuantumError
 pub fn StateVector::inner_product(Self, Self) -> @maths.Complex raise @circuit.QuantumError
 pub fn StateVector::norm_squared(Self) -> Double
 pub fn StateVector::probabilities(Self) -> Array[Double]
 pub fn StateVector::try_statevector(Self) -> Self?
 pub fn StateVector::type_name(Self) -> String
-pub fn StateVector::zero(Array[UInt32]) -> Self raise @circuit.QuantumError
+pub fn StateVector::zero(Array[UInt32]) -> Self
 pub impl ResultValue for StateVector
 
 type StateVectorState
 pub fn StateVectorState::apply(Self, @circuit.Instruction) -> Unit raise @circuit.QuantumError
 pub fn StateVectorState::copy(Self) -> Self
-pub fn StateVectorState::new(Array[UInt32], seed? : UInt64) -> Self raise @circuit.QuantumError
+pub fn StateVectorState::new(Array[UInt32], seed? : UInt64) -> Self
 pub fn StateVectorState::records(Self) -> @maths.Array3[Int32]
 pub fn StateVectorState::statevector(Self) -> StateVector
 pub fn StateVectorState::validate(Self) -> Unit raise @circuit.QuantumError

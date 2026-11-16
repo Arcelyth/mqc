@@ -2,15 +2,13 @@
 /// An immutable unitary effect.
 struct Gate {
   label : String
-  shape : Array[UInt32]
+  shape : @internal.Shape
   /// Immutable numerical kernel, shared by derived values when possible.
   kernel_value : &UnitaryKernel
-  size : Int32
 }
 
 ///|
 /// Check shape, finite entries, and U†U before accepting a matrix.
-/// max_dimension bounds the cubic validation work and quadratic storage.
 /// Entries are in row order: row * dimension + column.
 /// Tolerance must be finite and in (0, 1e-6]; it bounds absolute errors in
 /// column inner products. Accepted entries are kept without normalization.
@@ -19,7 +17,6 @@ pub fn Gate::unitary(
   dimensions : Array[UInt32],
   matrix : Array[@maths.Complex],
   tolerance~ : Double = 1.0e-10,
-  max_dimension~ : Int32 = 256,
 ) -> Gate raise QuantumError {
   if tolerance.is_nan() ||
     tolerance.is_inf() ||
@@ -27,8 +24,9 @@ pub fn Gate::unitary(
     tolerance > 1.0e-6 {
     raise InvalidGate("tolerance must be finite and in (0, 1e-6]")
   }
-  let size = space_size(dimensions, max_size=max_dimension)
-  if size > 46340 || matrix.length() != size * size {
+  let shape = @internal.Shape::new(dimensions)
+  let size = shape.size()
+  if matrix.length() != size * size {
     raise InvalidGate("matrix size does not match the shape")
   }
   for entry in matrix {
@@ -57,12 +55,7 @@ pub fn Gate::unitary(
       }
     }
   }
-  {
-    label: name,
-    shape: dimensions.copy(),
-    kernel_value: matrix_kernel(matrix.copy(), size),
-    size,
-  }
+  { label: name, shape, kernel_value: matrix_kernel(matrix.copy(), size), }
 }
 
 ///|
@@ -71,13 +64,13 @@ pub fn Gate::from_kernel(
   name : String,
   dimensions : Array[UInt32],
   kernel : &UnitaryKernel,
-  max_dimension~ : Int32 = 1048576,
 ) -> Gate raise QuantumError {
-  let size = space_size(dimensions, max_size=max_dimension)
-  if kernel.dimension() != size {
+  let shape = @internal.Shape::new(dimensions)
+  let size = shape.size()
+  if kernel.size() != size {
     raise InvalidGate("kernel dimension or workspace is invalid")
   }
-  { label: name, shape: dimensions.copy(), kernel_value: kernel, size, }
+  { label: name, shape, kernel_value: kernel, }
 }
 
 ///|
@@ -87,9 +80,9 @@ pub fn Gate::monomial(
   dimensions : Array[UInt32],
   columns : Array[Int32],
   phases : Array[@maths.Complex],
-  max_dimension~ : Int32 = 1048576,
 ) -> Gate raise QuantumError {
-  let size = space_size(dimensions, max_size=max_dimension)
+  let shape = @internal.Shape::new(dimensions)
+  let size = shape.size()
   if columns.length() != size || phases.length() != size {
     raise InvalidGate("permutation size does not match the shape")
   }
@@ -106,12 +99,11 @@ pub fn Gate::monomial(
   }
   {
     label: name,
-    shape: dimensions.copy(),
+    shape,
     kernel_value: MonomialKernel::{
       columns: columns.copy(),
       phases: phases.copy(),
     },
-    size,
   }
 }
 
@@ -121,16 +113,10 @@ pub fn Gate::diagonal(
   name : String,
   dimensions : Array[UInt32],
   phases : Array[@maths.Complex],
-  max_dimension~ : Int32 = 1048576,
 ) -> Gate raise QuantumError {
-  let size = space_size(dimensions, max_size=max_dimension)
-  Gate::monomial(
-    name,
-    dimensions,
-    Array::makei(size, fn(i) { i }),
-    phases,
-    max_dimension~,
-  )
+  let shape = @internal.Shape::new(dimensions)
+  let size = shape.size()
+  Gate::monomial(name, dimensions, Array::makei(size, fn(i) { i }), phases)
 }
 
 ///|
@@ -139,8 +125,8 @@ pub fn Gate::name(self : Gate) -> String {
 }
 
 ///|
-pub fn Gate::dimensions(self : Gate) -> Array[UInt32] {
-  self.shape.copy()
+pub fn Gate::dim(self : Gate) -> Array[UInt32] {
+  self.shape.to_array()
 }
 
 ///|
@@ -149,8 +135,13 @@ pub fn Gate::arity(self : Gate) -> Int32 {
 }
 
 ///|
-pub fn Gate::dimension(self : Gate) -> Int32 {
-  self.size
+pub fn Gate::size(self : Gate) -> Int32 {
+  self.shape.size()
+}
+
+///|
+pub fn Gate::shape(self : Gate) -> @internal.Shape {
+  self.shape
 }
 
 ///|
@@ -166,7 +157,6 @@ pub fn Gate::adjoint(self : Gate) -> Gate {
     label: self.label + "†",
     shape: self.shape,
     kernel_value: self.kernel_value.adjoint(),
-    size: self.size,
   }
 }
 
@@ -176,8 +166,8 @@ pub impl Effect for Gate with fn name(self) -> String {
 }
 
 ///|
-pub impl Effect for Gate with fn dimensions(self) -> Array[UInt32] {
-  self.shape.copy()
+pub impl Effect for Gate with fn dim(self) -> Array[UInt32] {
+  self.shape.to_array()
 }
 
 ///|
@@ -187,7 +177,7 @@ pub impl Effect for Gate with fn try_unitary(self) -> Gate? {
 
 ///|
 pub impl Debug for Gate with fn to_repr(self) {
-  Debug::to_repr((self.label, self.shape))
+  Debug::to_repr((self.label, self.shape.to_array()))
 }
 
 ///|

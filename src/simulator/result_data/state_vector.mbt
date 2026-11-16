@@ -11,7 +11,7 @@
 ///   |00⟩, |01⟩, |10⟩, |11⟩.
 pub struct StateVector {
   /// Ordered wire dimensions.
-  shape : Array[UInt32]
+  shape : @internal.Shape
   /// Real components of the state amplitudes.
   re : Array[Double]
   /// Imaginary components of the state amplitudes.
@@ -19,14 +19,13 @@ pub struct StateVector {
 }
 
 ///|
-pub fn StateVector::zero(
-  dimensions : Array[UInt32],
-) -> StateVector raise @circuit.QuantumError {
-  let size = @circuit.space_size(dimensions)
+pub fn StateVector::zero(dimensions : Array[UInt32]) -> StateVector {
+  let shape = @internal.Shape::new(dimensions)
+  let size = shape.size()
   let re = Array::make(size, 0.0)
   // Amplitude of |0⟩, |00⟩, ... is 1.
   re[0] = 1.0
-  { shape: dimensions.copy(), re, im: Array::make(size, 0.0), }
+  { shape, re, im: Array::make(size, 0.0), }
 }
 
 ///|
@@ -34,13 +33,14 @@ pub fn StateVector::basis(
   dimensions : Array[UInt32],
   index : Int32,
 ) -> StateVector raise @circuit.QuantumError {
-  let size = @circuit.space_size(dimensions)
+  let shape = @internal.Shape::new(dimensions)
+  let size = shape.size()
   if index < 0 || index >= size {
     raise @circuit.InvalidBasis(index)
   }
   let re = Array::make(size, 0.0)
   re[index] = 1.0
-  { shape: dimensions.copy(), re, im: Array::make(size, 0.0), }
+  { shape, re, im: Array::make(size, 0.0), }
 }
 
 ///|
@@ -52,7 +52,8 @@ pub fn StateVector::from_amplitudes(
   amplitudes : Array[@maths.Complex],
   tolerance~ : Double = 1.0e-10,
 ) -> StateVector raise @circuit.QuantumError {
-  let size = @circuit.space_size(dimensions)
+  let shape = @internal.Shape::new(dimensions)
+  let size = shape.size()
   if amplitudes.length() != size ||
     tolerance.is_nan() ||
     tolerance.is_inf() ||
@@ -76,15 +77,15 @@ pub fn StateVector::from_amplitudes(
   }
   let scale = 1.0 / norm.sqrt()
   {
-    shape: dimensions.copy(),
+    shape,
     re: amplitudes.map(fn(a) { a.re * scale }),
     im: amplitudes.map(fn(a) { a.im * scale }),
   }
 }
 
 ///|
-pub fn StateVector::dimensions(self : StateVector) -> Array[UInt32] {
-  self.shape.copy()
+pub fn StateVector::dim(self : StateVector) -> Array[UInt32] {
+  self.shape.to_array()
 }
 
 ///|

@@ -3,6 +3,7 @@ package "Arcelyth/mqc"
 
 import {
   "Arcelyth/mqc/circuit",
+  "Arcelyth/mqc/circuit/kernel",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator",
   "Arcelyth/mqc/simulator/result",
@@ -104,6 +105,6 @@ pub using @simulator {trait Sampler}
 
 pub using @simulator {trait SimulationState}
 
-pub using @circuit {trait UnitaryKernel}
+pub using @kernel {trait UnitaryKernel}
 
 // Traits

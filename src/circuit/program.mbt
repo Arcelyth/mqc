@@ -18,13 +18,13 @@ pub fn Instruction::targets(self : Instruction) -> Array[Int32] {
 ///|
 struct Program {
   label : String
-  shape : Array[UInt32]
+  shape : @internal.Shape
   ops : @vector.Vector[Instruction]
 }
 
 ///|
-pub fn Program::dimensions(self : Program) -> Array[UInt32] {
-  self.shape.copy()
+pub fn Program::dim(self : Program) -> Array[UInt32] {
+  self.shape.to_array()
 }
 
 ///|
@@ -35,6 +35,11 @@ pub fn Program::name(self : Program) -> String {
 ///|
 pub fn Program::length(self : Program) -> Int32 {
   self.ops.length()
+}
+
+///|
+pub fn Program::shape(self : Program) -> @internal.Shape {
+  self.shape
 }
 
 ///|

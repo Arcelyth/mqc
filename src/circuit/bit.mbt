@@ -4,7 +4,7 @@
 pub(all) struct QubitId(UInt64)
 
 ///|
-pub impl Qid for QubitId with fn dimension(_self) -> UInt32 {
+pub impl Qid for QubitId with fn dim(_self) -> UInt32 {
   2U
 }
 
@@ -35,7 +35,7 @@ pub fn QuditId::value(self : QuditId) -> UInt64 {
 }
 
 ///|
-pub impl Qid for QuditId with fn dimension(self) -> UInt32 {
+pub impl Qid for QuditId with fn dim(self) -> UInt32 {
   self.levels
 }
 
@@ -52,7 +52,7 @@ pub extend QubitId with Compare::{compare, op_lt, op_le, op_gt, op_ge}
 pub extend QubitId with Debug::{to_repr}
 
 ///|
-pub extend QubitId with Qid::{dimension}
+pub extend QubitId with Qid::{dim}
 
 ///|
 pub extend QuditId with Eq::{equal, not_equal}
@@ -64,4 +64,4 @@ pub extend QuditId with Hash::{hash, hash_combine}
 pub extend QuditId with Debug::{to_repr}
 
 ///|
-pub extend QuditId with Qid::{dimension}
+pub extend QuditId with Qid::{dim}

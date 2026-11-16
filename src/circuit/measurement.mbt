@@ -1,7 +1,7 @@
 ///|
 priv struct Measurement {
   key : String
-  shape : Array[UInt32]
+  shape : @internal.Shape
 }
 
 ///|
@@ -10,8 +10,8 @@ impl Effect for Measurement with fn name(_self) -> String {
 }
 
 ///|
-impl Effect for Measurement with fn dimensions(self) -> Array[UInt32] {
-  self.shape.copy()
+impl Effect for Measurement with fn dim(self) -> Array[UInt32] {
+  self.shape.to_array()
 }
 
 ///|
@@ -28,7 +28,10 @@ pub fn[Q : Qid] measure(
     raise InvalidState("measurement needs targets and a key")
   }
   Operation::new(
-    Measurement::{ key, shape: targets.map(fn(q) { q.dimension() }), },
+    Measurement::{
+      key,
+      shape: @internal.Shape::new(targets.map(fn(q) { q.dim() })),
+    },
     targets,
   )
 }

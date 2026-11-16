@@ -1,0 +1,45 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/circuit/kernel"
+
+import {
+  "Arcelyth/mqc/maths",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) struct DenseKernel {
+  data : Array[@maths.Complex]
+  size : Int32
+}
+pub fn DenseKernel::adjoint(Self) -> &UnitaryKernel
+pub fn DenseKernel::apply(Self, KernelArgs) -> Unit
+pub fn DenseKernel::size(Self) -> Int32
+pub impl UnitaryKernel for DenseKernel
+
+pub(all) struct KernelArgs {
+  input_re : ArrayView[Double]
+  input_im : ArrayView[Double]
+  output_re : MutArrayView[Double]
+  output_im : MutArrayView[Double]
+}
+
+pub(all) struct MonomialKernel {
+  columns : Array[Int32]
+  phases : Array[@maths.Complex]
+}
+pub fn MonomialKernel::adjoint(Self) -> &UnitaryKernel
+pub fn MonomialKernel::apply(Self, KernelArgs) -> Unit
+pub fn MonomialKernel::size(Self) -> Int32
+pub impl UnitaryKernel for MonomialKernel
+
+// Type aliases
+
+// Traits
+pub(open) trait UnitaryKernel {
+  fn size(Self) -> Int32
+  fn apply(Self, KernelArgs) -> Unit
+  fn adjoint(Self) -> &UnitaryKernel
+}

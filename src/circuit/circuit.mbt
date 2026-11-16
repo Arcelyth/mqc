@@ -4,7 +4,7 @@ struct Circuit[Q] {
   /// Logical wire identifiers in basis order.
   mut wires : Array[Q]
   /// Ordered wire dimensions.
-  mut shape : Array[UInt32]
+  mut shape : @internal.Shape
   /// Positions for each local id.
   mut indices : Map[Q, Int32]
   /// Instruction sequence in execution order.
@@ -22,7 +22,7 @@ pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise QuantumError {
     if indices.contains(q) {
       raise DuplicateQid(i)
     }
-    let dim = q.dimension()
+    let dim = q.dim()
     if dim < 2U {
       raise InvalidDimension(dim)
     }
@@ -31,7 +31,7 @@ pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise QuantumError {
   }
   {
     wires: qids.copy(),
-    shape,
+    shape: @internal.Shape::new(shape),
     indices,
     ops: @vector.Vector::new(),
     parameter_names: @hashset.HashSet::new(),
@@ -76,33 +76,32 @@ pub fn[Q : Qid] Circuit::extend_ops(
   operations : Array[Operation[Q]],
 ) -> Unit raise QuantumError {
   let mut wires = self.wires
-  let mut shape = self.shape
+  let shape = self.shape.to_array()
   let mut indices = self.indices
   let mut copied_wires = false
   let mut ops = self.ops
   let mut parameter_names = self.parameter_names
   for operation in operations {
     for i, qid in operation.wires {
-      let dimension = qid.dimension()
+      let dim = qid.dim()
       match indices.get(qid) {
         Some(index) =>
-          if dimension != shape[index] {
-            raise DimensionMismatch(i, shape[index], dimension)
+          if dim != shape[index] {
+            raise DimensionMismatch(i, shape[index], dim)
           }
         None => {
-          if dimension < 2U {
-            raise InvalidDimension(dimension)
+          if dim < 2U {
+            raise InvalidDimension(dim)
           }
           // Copy when first new Qid appears.
           if !copied_wires {
             wires = wires.copy()
-            shape = shape.copy()
             indices = indices.copy()
             copied_wires = true
           }
           indices[qid] = wires.length()
           wires.push(qid)
-          shape.push(dimension)
+          shape.push(dim)
         }
       }
     }
@@ -110,7 +109,7 @@ pub fn[Q : Qid] Circuit::extend_ops(
     parameter_names = add_names(parameter_names, operation.effect.parameters())
   }
   self.wires = wires
-  self.shape = shape
+  self.shape = @internal.Shape::new(shape)
   self.indices = indices
   self.ops = ops
   self.parameter_names = parameter_names
@@ -124,8 +123,8 @@ pub fn[Q] Circuit::qids(self : Circuit[Q]) -> Array[Q] {
 
 ///|
 /// Return a copy of the ordered wire dimensions.
-pub fn[Q] Circuit::dimensions(self : Circuit[Q]) -> Array[UInt32] {
-  self.shape.copy()
+pub fn[Q] Circuit::dim(self : Circuit[Q]) -> Array[UInt32] {
+  self.shape.to_array()
 }
 
 ///|
@@ -157,7 +156,7 @@ pub fn[Q : Qid] Circuit::compile(
     let wires = operation.wires.map(fn(q) { self.indices[q] })
     ops = ops.push(Instruction::{ effect_value: operation.effect, wires, })
   }
-  { label: name, shape: self.shape.copy(), ops, }
+  { label: name, shape: self.shape, ops, }
 }
 
 ///|
@@ -168,7 +167,7 @@ pub fn[Q : Qid] Circuit::concat(
   other : Circuit[Q],
 ) -> Circuit[Q] raise QuantumError {
   let wires = self.wires.copy()
-  let shape = self.shape.copy()
+  let shape = self.shape.to_array()
   let indices = self.indices.copy()
   for i, qid in other.wires {
     match indices.get(qid) {
@@ -187,7 +186,13 @@ pub fn[Q : Qid] Circuit::concat(
   for name in other.parameter_names.iter() {
     parameter_names = parameter_names.add(name)
   }
-  { wires, shape, indices, ops: self.ops.concat(other.ops), parameter_names, }
+  {
+    wires,
+    shape: @internal.Shape::new(shape),
+    indices,
+    ops: self.ops.concat(other.ops),
+    parameter_names,
+  }
 }
 
 ///|
@@ -198,9 +203,9 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
 ) -> Circuit[R] raise QuantumError {
   let wires = self.wires.map(map)
   for i, qid in wires {
-    let dimension = qid.dimension()
-    if dimension != self.shape[i] {
-      raise DimensionMismatch(i, self.shape[i], dimension)
+    let dim = qid.dim()
+    if dim != self.shape[i] {
+      raise DimensionMismatch(i, self.shape[i], dim)
     }
   }
   let result = Circuit::new(wires)

@@ -5,7 +5,7 @@ pub fn evolve(
   program : @circuit.Program,
 ) -> StateVector raise @circuit.QuantumError {
   // This path skips measurements and never draws random values.
-  let state = StateVectorState::new(program.dimensions(), seed=0UL)
+  let state = StateVectorState::new(program.dim(), seed=0UL)
   let mut measuring = false
   for instruction in program.instructions() {
     if check_instruction(instruction) {
@@ -22,18 +22,6 @@ pub fn evolve(
 }
 
 ///|
-/// Compute the basis stride of each wire, from last to first.
-fn wire_strides(shape : Array[UInt32]) -> Array[Int32] {
-  let strides = Array::make(shape.length(), 1)
-  let mut stride = 1
-  for i = shape.length() - 1; i >= 0; i = i - 1 {
-    strides[i] = stride
-    stride *= shape[i].reinterpret_as_int()
-  }
-  strides
-}
-
-///|
 /// Check the unitary capability and target shape before applying a gate.
 fn execute_gate(
   state : StateVector,
@@ -46,7 +34,7 @@ fn execute_gate(
   }
 
   let targets = instruction.targets()
-  let gate_shape = gate.dimensions()
+  let gate_shape = gate.shape()
   if gate_shape.length() != targets.length() {
     raise @circuit.TargetCount(targets.length(), gate_shape.length())
   }
@@ -70,7 +58,7 @@ fn validate_norm(state : StateVector) -> Unit raise @circuit.QuantumError {
 ///|
 /// Map local basis indices to offsets in the full state.
 fn local_offsets(
-  shape : Array[UInt32],
+  shape : @internal.Shape,
   strides : Array[Int32],
   targets : Array[Int32],
   local_size : Int32,
@@ -92,7 +80,7 @@ fn local_offsets(
 /// A local block starts where all target digits are zero.
 fn is_local_base(
   base : Int32,
-  shape : Array[UInt32],
+  shape : @internal.Shape,
   strides : Array[Int32],
   targets : Array[Int32],
 ) -> Bool {
@@ -108,12 +96,12 @@ fn is_local_base(
 fn apply_local(
   re : Array[Double],
   im : Array[Double],
-  shape : Array[UInt32],
+  shape : @internal.Shape,
   strides : Array[Int32],
   gate : @circuit.Gate,
   targets : Array[Int32],
 ) -> Unit {
-  let local_size = gate.dimension()
+  let local_size = gate.size()
   let offsets = local_offsets(shape, strides, targets, local_size)
   let input_re = Array::make(local_size, 0.0)
   let input_im = Array::make(local_size, 0.0)

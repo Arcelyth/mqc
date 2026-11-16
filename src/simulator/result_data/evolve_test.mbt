@@ -12,7 +12,7 @@ test "evolve preserves phase and target order before terminal measurements" {
   ])
   // In wire order [a, spectator, b], the state is (|000> + i|101>) / sqrt(2).
   let state = @result_data.evolve(circuit.compile())
-  assert_eq(state.dimensions(), [2U, 3U, 2U])
+  assert_eq(state.dim(), [2U, 3U, 2U])
   let amplitudes = state.amplitudes()
   assert_eq(amplitudes.length(), 12)
   let s = 1.0 / 2.0.sqrt()

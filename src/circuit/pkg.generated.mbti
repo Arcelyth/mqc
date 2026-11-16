@@ -2,14 +2,14 @@
 package "Arcelyth/mqc/circuit"
 
 import {
+  "Arcelyth/mqc/circuit/kernel",
+  "Arcelyth/mqc/internal",
   "Arcelyth/mqc/maths",
   "moonbitlang/core/debug",
 }
 
 // Values
 pub fn[Q : Qid] measure(Array[Q], key? : String) -> Operation[Q] raise QuantumError
-
-pub fn space_size(Array[UInt32], max_size? : Int32) -> Int32 raise QuantumError
 
 // Errors
 #derive(@debug.Debug)
@@ -35,7 +35,7 @@ pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise QuantumErro
 pub fn[Q : Qid] Circuit::compile(Self[Q], name? : String) -> Program
 pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise QuantumError
 pub fn[Q] Circuit::copy(Self[Q]) -> Self[Q]
-pub fn[Q] Circuit::dimensions(Self[Q]) -> Array[UInt32]
+pub fn[Q] Circuit::dim(Self[Q]) -> Array[UInt32]
 pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise QuantumError
 pub fn[Q : Qid] Circuit::from_op(Array[Operation[Q]]) -> Self[Q] raise QuantumError
 pub fn[Q : Qid] Circuit::index_of(Self[Q], Q) -> Int32?
@@ -48,34 +48,28 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise Quan
 type Gate
 pub fn Gate::adjoint(Self) -> Self
 pub fn Gate::arity(Self) -> Int32
-pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex], max_dimension? : Int32) -> Self raise QuantumError
-pub fn Gate::dimension(Self) -> Int32
-pub fn Gate::dimensions(Self) -> Array[UInt32]
-pub fn Gate::from_kernel(String, Array[UInt32], &UnitaryKernel, max_dimension? : Int32) -> Self raise QuantumError
-pub fn Gate::kernel(Self) -> &UnitaryKernel
+pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex]) -> Self raise QuantumError
+pub fn Gate::dim(Self) -> Array[UInt32]
+pub fn Gate::from_kernel(String, Array[UInt32], &@kernel.UnitaryKernel) -> Self raise QuantumError
+pub fn Gate::kernel(Self) -> &@kernel.UnitaryKernel
 pub fn Gate::measurement_key(Self) -> String?
-pub fn Gate::monomial(String, Array[UInt32], Array[Int32], Array[@maths.Complex], max_dimension? : Int32) -> Self raise QuantumError
+pub fn Gate::monomial(String, Array[UInt32], Array[Int32], Array[@maths.Complex]) -> Self raise QuantumError
 pub fn Gate::name(Self) -> String
 pub fn Gate::parameters(Self) -> Array[String]
+pub fn Gate::shape(Self) -> @internal.Shape
+pub fn Gate::size(Self) -> Int32
 pub fn Gate::to_repr(Self) -> @debug.Repr
 pub fn Gate::try_adjoint(Self) -> &Effect? raise QuantumError
 pub fn Gate::try_channel(Self) -> Channel?
 pub fn Gate::try_decompose(Self) -> Program? raise QuantumError
 pub fn Gate::try_unitary(Self) -> Self?
-pub fn Gate::unitary(String, Array[UInt32], Array[@maths.Complex], tolerance? : Double, max_dimension? : Int32) -> Self raise QuantumError
+pub fn Gate::unitary(String, Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise QuantumError
 pub impl Effect for Gate
 pub impl @debug.Debug for Gate
 
 type Instruction
 pub fn Instruction::effect(Self) -> &Effect
 pub fn Instruction::targets(Self) -> Array[Int32]
-
-pub(all) struct KernelArgs {
-  input_re : ArrayView[Double]
-  input_im : ArrayView[Double]
-  output_re : MutArrayView[Double]
-  output_im : MutArrayView[Double]
-}
 
 type Operation[Q]
 pub fn[Q] Operation::effect(Self[Q]) -> &Effect
@@ -86,15 +80,16 @@ pub fn[Q : @debug.Debug] Operation::to_repr(Self[Q]) -> @debug.Repr
 pub impl[Q : @debug.Debug] @debug.Debug for Operation[Q]
 
 type Program
-pub fn Program::dimensions(Self) -> Array[UInt32]
+pub fn Program::dim(Self) -> Array[UInt32]
 pub fn Program::instructions(Self) -> Iter[Instruction]
 pub fn Program::length(Self) -> Int32
 pub fn Program::name(Self) -> String
+pub fn Program::shape(Self) -> @internal.Shape
 
 #derive(Compare, Eq, Hash, @debug.Debug)
 pub(all) struct QubitId(UInt64)
 pub fn QubitId::compare(Self, Self) -> Int32
-pub fn QubitId::dimension(Self) -> UInt32
+pub fn QubitId::dim(Self) -> UInt32
 pub fn QubitId::equal(Self, Self) -> Bool
 pub fn QubitId::hash(Self) -> Int32
 pub fn QubitId::hash_combine(Self, Hasher) -> Unit
@@ -108,7 +103,7 @@ pub impl Qid for QubitId
 
 #derive(Eq, Hash, @debug.Debug)
 type QuditId
-pub fn QuditId::dimension(Self) -> UInt32
+pub fn QuditId::dim(Self) -> UInt32
 pub fn QuditId::equal(Self, Self) -> Bool
 pub fn QuditId::hash(Self) -> Int32
 pub fn QuditId::hash_combine(Self, Hasher) -> Unit
@@ -119,12 +114,19 @@ pub fn QuditId::value(Self) -> UInt64
 pub impl Qid for QuditId
 
 // Type aliases
+pub using @kernel {type DenseKernel}
+
+pub using @kernel {type KernelArgs}
+
+pub using @kernel {type MonomialKernel}
+
+pub using @kernel {trait UnitaryKernel}
 
 // Traits
 pub(open) trait Effect {
   fn measurement_key(Self) -> String? = _
   fn name(Self) -> String
-  fn dimensions(Self) -> Array[UInt32]
+  fn dim(Self) -> Array[UInt32]
   fn arity(Self) -> Int32 = _
   fn try_unitary(Self) -> Gate? = _
   fn try_channel(Self) -> Channel? = _
@@ -134,11 +136,5 @@ pub(open) trait Effect {
 }
 
 pub(open) trait Qid : Eq + Hash {
-  fn dimension(Self) -> UInt32
-}
-
-pub(open) trait UnitaryKernel {
-  fn dimension(Self) -> Int32
-  fn apply(Self, KernelArgs) -> Unit
-  fn adjoint(Self) -> &UnitaryKernel
+  fn dim(Self) -> UInt32
 }

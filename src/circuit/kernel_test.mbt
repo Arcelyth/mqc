@@ -62,7 +62,7 @@ test "kernel output is independent of mutations to gate constructor inputs" {
   let gate = @circuit.Gate::unitary("H", shape, matrix)
   shape[0] = 3U
   matrix[0] = @maths.Complex::real(99.0)
-  let exported = gate.dimensions()
+  let exported = gate.dim()
   exported[0] = 4U
 
   assert_amplitudes(

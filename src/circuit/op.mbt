@@ -10,7 +10,7 @@ pub fn[Q : Qid] Operation::new(
   effect : &Effect,
   targets : Array[Q],
 ) -> Operation[Q] raise QuantumError {
-  let shape = effect.dimensions()
+  let shape = effect.dim()
   if shape.length() != targets.length() {
     raise TargetCount(shape.length(), targets.length())
   }
@@ -20,7 +20,7 @@ pub fn[Q : Qid] Operation::new(
       raise DuplicateQid(i)
     }
     seen[q] = true
-    let actual = q.dimension()
+    let actual = q.dim()
     let expected = shape[i]
     if actual != expected {
       raise DimensionMismatch(i, expected, actual)
