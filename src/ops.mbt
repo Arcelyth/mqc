@@ -89,6 +89,30 @@ pub fn[Q : @circuit.Qid] cnot(
 }
 
 ///|
+pub fn[Q : @circuit.Qid] cy(
+  control : Q,
+  target : Q,
+) -> @circuit.Operation[Q] raise @circuit.QuantumError {
+  @circuit.Operation::new(@gates.cy(), [control, target])
+}
+
+///|
+pub fn[Q : @circuit.Qid] cz(
+  first : Q,
+  second : Q,
+) -> @circuit.Operation[Q] raise @circuit.QuantumError {
+  @circuit.Operation::new(@gates.cz(), [first, second])
+}
+
+///|
+pub fn[Q : @circuit.Qid] swap(
+  first : Q,
+  second : Q,
+) -> @circuit.Operation[Q] raise @circuit.QuantumError {
+  @circuit.Operation::new(@gates.swap(), [first, second])
+}
+
+///|
 pub fn[Q : @circuit.Qid] measure(
   targets : Array[Q],
   key~ : String = "m",

@@ -9,6 +9,10 @@ import {
 #alias(cx)
 pub fn cnot() -> @circuit.Gate
 
+pub fn cy() -> @circuit.Gate
+
+pub fn cz() -> @circuit.Gate
+
 pub fn h() -> @circuit.Gate
 
 pub fn i() -> @circuit.Gate
@@ -22,6 +26,8 @@ pub fn ry(Double) -> @circuit.Gate raise @circuit.QuantumError
 pub fn rz(Double) -> @circuit.Gate raise @circuit.QuantumError
 
 pub fn s() -> @circuit.Gate
+
+pub fn swap() -> @circuit.Gate
 
 pub fn t() -> @circuit.Gate
 
