@@ -77,28 +77,3 @@ impl Effect with fn parameters(_self) -> Array[String] {
 impl Effect with fn measurement_key(_self) -> String? {
   None
 }
-
-///|
-pub impl Effect for Gate with fn name(self) -> String {
-  self.label
-}
-
-///|
-pub impl Effect for Gate with fn dimensions(self) -> Array[UInt32] {
-  self.shape.copy()
-}
-
-///|
-pub impl Effect for Gate with fn try_unitary(self) -> Gate? {
-  Some(self)
-}
-
-///|
-pub extend Gate with Effect::{
-  measurement_key,
-  try_unitary,
-  try_channel,
-  try_decompose,
-  try_adjoint,
-  parameters,
-}

@@ -159,3 +159,72 @@ pub fn[Q : Qid] Circuit::compile(
   }
   { label: name, shape: self.shape.copy(), ops, }
 }
+
+///|
+/// Return a new circuit executing self followed by other.
+/// Append new wires in order.
+pub fn[Q : Qid] Circuit::concat(
+  self : Circuit[Q],
+  other : Circuit[Q],
+) -> Circuit[Q] raise QuantumError {
+  let wires = self.wires.copy()
+  let shape = self.shape.copy()
+  let indices = self.indices.copy()
+  for i, qid in other.wires {
+    match indices.get(qid) {
+      Some(index) =>
+        if shape[index] != other.shape[i] {
+          raise DimensionMismatch(i, shape[index], other.shape[i])
+        }
+      None => {
+        indices[qid] = wires.length()
+        wires.push(qid)
+        shape.push(other.shape[i])
+      }
+    }
+  }
+  let mut parameter_names = self.parameter_names
+  for name in other.parameter_names.iter() {
+    parameter_names = parameter_names.add(name)
+  }
+  { wires, shape, indices, ops: self.ops.concat(other.ops), parameter_names, }
+}
+
+///|
+/// Map each logical wire once, preserving wire and target order.
+pub fn[Q : Qid, R : Qid] Circuit::remap(
+  self : Circuit[Q],
+  map : (Q) -> R,
+) -> Circuit[R] raise QuantumError {
+  let wires = self.wires.map(map)
+  for i, qid in wires {
+    let dimension = qid.dimension()
+    if dimension != self.shape[i] {
+      raise DimensionMismatch(i, self.shape[i], dimension)
+    }
+  }
+  let result = Circuit::new(wires)
+  for operation in self.ops {
+    let targets = operation.wires.map(fn(qid) { wires[self.indices[qid]] })
+    result.append(Operation::new(operation.effect, targets))
+  }
+  result
+}
+
+///|
+/// Reverse operation order and replace each effect with its adjoint:
+/// (U₁ U₂ ... Uₙ)† = Uₙ† ... U₂† U₁†.
+/// Reject effects without an adjoint.
+pub fn[Q : Qid] Circuit::adjoint(
+  self : Circuit[Q],
+) -> Circuit[Q] raise QuantumError {
+  let result = Circuit::new(self.wires)
+  for i = self.ops.length() - 1; i >= 0; i = i - 1 {
+    let operation = self.ops[i]
+    guard operation.effect.try_adjoint() is Some(inverse) else {
+      raise InvalidGate("effect has no adjoint: " + operation.effect.name())
+    }
+    result.append(Operation::new(inverse, operation.wires))
+  }
+  result
+}

@@ -9,32 +9,6 @@ struct Gate {
 }
 
 ///|
-pub fn Gate::name(self : Gate) -> String {
-  self.label
-}
-
-///|
-pub fn Gate::dimensions(self : Gate) -> Array[UInt32] {
-  self.shape.copy()
-}
-
-///|
-pub fn Gate::arity(self : Gate) -> Int32 {
-  self.shape.length()
-}
-
-///|
-pub fn Gate::dimension(self : Gate) -> Int32 {
-  self.size
-}
-
-///|
-/// Return the immutable unitary kernel for this gate.
-pub fn Gate::kernel(self : Gate) -> &UnitaryKernel {
-  self.kernel_value
-}
-
-///|
 /// Check shape, finite entries, and U†U before accepting a matrix.
 /// max_dimension bounds the cubic validation work and quadratic storage.
 /// Entries are in row order: row * dimension + column.
@@ -160,8 +134,70 @@ pub fn Gate::diagonal(
 }
 
 ///|
+pub fn Gate::name(self : Gate) -> String {
+  self.label
+}
+
+///|
+pub fn Gate::dimensions(self : Gate) -> Array[UInt32] {
+  self.shape.copy()
+}
+
+///|
+pub fn Gate::arity(self : Gate) -> Int32 {
+  self.shape.length()
+}
+
+///|
+pub fn Gate::dimension(self : Gate) -> Int32 {
+  self.size
+}
+
+///|
+/// Return the immutable unitary kernel for this gate.
+pub fn Gate::kernel(self : Gate) -> &UnitaryKernel {
+  self.kernel_value
+}
+
+///|
+/// Return the inverse unitary using the kernel's adjoint.
+pub fn Gate::adjoint(self : Gate) -> Gate {
+  {
+    label: self.label + "†",
+    shape: self.shape,
+    kernel_value: self.kernel_value.adjoint(),
+    size: self.size,
+  }
+}
+
+///|
+pub impl Effect for Gate with fn name(self) -> String {
+  self.label
+}
+
+///|
+pub impl Effect for Gate with fn dimensions(self) -> Array[UInt32] {
+  self.shape.copy()
+}
+
+///|
+pub impl Effect for Gate with fn try_unitary(self) -> Gate? {
+  Some(self)
+}
+
+///|
 pub impl Debug for Gate with fn to_repr(self) {
   Debug::to_repr((self.label, self.shape))
+}
+
+///|
+pub extend Gate with Effect::{
+  measurement_key,
+  try_unitary,
+  try_channel,
+  try_decompose,
+  try_adjoint,
+  parameters,
 }
 
 ///|

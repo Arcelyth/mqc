@@ -30,8 +30,10 @@ pub fn QuantumError::to_repr(Self) -> @debug.Repr
 type Channel
 
 type Circuit[Q]
+pub fn[Q : Qid] Circuit::adjoint(Self[Q]) -> Self[Q] raise QuantumError
 pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise QuantumError
 pub fn[Q : Qid] Circuit::compile(Self[Q], name? : String) -> Program
+pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise QuantumError
 pub fn[Q] Circuit::copy(Self[Q]) -> Self[Q]
 pub fn[Q] Circuit::dimensions(Self[Q]) -> Array[UInt32]
 pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise QuantumError
@@ -41,8 +43,10 @@ pub fn[Q] Circuit::length(Self[Q]) -> Int32
 pub fn[Q : Qid] Circuit::new(Array[Q]) -> Self[Q] raise QuantumError
 pub fn[Q] Circuit::operations(Self[Q]) -> Iter[Operation[Q]]
 pub fn[Q] Circuit::qids(Self[Q]) -> Array[Q]
+pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise QuantumError
 
 type Gate
+pub fn Gate::adjoint(Self) -> Self
 pub fn Gate::arity(Self) -> Int32
 pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex], max_dimension? : Int32) -> Self raise QuantumError
 pub fn Gate::dimension(Self) -> Int32

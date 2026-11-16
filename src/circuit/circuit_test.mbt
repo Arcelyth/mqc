@@ -33,3 +33,38 @@ test "circuit rejects duplicate wire IDs" {
   let result = Ok(@circuit.Circuit::new([q, q])) catch { error => Err(error) }
   assert_true(result is Err(@circuit.QuantumError::DuplicateQid(1)))
 }
+
+///|
+test "concatenation retains idle wires and remapping preserves local target positions" {
+  let a = @circuit.QubitId(0UL)
+  let b = @circuit.QubitId(1UL)
+  let c = @circuit.QubitId(2UL)
+  let left = @circuit.Circuit::new([b, a])
+  left.append(@circuit.measure([a], key="left"))
+  let right = @circuit.Circuit::new([c, b])
+  right.append(@circuit.measure([b], key="right"))
+  let joined = left.concat(right)
+  assert_eq(joined.qids(), [b, a, c])
+  assert_eq(left.length(), 1)
+  assert_eq(right.length(), 1)
+
+  let mut calls = 0
+  let mapped = joined.remap(fn(q) {
+    calls += 1
+    @circuit.QubitId(q.0 + 10UL)
+  })
+  assert_eq(calls, 3)
+  assert_eq(mapped.dimensions(), [2U, 2U, 2U])
+  let targets = []
+  for instruction in mapped.compile().instructions() {
+    targets.push(instruction.targets())
+  }
+  assert_eq(targets, [[1], [0]])
+  let duplicate = Ok(joined.remap(fn(_) { a })) catch { error => Err(error) }
+  assert_true(duplicate is Err(@circuit.QuantumError::DuplicateQid(_)))
+
+  let measured_adjoint = Ok(joined.adjoint()) catch { error => Err(error) }
+  assert_true(measured_adjoint is Err(@circuit.QuantumError::InvalidGate(_)))
+  joined.append(@circuit.measure([c], key="later"))
+  assert_eq(mapped.length(), 2)
+}
