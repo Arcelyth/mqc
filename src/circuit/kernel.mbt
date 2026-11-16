@@ -4,6 +4,7 @@ pub using @kernel {
   type KernelArgs,
   type DenseKernel,
   type MonomialKernel,
+  type ControlledKernel,
 }
 
 ///|

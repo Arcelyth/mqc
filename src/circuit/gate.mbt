@@ -161,6 +161,50 @@ pub fn Gate::adjoint(self : Gate) -> Gate {
 }
 
 ///|
+/// Create a controlled version of this gate by prepending control wires.
+/// Apply this gate only when all control wires match their specified control values.
+///
+/// `control_dimensions` specifies the dimension of each control wire.
+/// `control_values` specifies the required basis-state value of each control wire to activate the gate. 
+/// For example, `control_values = [1, 2]` means the gate is applied only when the first control wire is in state |1⟩ 
+/// and the second is in state |2⟩. Defaults to the highest basis value of each control wire (dimension - 1).
+pub fn Gate::controlled(
+  self : Gate,
+  control_dimensions~ : Array[UInt32] = [2U],
+  control_values? : Array[UInt32],
+) -> Gate raise QuantumError {
+  let shape = control_dimensions.copy()
+  for i in 0..<self.shape.length() {
+    shape.push(self.shape[i])
+  }
+
+  let size = @internal.Shape::new(shape).size()
+  let values = control_values.unwrap_or_else(fn() {
+    control_dimensions.map(fn(dimension) { dimension - 1U })
+  })
+  if values.length() != control_dimensions.length() {
+    raise TargetCount(control_dimensions.length(), values.length())
+  }
+
+  let mut block = 0
+  for i, dimension in control_dimensions {
+    if values[i] >= dimension {
+      raise InvalidGate("control value must be smaller than its wire dimension")
+    }
+    block = block * dimension.reinterpret_as_int() +
+      values[i].reinterpret_as_int()
+  }
+  if control_dimensions.is_empty() {
+    return self
+  }
+  Gate::from_kernel("C(" + self.label + ")", shape, ControlledKernel::{
+    inner: self.kernel_value,
+    size,
+    offset: block * self.size(),
+  })
+}
+
+///|
 pub impl Effect for Gate with fn name(self) -> String {
   self.label
 }

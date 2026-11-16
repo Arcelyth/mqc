@@ -48,6 +48,7 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise Quan
 type Gate
 pub fn Gate::adjoint(Self) -> Self
 pub fn Gate::arity(Self) -> Int32
+pub fn Gate::controlled(Self, control_dimensions? : Array[UInt32], control_values? : Array[UInt32]) -> Self raise QuantumError
 pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex]) -> Self raise QuantumError
 pub fn Gate::dim(Self) -> Array[UInt32]
 pub fn Gate::from_kernel(String, Array[UInt32], &@kernel.UnitaryKernel) -> Self raise QuantumError
@@ -114,6 +115,8 @@ pub fn QuditId::value(Self) -> UInt64
 pub impl Qid for QuditId
 
 // Type aliases
+pub using @kernel {type ControlledKernel}
+
 pub using @kernel {type DenseKernel}
 
 pub using @kernel {type KernelArgs}

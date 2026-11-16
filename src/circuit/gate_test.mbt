@@ -45,3 +45,21 @@ test "monomial rejects invalid permutations and phases" {
     expect_invalid_gate(() => @circuit.Gate::diagonal("bad", [2U], phases))
   }
 }
+
+///|
+test "controlled gate construction validates control shapes and values" {
+  let gate = @circuit.Gate::diagonal(
+    "I",
+    [2U],
+    Array::make(2, @maths.Complex::real(1.0)),
+  )
+  assert_eq(gate.controlled().dim(), [2U, 2U])
+  assert_eq(gate.controlled(control_dimensions=[]).dim(), [2U])
+  expect_invalid_gate(() => {
+    gate.controlled(control_dimensions=[3U], control_values=[3U])
+  })
+  let mismatch = Ok(gate.controlled(control_values=[])) catch {
+    error => Err(error)
+  }
+  assert_true(mismatch is Err(@circuit.QuantumError::TargetCount(1, 0)))
+}

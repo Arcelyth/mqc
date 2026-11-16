@@ -10,6 +10,16 @@ import {
 // Errors
 
 // Types and methods
+pub(all) struct ControlledKernel {
+  inner : &UnitaryKernel
+  size : Int32
+  offset : Int32
+}
+pub fn ControlledKernel::adjoint(Self) -> &UnitaryKernel
+pub fn ControlledKernel::apply(Self, KernelArgs) -> Unit
+pub fn ControlledKernel::size(Self) -> Int32
+pub impl UnitaryKernel for ControlledKernel
+
 pub(all) struct DenseKernel {
   data : Array[@maths.Complex]
   size : Int32
