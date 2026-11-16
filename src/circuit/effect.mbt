@@ -78,8 +78,6 @@ impl Effect with fn measurement_key(_self) -> String? {
   None
 }
 
-/// ----- Implement Effect for Gate -----
-
 ///|
 pub impl Effect for Gate with fn name(self) -> String {
   self.label
@@ -94,8 +92,6 @@ pub impl Effect for Gate with fn dimensions(self) -> Array[UInt32] {
 pub impl Effect for Gate with fn try_unitary(self) -> Gate? {
   Some(self)
 }
-
-/// ----- -----
 
 ///|
 pub extend Gate with Effect::{

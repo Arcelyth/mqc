@@ -58,8 +58,6 @@ pub fn StateVectorSimulator::simulate_batch(
   self.engine.simulate_batch(programs)
 }
 
-// ===== Implement Sampler for StateVectorSimulator =====
-
 ///|
 pub impl Sampler for StateVectorSimulator with fn run(
   self,
@@ -72,12 +70,17 @@ pub impl Sampler for StateVectorSimulator with fn run(
   }
 
   let targets : Array[Int32] = []
+  let mut measuring = false
+  let mut terminal = true
   // Collects every measured wire into targets
   for instruction in program.instructions() {
     if instruction.effect().measurement_key() is Some(_) {
+      measuring = true
       for wire in instruction.targets() {
         targets.push(wire)
       }
+    } else if measuring {
+      terminal = false
     }
   }
 
@@ -89,6 +92,11 @@ pub impl Sampler for StateVectorSimulator with fn run(
     raise @circuit.SizeLimit(2147483647)
   }
 
+  if !terminal {
+    return self.run_shots(program, repetitions, width)
+  }
+
+  // Fast path for terminal measurement.
   let state = @result_data.evolve(program)
   let probabilities = state.probabilities()
   let mut total = 0.0
@@ -130,7 +138,25 @@ pub impl Sampler for StateVectorSimulator with fn run(
   SamplerResult::new(records)
 }
 
-// ===== =====
+///|
+/// Execute each shot separately when measurements affect later gates.
+fn StateVectorSimulator::run_shots(
+  self : StateVectorSimulator,
+  program : @circuit.Program,
+  repetitions : Int32,
+  width : Int32,
+) -> SamplerResult raise @circuit.QuantumError {
+  let records = @maths.Array3::make(repetitions, 1, width, 0)
+  for shot in 0..<repetitions {
+    let trial = self.simulate(program)
+    for column in 0..<width {
+      ignore(
+        records.set(shot, 0, column, trial.records.get(0, 0, column).unwrap()),
+      )
+    }
+  }
+  SamplerResult::new(records)
+}
 
 ///|
 pub extend StateVectorSimulator with Sampler::{run}

@@ -4,8 +4,6 @@ struct StateVectorState {
   base : SimulationStateBase
   vector : StateVector
   strides : Array[Int32]
-  keys : Map[String, Bool]
-  mut measuring : Bool
 }
 
 ///|
@@ -18,8 +16,6 @@ pub fn StateVectorState::new(
     base: SimulationStateBase::new(seed?),
     vector,
     strides: wire_strides(vector.shape),
-    keys: Map([]),
-    measuring: false,
   }
 }
 
@@ -30,8 +26,6 @@ pub fn StateVectorState::copy(self : StateVectorState) -> StateVectorState {
     base: self.base.copy(),
     vector: { shape: vector.shape, re: vector.re.copy(), im: vector.im.copy(), },
     strides: self.strides,
-    keys: self.keys.copy(),
-    measuring: self.measuring,
   }
 }
 
@@ -65,36 +59,11 @@ pub fn StateVectorState::apply(
   self : StateVectorState,
   instruction : @circuit.Instruction,
 ) -> Unit raise @circuit.QuantumError {
-  if self.check_instruction(instruction) {
+  if check_instruction(instruction) {
     self.validate()
     self.measure(instruction.targets(), self.base.draw())
   } else {
     execute_gate(self.vector, self.strides, instruction)
-  }
-}
-
-///|
-/// Validate execution order and return whether this instruction is a measurement.
-fn StateVectorState::check_instruction(
-  self : StateVectorState,
-  instruction : @circuit.Instruction,
-) -> Bool raise @circuit.QuantumError {
-  let effect = instruction.effect()
-  if effect.parameters().length() != 0 {
-    raise @circuit.InvalidState("unbound parameters are not supported")
-  }
-  if effect.measurement_key() is Some(key) {
-    if self.keys.contains(key) {
-      raise @circuit.InvalidState("measurement keys must be unique")
-    }
-    self.keys[key] = true
-    self.measuring = true
-    true
-  } else {
-    if self.measuring {
-      raise @circuit.InvalidState("only terminal measurements are supported")
-    }
-    false
   }
 }
 

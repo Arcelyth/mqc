@@ -6,8 +6,14 @@ pub fn evolve(
 ) -> StateVector raise @circuit.QuantumError {
   // This path skips measurements and never draws random values.
   let state = StateVectorState::new(program.dimensions(), seed=0UL)
+  let mut measuring = false
   for instruction in program.instructions() {
-    if !state.check_instruction(instruction) {
+    if check_instruction(instruction) {
+      measuring = true
+    } else {
+      if measuring {
+        raise @circuit.InvalidState("evolve requires terminal measurements")
+      }
       execute_gate(state.vector, state.strides, instruction)
     }
   }
