@@ -201,6 +201,33 @@ pub fn DensityMatrix::probabilities(self : DensityMatrix) -> Array[Double] {
 }
 
 ///|
+pub fn DensityMatrix::marginal_probabilities(
+  self : DensityMatrix,
+  targets : Array[Int32],
+) -> Array[Double] raise @error.QError {
+  let size = self.size()
+  let probabilities = Array::make(self.shape.selected_size(targets), 0.0)
+  let corrections = Array::make(probabilities.length(), 0.0)
+  let strides = self.shape.strides()
+  for basis in 0..<size {
+    let mut index = 0
+    for wire in targets {
+      let dimension = self.shape[wire].reinterpret_as_int()
+      index = index * dimension + basis / strides[wire] % dimension
+    }
+
+    let term = self.re[basis * size + basis] - corrections[index]
+    let next = probabilities[index] + term
+    corrections[index] = next - probabilities[index] - term
+    probabilities[index] = next
+  }
+  for i in 0..<probabilities.length() {
+    probabilities[i] = Double::max(probabilities[i], 0.0)
+  }
+  probabilities
+}
+
+///|
 /// Return the trace of the density matrix:
 pub fn DensityMatrix::trace(self : DensityMatrix) -> Double {
   let size = self.size()
@@ -227,4 +254,9 @@ pub fn DensityMatrix::purity(self : DensityMatrix) -> Double {
     sum = next
   }
   sum
+}
+
+///|
+pub fn DensityMatrix::copy(self : DensityMatrix) -> DensityMatrix {
+  { shape: self.shape, re: self.re.copy(), im: self.im.copy(), }
 }

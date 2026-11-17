@@ -17,16 +17,28 @@ pub fn evolve(@circuit.Program) -> StateVector raise @error.QError
 // Types and methods
 type DensityMatrix
 pub fn DensityMatrix::basis(Array[UInt32], Int32) -> Self raise @error.QError
+pub fn DensityMatrix::copy(Self) -> Self
 pub fn DensityMatrix::dim(Self) -> Array[UInt32]
 pub fn DensityMatrix::entries(Self) -> Array[@maths.Complex]
 pub fn DensityMatrix::entry(Self, Int32, Int32) -> @maths.Complex raise @error.QError
 pub fn DensityMatrix::from_mixture(Array[StateVector], Array[Double]) -> Self raise @error.QError
 pub fn DensityMatrix::from_state(StateVector) -> Self raise @error.QError
+pub fn DensityMatrix::marginal_probabilities(Self, Array[Int32]) -> Array[Double] raise @error.QError
 pub fn DensityMatrix::probabilities(Self) -> Array[Double]
 pub fn DensityMatrix::purity(Self) -> Double
 pub fn DensityMatrix::size(Self) -> Int32
 pub fn DensityMatrix::trace(Self) -> Double
 pub fn DensityMatrix::zero(Array[UInt32]) -> Self raise @error.QError
+
+type DensityMatrixState
+pub fn DensityMatrixState::apply(Self, @circuit.Instruction) -> Unit raise @error.QError
+pub fn DensityMatrixState::copy(Self) -> Self
+pub fn DensityMatrixState::density_matrix(Self) -> DensityMatrix
+pub fn DensityMatrixState::dim(Self) -> Array[UInt32]
+pub fn DensityMatrixState::from_density(DensityMatrix, seed? : UInt64) -> Self raise @error.QError
+pub fn DensityMatrixState::new(Array[UInt32], seed? : UInt64) -> Self raise @error.QError
+pub fn DensityMatrixState::records(Self) -> @maths.Array3[Int32]
+pub fn DensityMatrixState::validate(Self) -> Unit raise @error.QError
 
 pub struct ResultData {
   values : @hashmap.HashMap[String, &ResultValue]

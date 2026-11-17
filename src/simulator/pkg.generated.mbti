@@ -84,4 +84,5 @@ pub(open) trait SimulationState {
   fn records(Self) -> @maths.Array3[Int32]
   fn validate(Self) -> Unit raise @error.QError
 }
+pub impl SimulationState for @result_data.DensityMatrixState
 pub impl SimulationState for @result_data.StateVectorState

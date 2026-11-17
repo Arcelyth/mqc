@@ -28,27 +28,32 @@ fn execute_gate(
   strides : Array[Int32],
   instruction : @circuit.Instruction,
 ) -> Unit raise @error.QError {
-  let effect = instruction.effect()
+  let targets = instruction.targets()
+  let gate = checked_unitary(instruction.effect(), targets, state.shape)
+  apply_local(state.re, state.im, state.shape, strides, gate.kernel(), targets)
+}
+
+///|
+fn checked_unitary(
+  effect : &@circuit.Effect,
+  targets : Array[Int32],
+  shape : @internal.Shape,
+) -> @circuit.Gate raise @error.QError {
   guard effect.try_unitary() is Some(gate) else {
     raise @error.QError::InvalidGate("unsupported effect: " + effect.name())
   }
 
-  let targets = instruction.targets()
   let gate_shape = gate.shape()
   if gate_shape.length() != targets.length() {
     raise @error.QError::TargetCount(targets.length(), gate_shape.length())
   }
 
   for i, target in targets {
-    if gate_shape[i] != state.shape[target] {
-      raise @error.QError::DimensionMismatch(
-        i,
-        state.shape[target],
-        gate_shape[i],
-      )
+    if gate_shape[i] != shape[target] {
+      raise @error.QError::DimensionMismatch(i, shape[target], gate_shape[i])
     }
   }
-  apply_local(state.re, state.im, state.shape, strides, gate, targets)
+  gate
 }
 
 ///|
@@ -102,23 +107,27 @@ fn apply_local(
   im : Array[Double],
   shape : @internal.Shape,
   strides : Array[Int32],
-  gate : @circuit.Gate,
+  kernel : &@circuit.UnitaryKernel,
   targets : Array[Int32],
+  conjugate~ : Bool = false,
 ) -> Unit {
-  let local_size = gate.size()
+  let local_size = kernel.size()
   let offsets = local_offsets(shape, strides, targets, local_size)
   let input_re = Array::make(local_size, 0.0)
   let input_im = Array::make(local_size, 0.0)
   let output_re = Array::make(local_size, 0.0)
   let output_im = Array::make(local_size, 0.0)
-  let kernel = gate.kernel()
   for base in 0..<re.length() {
     if !is_local_base(base, shape, strides, targets) {
       continue
     }
     for j in 0..<local_size {
       input_re[j] = re[base + offsets[j]]
-      input_im[j] = im[base + offsets[j]]
+      input_im[j] = if conjugate {
+        -im[base + offsets[j]]
+      } else {
+        im[base + offsets[j]]
+      }
     }
     kernel.apply({
       input_re: input_re[:],
@@ -128,7 +137,11 @@ fn apply_local(
     })
     for j in 0..<local_size {
       re[base + offsets[j]] = output_re[j]
-      im[base + offsets[j]] = output_im[j]
+      im[base + offsets[j]] = if conjugate {
+        -output_im[j]
+      } else {
+        output_im[j]
+      }
     }
   }
 }
