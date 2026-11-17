@@ -26,6 +26,9 @@ pub using @maths {type Complex}
 ///|
 pub using @simulator {
   type StateVector,
+  type DensityMatrix,
+  type DensityMatrixState,
+  type DensityMatrixSimulator,
   trait ResultValue,
   type ExecutionResult,
   type ExperimentResult,

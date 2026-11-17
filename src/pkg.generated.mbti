@@ -56,6 +56,12 @@ pub using @circuit {type Circuit}
 
 pub using @maths {type Complex}
 
+pub using @states {type DensityMatrix}
+
+pub using @simulator {type DensityMatrixSimulator}
+
+pub using @states {type DensityMatrixState}
+
 pub using @result {type ExecutionResult}
 
 pub using @result {type ExecutionStatus}

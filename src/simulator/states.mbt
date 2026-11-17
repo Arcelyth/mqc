@@ -4,4 +4,5 @@ pub using @states {
   type SimulationStateBase,
   type StateVectorState,
   type DensityMatrix,
+  type DensityMatrixState,
 }

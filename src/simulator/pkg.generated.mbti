@@ -14,6 +14,16 @@ import {
 // Errors
 
 // Types and methods
+type DensityMatrixSimulator
+pub fn DensityMatrixSimulator::name(Self) -> String
+pub fn DensityMatrixSimulator::new(seed? : UInt64) -> Self
+pub fn DensityMatrixSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @error.QError
+pub fn DensityMatrixSimulator::simulate(Self, @circuit.Program, initial_state? : @states.DensityMatrixState) -> TrialResult[@states.DensityMatrixState] raise @error.QError
+pub fn DensityMatrixSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@states.DensityMatrixState], @error.QError]]
+pub fn DensityMatrixSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@states.DensityMatrixState]) -> Unit raise @error.QError, initial_state? : @states.DensityMatrixState) -> TrialResult[@states.DensityMatrixState] raise @error.QError
+pub fn DensityMatrixSimulator::simulator(Self) -> Simulator[@states.DensityMatrixState]
+pub impl Sampler for DensityMatrixSimulator
+
 type ParamBinding
 pub fn ParamBinding::empty() -> Self
 
@@ -53,6 +63,8 @@ pub(all) struct TrialResult[S] {
 
 // Type aliases
 pub using @states {type DensityMatrix}
+
+pub using @states {type DensityMatrixState}
 
 pub using @result {type ExecutionResult}
 

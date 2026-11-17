@@ -69,6 +69,13 @@ pub fn DensityMatrixState::density_matrix(
 }
 
 ///|
+pub fn DensityMatrixState::probabilities(
+  self : DensityMatrixState,
+) -> Array[Double] {
+  self.matrix.probabilities()
+}
+
+///|
 pub fn DensityMatrixState::records(
   self : DensityMatrixState,
 ) -> @maths.Array3[Int32] {
