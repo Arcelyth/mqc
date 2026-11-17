@@ -124,11 +124,57 @@ pub fn DensityMatrixState::apply(
 
 ///|
 fn DensityMatrixState::measure(
-  _self : DensityMatrixState,
-  _targets : Array[Int32],
+  self : DensityMatrixState,
+  targets : Array[Int32],
 ) -> Unit raise @error.QError {
-  // TODO
-  raise @error.InvalidState("TODO")
+  let probabilities = self.matrix.marginal_probabilities(targets)
+  let outcome = measurement_outcome(probabilities, self.base.draw())
+  self.collapse_measurement(targets, outcome, probabilities[outcome])
+  let digits = measurement_digits(self.matrix.shape, targets, outcome)
+  self.base.record(digits[:])
+}
+
+///|
+/// Keep both matrix indices in the measured subspace, then divide by its probability.
+fn DensityMatrixState::collapse_measurement(
+  self : DensityMatrixState,
+  targets : Array[Int32],
+  outcome : Int32,
+  probability : Double,
+) -> Unit {
+  let size = self.matrix.size()
+  let keep = Array::makei(size, basis => {
+    self.measurement_index(basis, targets) == outcome
+  })
+  for row in 0..<size {
+    for column in 0..<size {
+      let index = row * size + column
+      if keep[row] && keep[column] {
+        self.matrix.re[index] /= probability
+        self.matrix.im[index] /= probability
+      } else {
+        self.matrix.re[index] = 0.0
+        self.matrix.im[index] = 0.0
+      }
+    }
+  }
+}
+
+///|
+/// Pack target digits in their measurement order, using the cached column strides.
+fn DensityMatrixState::measurement_index(
+  self : DensityMatrixState,
+  basis : Int32,
+  targets : Array[Int32],
+) -> Int32 {
+  let wires = self.matrix.shape.length()
+  let mut index = 0
+  for wire in targets {
+    let dimension = self.matrix.shape[wire].reinterpret_as_int()
+    index = index * dimension +
+      basis / self.tensor_strides[wires + wire] % dimension
+  }
+  index
 }
 
 ///|

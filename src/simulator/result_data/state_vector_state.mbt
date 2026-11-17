@@ -79,7 +79,7 @@ pub fn StateVectorState::apply(
 ) -> Unit raise @error.QError {
   if check_instruction(instruction) {
     self.validate()
-    self.measure(instruction.targets(), self.base.draw())
+    self.measure(instruction.targets())
   } else {
     execute_gate(self.vector, self.strides, instruction)
   }
@@ -89,46 +89,32 @@ pub fn StateVectorState::apply(
 fn StateVectorState::measure(
   self : StateVectorState,
   targets : Array[Int32],
-  draw : Double,
 ) -> Unit raise @error.QError {
-  let probabilities = self.vector.probabilities()
-  let mut total = 0.0
-  for probability in probabilities {
-    total += probability
-  }
-  let threshold = draw * total
-  let mut cumulative = 0.0
-  let mut basis = probabilities.length() - 1
-  for i, probability in probabilities {
-    cumulative += probability
-    if threshold < cumulative {
-      basis = i
-      break
-    }
-  }
-  let digits = targets.map(fn(wire) {
-    basis / self.strides[wire] % self.vector.shape[wire].reinterpret_as_int()
-  })
-  let mut probability = 0.0
-  for i, weight in probabilities {
-    if self.matches_digits(i, targets, digits) {
-      probability += weight
-    }
-  }
-  if probability <= 0.0 || probability.is_nan() || probability.is_inf() {
-    raise @error.QError::InvalidState("invalid measurement probability")
-  }
-  let scale = 1.0 / probability.sqrt()
-  for i in 0..<probabilities.length() {
-    if self.matches_digits(i, targets, digits) {
-      self.vector.re[i] *= scale
-      self.vector.im[i] *= scale
-    } else {
-      self.vector.re[i] = 0.0
-      self.vector.im[i] = 0.0
-    }
-  }
+  let probabilities = self.vector.marginal_probabilities(targets)
+  let outcome = measurement_outcome(probabilities, self.base.draw())
+  let digits = measurement_digits(self.vector.shape, targets, outcome)
+  self.collapse_measurement(targets, digits, probabilities[outcome])
   self.base.record(digits[:])
+}
+
+///|
+/// Keep amplitudes matching the measured digits and divide by sqrt(probability).
+fn StateVectorState::collapse_measurement(
+  self : StateVectorState,
+  targets : Array[Int32],
+  digits : Array[Int32],
+  probability : Double,
+) -> Unit {
+  let scale = 1.0 / probability.sqrt()
+  for basis in 0..<self.vector.re.length() {
+    if self.matches_digits(basis, targets, digits) {
+      self.vector.re[basis] *= scale
+      self.vector.im[basis] *= scale
+    } else {
+      self.vector.re[basis] = 0.0
+      self.vector.im[basis] = 0.0
+    }
+  }
 }
 
 ///|
