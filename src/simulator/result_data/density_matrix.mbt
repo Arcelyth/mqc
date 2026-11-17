@@ -1,29 +1,20 @@
 ///|
-/// Represents a quantum density matrix.
+/// A quantum state represented by a complex density matrix.
 ///
-/// A density matrix describes the quantum state of a system, including both
-/// pure states and mixed states. Mathematically, it is a complex Hermitian,
-/// positive semidefinite matrix with unit trace:
+/// For example, a two-qubit state |ψ> = (|00> + |11>) / √2:
 ///
-/// $$
-/// \rho = \sum_k p_k \lvert\psi_k\rangle\langle\psi_k\rvert
-/// $$
+///   shape = [2, 2]
+///   re    = [1/2, 0, 0, 1/2,
+///              0, 0, 0,   0,
+///              0, 0, 0,   0,
+///            1/2, 0, 0, 1/2]
+///   im    = [0, 0, 0, 0,
+///            0, 0, 0, 0,
+///            0, 0, 0, 0,
+///            0, 0, 0, 0]
 ///
-/// where $p_k \ge 0$ and $\sum_k p_k = 1$.
-///
-/// For a pure state $\lvert\psi\rangle$, the density matrix is:
-///
-/// $$
-/// \rho = \lvert\psi\rangle\langle\psi\rvert
-/// $$
-///
-/// The matrix elements are stored in row-major order using two flat arrays:
-///
-/// $$
-/// \rho_{ij} = \mathrm{re}[i n + j] + \mathrm{i}\,\mathrm{im}[i n + j]
-/// $$
-///
-/// where $n$ is the matrix dimension.
+/// Rows and columns follow basis-state order: |00>, |01>, |10>, |11>.
+/// Entries are stored one row after another, at row * size + column.
 struct DensityMatrix {
   shape : @internal.Shape
   re : Array[Double]
@@ -83,12 +74,8 @@ pub fn DensityMatrix::basis(
 }
 
 ///|
-/// Given a normalized state vector $\lvert\psi\rangle$, constructs its density
+/// Given a normalized state vector, constructs its density
 /// matrix by computing the outer product:
-///
-/// $$
-/// \rho = \lvert\psi\rangle\langle\psi\rvert
-/// $$
 pub fn DensityMatrix::from_state(
   state : StateVector,
 ) -> DensityMatrix raise @error.QError {
@@ -215,10 +202,6 @@ pub fn DensityMatrix::probabilities(self : DensityMatrix) -> Array[Double] {
 
 ///|
 /// Return the trace of the density matrix:
-///
-/// $$
-/// \operatorname{Tr}(\rho) = \sum_i \rho_{ii}
-/// $$
 pub fn DensityMatrix::trace(self : DensityMatrix) -> Double {
   let size = self.size()
   let mut sum = 0.0
@@ -234,11 +217,6 @@ pub fn DensityMatrix::trace(self : DensityMatrix) -> Double {
 
 ///|
 /// Return the purity of the quantum state.
-///
-/// $$
-/// \operatorname{Purity}(\rho) = \operatorname{Tr}(\rho^2)
-/// = \sum_{i,j} \lvert\rho_{ij}\rvert^2
-/// $$
 pub fn DensityMatrix::purity(self : DensityMatrix) -> Double {
   let mut sum = 0.0
   let mut correction = 0.0
