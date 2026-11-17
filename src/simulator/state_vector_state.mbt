@@ -9,7 +9,7 @@ pub impl SimulationState for @result_data.StateVectorState with fn dim(self) -> 
 pub impl SimulationState for @result_data.StateVectorState with fn apply(
   self,
   instruction,
-) -> Unit raise @circuit.QuantumError {
+) -> Unit raise @error.QError {
   self.apply(instruction)
 }
 
@@ -28,6 +28,6 @@ pub impl SimulationState for @result_data.StateVectorState with fn records(self)
 ///|
 pub impl SimulationState for @result_data.StateVectorState with fn validate(
   self,
-) -> Unit raise @circuit.QuantumError {
+) -> Unit raise @error.QError {
   self.validate()
 }

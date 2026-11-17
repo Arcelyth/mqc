@@ -23,7 +23,7 @@ impl Effect for Measurement with fn measurement_key(self) -> String? {
 pub fn[Q : Qid] measure(
   targets : Array[Q],
   key~ : String = "m",
-) -> Operation[Q] raise QuantumError {
+) -> Operation[Q] raise @error.QError {
   if targets.is_empty() || key == "" {
     raise InvalidState("measurement needs targets and a key")
   }

@@ -15,7 +15,7 @@ struct Circuit[Q] {
 
 ///|
 /// Create an empty circuit over an ordered list of distinct logical IDs.
-pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise QuantumError {
+pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise @error.QError {
   let indices : Map[Q, Int32] = Map([])
   let shape : Array[UInt32] = []
   for i, q in qids {
@@ -42,7 +42,7 @@ pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise QuantumError {
 /// Build a circuit from bound operations in execution order.
 pub fn[Q : Qid] Circuit::from_op(
   operations : Array[Operation[Q]],
-) -> Circuit[Q] raise QuantumError {
+) -> Circuit[Q] raise @error.QError {
   let circuit = Circuit::new([])
   circuit.extend_ops(operations)
   circuit
@@ -65,7 +65,7 @@ pub fn[Q] Circuit::copy(self : Circuit[Q]) -> Circuit[Q] {
 pub fn[Q : Qid] Circuit::append(
   self : Circuit[Q],
   operation : Operation[Q],
-) -> Unit raise QuantumError {
+) -> Unit raise @error.QError {
   self.extend_ops([operation])
 }
 
@@ -74,7 +74,7 @@ pub fn[Q : Qid] Circuit::append(
 pub fn[Q : Qid] Circuit::extend_ops(
   self : Circuit[Q],
   operations : Array[Operation[Q]],
-) -> Unit raise QuantumError {
+) -> Unit raise @error.QError {
   let mut wires = self.wires
   let shape = self.shape.to_array()
   let mut indices = self.indices
@@ -165,7 +165,7 @@ pub fn[Q : Qid] Circuit::compile(
 pub fn[Q : Qid] Circuit::concat(
   self : Circuit[Q],
   other : Circuit[Q],
-) -> Circuit[Q] raise QuantumError {
+) -> Circuit[Q] raise @error.QError {
   let wires = self.wires.copy()
   let shape = self.shape.to_array()
   let indices = self.indices.copy()
@@ -200,7 +200,7 @@ pub fn[Q : Qid] Circuit::concat(
 pub fn[Q : Qid, R : Qid] Circuit::remap(
   self : Circuit[Q],
   map : (Q) -> R,
-) -> Circuit[R] raise QuantumError {
+) -> Circuit[R] raise @error.QError {
   let wires = self.wires.map(map)
   for i, qid in wires {
     let dim = qid.dim()
@@ -222,7 +222,7 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
 /// Reject effects without an adjoint.
 pub fn[Q : Qid] Circuit::adjoint(
   self : Circuit[Q],
-) -> Circuit[Q] raise QuantumError {
+) -> Circuit[Q] raise @error.QError {
   let result = Circuit::new(self.wires)
   for i = self.ops.length() - 1; i >= 0; i = i - 1 {
     let operation = self.ops[i]

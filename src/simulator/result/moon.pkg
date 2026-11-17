@@ -1,4 +1,5 @@
 import {
+  "Arcelyth/mqc/error",
   "Arcelyth/mqc/simulator/result_data",
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/internal",

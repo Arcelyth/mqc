@@ -9,7 +9,7 @@ struct Operation[Q] {
 pub fn[Q : Qid] Operation::new(
   effect : &Effect,
   targets : Array[Q],
-) -> Operation[Q] raise QuantumError {
+) -> Operation[Q] raise @error.QError {
   let shape = effect.dim()
   if shape.length() != targets.length() {
     raise TargetCount(shape.length(), targets.length())

@@ -1,0 +1,30 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/error"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+#alias(QuantumError)
+#derive(@debug.Debug)
+pub(all) suberror QError {
+  InvalidDimension(UInt32)
+  SizeLimit(Int32)
+  InvalidGate(String)
+  DuplicateQid(Int32)
+  TargetCount(Int32, Int32)
+  DimensionMismatch(Int32, UInt32, UInt32)
+  RegisterMismatch
+  InvalidBasis(Int32)
+  InvalidState(String)
+}
+pub fn QError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+
+// Type aliases
+
+// Traits

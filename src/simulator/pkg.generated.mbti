@@ -3,6 +3,7 @@ package "Arcelyth/mqc/simulator"
 
 import {
   "Arcelyth/mqc/circuit",
+  "Arcelyth/mqc/error",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator/result",
   "Arcelyth/mqc/simulator/result_data",
@@ -24,18 +25,18 @@ pub fn SamplerResult::new(params? : ParamBinding, @maths.Array3[Int32]) -> Self
 
 type Simulator[S]
 pub fn[S] Simulator::name(Self[S]) -> String
-pub fn[S] Simulator::new(String, (Array[UInt32]) -> S raise @circuit.QuantumError) -> Self[S]
-pub fn[S : SimulationState] Simulator::simulate(Self[S], @circuit.Program, initial_state? : S) -> TrialResult[S] raise @circuit.QuantumError
-pub fn[S : SimulationState] Simulator::simulate_batch(Self[S], Array[@circuit.Program]) -> Array[Result[TrialResult[S], @circuit.QuantumError]]
-pub fn[S : SimulationState] Simulator::simulate_steps(Self[S], @circuit.Program, (StepResult[S]) -> Unit raise @circuit.QuantumError, initial_state? : S) -> TrialResult[S] raise @circuit.QuantumError
+pub fn[S] Simulator::new(String, (Array[UInt32]) -> S raise @error.QError) -> Self[S]
+pub fn[S : SimulationState] Simulator::simulate(Self[S], @circuit.Program, initial_state? : S) -> TrialResult[S] raise @error.QError
+pub fn[S : SimulationState] Simulator::simulate_batch(Self[S], Array[@circuit.Program]) -> Array[Result[TrialResult[S], @error.QError]]
+pub fn[S : SimulationState] Simulator::simulate_steps(Self[S], @circuit.Program, (StepResult[S]) -> Unit raise @error.QError, initial_state? : S) -> TrialResult[S] raise @error.QError
 
 type StateVectorSimulator
 pub fn StateVectorSimulator::name(Self) -> String
 pub fn StateVectorSimulator::new(seed? : UInt64) -> Self
-pub fn StateVectorSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @circuit.QuantumError
-pub fn StateVectorSimulator::simulate(Self, @circuit.Program, initial_state? : @result_data.StateVectorState) -> TrialResult[@result_data.StateVectorState] raise @circuit.QuantumError
-pub fn StateVectorSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@result_data.StateVectorState], @circuit.QuantumError]]
-pub fn StateVectorSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@result_data.StateVectorState]) -> Unit raise @circuit.QuantumError, initial_state? : @result_data.StateVectorState) -> TrialResult[@result_data.StateVectorState] raise @circuit.QuantumError
+pub fn StateVectorSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @error.QError
+pub fn StateVectorSimulator::simulate(Self, @circuit.Program, initial_state? : @result_data.StateVectorState) -> TrialResult[@result_data.StateVectorState] raise @error.QError
+pub fn StateVectorSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@result_data.StateVectorState], @error.QError]]
+pub fn StateVectorSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@result_data.StateVectorState]) -> Unit raise @error.QError, initial_state? : @result_data.StateVectorState) -> TrialResult[@result_data.StateVectorState] raise @error.QError
 pub fn StateVectorSimulator::simulator(Self) -> Simulator[@result_data.StateVectorState]
 pub impl Sampler for StateVectorSimulator
 
@@ -71,14 +72,14 @@ pub using @result_data {trait ResultValue}
 
 // Traits
 pub(open) trait Sampler {
-  fn run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @circuit.QuantumError
+  fn run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @error.QError
 }
 
 pub(open) trait SimulationState {
   fn dim(Self) -> Array[UInt32]
-  fn apply(Self, @circuit.Instruction) -> Unit raise @circuit.QuantumError
+  fn apply(Self, @circuit.Instruction) -> Unit raise @error.QError
   fn copy(Self) -> Self
   fn records(Self) -> @maths.Array3[Int32]
-  fn validate(Self) -> Unit raise @circuit.QuantumError
+  fn validate(Self) -> Unit raise @error.QError
 }
 pub impl SimulationState for @result_data.StateVectorState

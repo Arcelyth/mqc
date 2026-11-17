@@ -31,7 +31,7 @@ test "circuit discovers wires and compiles targets in operation order" {
 test "circuit rejects duplicate wire IDs" {
   let q = @circuit.QubitId(0UL)
   let result = Ok(@circuit.Circuit::new([q, q])) catch { error => Err(error) }
-  assert_true(result is Err(@circuit.QuantumError::DuplicateQid(1)))
+  assert_true(result is Err(@error.QError::DuplicateQid(1)))
 }
 
 ///|
@@ -61,10 +61,10 @@ test "concatenation retains idle wires and remapping preserves local target posi
   }
   assert_eq(targets, [[1], [0]])
   let duplicate = Ok(joined.remap(fn(_) { a })) catch { error => Err(error) }
-  assert_true(duplicate is Err(@circuit.QuantumError::DuplicateQid(_)))
+  assert_true(duplicate is Err(@error.QError::DuplicateQid(_)))
 
   let measured_adjoint = Ok(joined.adjoint()) catch { error => Err(error) }
-  assert_true(measured_adjoint is Err(@circuit.QuantumError::InvalidGate(_)))
+  assert_true(measured_adjoint is Err(@error.QError::InvalidGate(_)))
   joined.append(@circuit.measure([c], key="later"))
   assert_eq(mapped.length(), 2)
 }

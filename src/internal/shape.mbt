@@ -18,6 +18,28 @@ pub fn Shape::size(self : Shape) -> Int32 {
 }
 
 ///|
+/// Multiply the dimensions of the selected wires. Empty targets give one.
+/// Reject out-of-range and repeated targets.
+pub fn Shape::selected_size(
+  self : Shape,
+  targets : Array[Int32],
+) -> Int32 raise @error.QError {
+  let seen = Array::make(self.length(), false)
+  let mut size = 1
+  for wire in targets {
+    if wire < 0 || wire >= self.length() {
+      raise @error.InvalidBasis(wire)
+    }
+    if seen[wire] {
+      raise @error.DuplicateQid(wire)
+    }
+    seen[wire] = true
+    size *= self[wire].reinterpret_as_int()
+  }
+  size
+}
+
+///|
 pub fn Shape::length(self : Shape) -> Int32 {
   self.dimensions.length()
 }

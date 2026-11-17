@@ -3,68 +3,56 @@ package "Arcelyth/mqc/circuit"
 
 import {
   "Arcelyth/mqc/circuit/kernel",
+  "Arcelyth/mqc/error",
   "Arcelyth/mqc/internal",
   "Arcelyth/mqc/maths",
   "moonbitlang/core/debug",
 }
 
 // Values
-pub fn[Q : Qid] measure(Array[Q], key? : String) -> Operation[Q] raise QuantumError
+pub fn[Q : Qid] measure(Array[Q], key? : String) -> Operation[Q] raise @error.QError
 
 // Errors
-#derive(@debug.Debug)
-pub(all) suberror QuantumError {
-  InvalidDimension(UInt32)
-  SizeLimit(Int32)
-  InvalidGate(String)
-  DuplicateQid(Int32)
-  TargetCount(Int32, Int32)
-  DimensionMismatch(Int32, UInt32, UInt32)
-  RegisterMismatch
-  InvalidBasis(Int32)
-  InvalidState(String)
-}
-pub fn QuantumError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 type Channel
 
 type Circuit[Q]
-pub fn[Q : Qid] Circuit::adjoint(Self[Q]) -> Self[Q] raise QuantumError
-pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise QuantumError
+pub fn[Q : Qid] Circuit::adjoint(Self[Q]) -> Self[Q] raise @error.QError
+pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise @error.QError
 pub fn[Q : Qid] Circuit::compile(Self[Q], name? : String) -> Program
-pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise QuantumError
+pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise @error.QError
 pub fn[Q] Circuit::copy(Self[Q]) -> Self[Q]
 pub fn[Q] Circuit::dim(Self[Q]) -> Array[UInt32]
-pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise QuantumError
-pub fn[Q : Qid] Circuit::from_op(Array[Operation[Q]]) -> Self[Q] raise QuantumError
+pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise @error.QError
+pub fn[Q : Qid] Circuit::from_op(Array[Operation[Q]]) -> Self[Q] raise @error.QError
 pub fn[Q : Qid] Circuit::index_of(Self[Q], Q) -> Int32?
 pub fn[Q] Circuit::length(Self[Q]) -> Int32
-pub fn[Q : Qid] Circuit::new(Array[Q]) -> Self[Q] raise QuantumError
+pub fn[Q : Qid] Circuit::new(Array[Q]) -> Self[Q] raise @error.QError
 pub fn[Q] Circuit::operations(Self[Q]) -> Iter[Operation[Q]]
 pub fn[Q] Circuit::qids(Self[Q]) -> Array[Q]
-pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise QuantumError
+pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise @error.QError
 
 type Gate
 pub fn Gate::adjoint(Self) -> Self
 pub fn Gate::arity(Self) -> Int32
-pub fn Gate::controlled(Self, control_dimensions? : Array[UInt32], control_values? : Array[UInt32]) -> Self raise QuantumError
-pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex]) -> Self raise QuantumError
+pub fn Gate::controlled(Self, control_dimensions? : Array[UInt32], control_values? : Array[UInt32]) -> Self raise @error.QError
+pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex]) -> Self raise @error.QError
 pub fn Gate::dim(Self) -> Array[UInt32]
-pub fn Gate::from_kernel(String, Array[UInt32], &@kernel.UnitaryKernel) -> Self raise QuantumError
+pub fn Gate::from_kernel(String, Array[UInt32], &@kernel.UnitaryKernel) -> Self raise @error.QError
 pub fn Gate::kernel(Self) -> &@kernel.UnitaryKernel
 pub fn Gate::measurement_key(Self) -> String?
-pub fn Gate::monomial(String, Array[UInt32], Array[Int32], Array[@maths.Complex]) -> Self raise QuantumError
+pub fn Gate::monomial(String, Array[UInt32], Array[Int32], Array[@maths.Complex]) -> Self raise @error.QError
 pub fn Gate::name(Self) -> String
 pub fn Gate::parameters(Self) -> Array[String]
 pub fn Gate::shape(Self) -> @internal.Shape
 pub fn Gate::size(Self) -> Int32
 pub fn Gate::to_repr(Self) -> @debug.Repr
-pub fn Gate::try_adjoint(Self) -> &Effect? raise QuantumError
+pub fn Gate::try_adjoint(Self) -> &Effect? raise @error.QError
 pub fn Gate::try_channel(Self) -> Channel?
-pub fn Gate::try_decompose(Self) -> Program? raise QuantumError
+pub fn Gate::try_decompose(Self) -> Program? raise @error.QError
 pub fn Gate::try_unitary(Self) -> Self?
-pub fn Gate::unitary(String, Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise QuantumError
+pub fn Gate::unitary(String, Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise @error.QError
 pub impl Effect for Gate
 pub impl @debug.Debug for Gate
 
@@ -75,7 +63,7 @@ pub fn Instruction::targets(Self) -> Array[Int32]
 type Operation[Q]
 pub fn[Q] Operation::effect(Self[Q]) -> &Effect
 pub fn[Q] Operation::gate(Self[Q]) -> Gate?
-pub fn[Q : Qid] Operation::new(&Effect, Array[Q]) -> Self[Q] raise QuantumError
+pub fn[Q : Qid] Operation::new(&Effect, Array[Q]) -> Self[Q] raise @error.QError
 pub fn[Q] Operation::targets(Self[Q]) -> Array[Q]
 pub fn[Q : @debug.Debug] Operation::to_repr(Self[Q]) -> @debug.Repr
 pub impl[Q : @debug.Debug] @debug.Debug for Operation[Q]
@@ -108,7 +96,7 @@ pub fn QuditId::dim(Self) -> UInt32
 pub fn QuditId::equal(Self, Self) -> Bool
 pub fn QuditId::hash(Self) -> Int32
 pub fn QuditId::hash_combine(Self, Hasher) -> Unit
-pub fn QuditId::new(UInt64, UInt32) -> Self raise QuantumError
+pub fn QuditId::new(UInt64, UInt32) -> Self raise @error.QError
 pub fn QuditId::not_equal(Self, Self) -> Bool
 pub fn QuditId::to_repr(Self) -> @debug.Repr
 pub fn QuditId::value(Self) -> UInt64
@@ -133,8 +121,8 @@ pub(open) trait Effect {
   fn arity(Self) -> Int32 = _
   fn try_unitary(Self) -> Gate? = _
   fn try_channel(Self) -> Channel? = _
-  fn try_decompose(Self) -> Program? raise QuantumError = _
-  fn try_adjoint(Self) -> &Effect? raise QuantumError = _
+  fn try_decompose(Self) -> Program? raise @error.QError = _
+  fn try_adjoint(Self) -> &Effect? raise @error.QError = _
   fn parameters(Self) -> Array[String] = _
 }
 

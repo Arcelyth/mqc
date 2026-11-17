@@ -1,6 +1,7 @@
 ///|
 #derive(Debug)
-pub(all) suberror QuantumError {
+#alias(QuantumError)
+pub(all) suberror QError {
   /// A wire dimension is below two; carries that dimension.
   InvalidDimension(UInt32)
   /// A size budget is invalid or exceeded; carries the reported limit.
@@ -23,4 +24,4 @@ pub(all) suberror QuantumError {
 }
 
 ///|
-pub extend QuantumError with Debug::{to_repr}
+pub extend QError with Debug::{to_repr}

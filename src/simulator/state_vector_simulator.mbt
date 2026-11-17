@@ -38,7 +38,7 @@ pub fn StateVectorSimulator::simulate(
   self : StateVectorSimulator,
   program : @circuit.Program,
   initial_state? : StateVectorState,
-) -> TrialResult[StateVectorState] raise @circuit.QuantumError {
+) -> TrialResult[StateVectorState] raise @error.QError {
   self.engine.simulate(program, initial_state?)
 }
 
@@ -46,9 +46,9 @@ pub fn StateVectorSimulator::simulate(
 pub fn StateVectorSimulator::simulate_steps(
   self : StateVectorSimulator,
   program : @circuit.Program,
-  visit : (StepResult[StateVectorState]) -> Unit raise @circuit.QuantumError,
+  visit : (StepResult[StateVectorState]) -> Unit raise @error.QError,
   initial_state? : StateVectorState,
-) -> TrialResult[StateVectorState] raise @circuit.QuantumError {
+) -> TrialResult[StateVectorState] raise @error.QError {
   self.engine.simulate_steps(program, visit, initial_state?)
 }
 
@@ -56,7 +56,7 @@ pub fn StateVectorSimulator::simulate_steps(
 pub fn StateVectorSimulator::simulate_batch(
   self : StateVectorSimulator,
   programs : Array[@circuit.Program],
-) -> Array[Result[TrialResult[StateVectorState], @circuit.QuantumError]] {
+) -> Array[Result[TrialResult[StateVectorState], @error.QError]] {
   self.engine.simulate_batch(programs)
 }
 
@@ -65,10 +65,10 @@ pub impl Sampler for StateVectorSimulator with fn run(
   self,
   program,
   repetitions?,
-) -> SamplerResult raise @circuit.QuantumError {
+) -> SamplerResult raise @error.QError {
   let repetitions = repetitions.unwrap_or(1)
   if repetitions < 0 {
-    raise @circuit.InvalidState("repetitions must be nonnegative")
+    raise @error.QError::InvalidState("repetitions must be nonnegative")
   }
 
   let targets : Array[Int32] = []
@@ -88,10 +88,10 @@ pub impl Sampler for StateVectorSimulator with fn run(
 
   let width = targets.length()
   if width == 0 {
-    raise @circuit.InvalidState("run requires a measurement")
+    raise @error.QError::InvalidState("run requires a measurement")
   }
   if repetitions > 2147483647 / width {
-    raise @circuit.SizeLimit(2147483647)
+    raise @error.QError::SizeLimit(2147483647)
   }
 
   if !terminal {
@@ -142,7 +142,7 @@ fn StateVectorSimulator::run_shots(
   program : @circuit.Program,
   repetitions : Int32,
   width : Int32,
-) -> SamplerResult raise @circuit.QuantumError {
+) -> SamplerResult raise @error.QError {
   let records = @maths.Array3::make(repetitions, 1, width, 0)
   for shot in 0..<repetitions {
     let trial = self.simulate(program)

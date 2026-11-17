@@ -31,12 +31,12 @@ pub(open) trait Effect {
   fn try_channel(Self) -> Channel? = _
 
   /// Try to decompose this effect into an equivalent quantum program.
-  fn try_decompose(Self) -> Program? raise QuantumError = _
+  fn try_decompose(Self) -> Program? raise @error.QError = _
 
   /// Try to provide the adjoint as an effect with the same ordered shape.
   /// For a unitary, this is its inverse. Unbound symbols may stay symbolic.
   /// General noisy channels need not have an adjoint that is a valid effect.
-  fn try_adjoint(Self) -> &Effect? raise QuantumError = _
+  fn try_adjoint(Self) -> &Effect? raise @error.QError = _
 
   /// Free parameter names, without duplicates, in lexical order.
   /// Parameters let you build a circuit with values you will supply later, such as a rotation angle.
@@ -59,12 +59,12 @@ impl Effect with fn try_channel(_self) -> Channel? {
 }
 
 ///|
-impl Effect with fn try_decompose(_self) -> Program? raise QuantumError {
+impl Effect with fn try_decompose(_self) -> Program? raise @error.QError {
   None
 }
 
 ///|
-impl Effect with fn try_adjoint(_self) -> &Effect? raise QuantumError {
+impl Effect with fn try_adjoint(_self) -> &Effect? raise @error.QError {
   None
 }
 

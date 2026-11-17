@@ -32,11 +32,11 @@ pub fn StateVector::zero(dimensions : Array[UInt32]) -> StateVector {
 pub fn StateVector::basis(
   dimensions : Array[UInt32],
   index : Int32,
-) -> StateVector raise @circuit.QuantumError {
+) -> StateVector raise @error.QError {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
   if index < 0 || index >= size {
-    raise @circuit.InvalidBasis(index)
+    raise @error.QError::InvalidBasis(index)
   }
   let re = Array::make(size, 0.0)
   re[index] = 1.0
@@ -51,7 +51,7 @@ pub fn StateVector::from_amplitudes(
   dimensions : Array[UInt32],
   amplitudes : Array[@maths.Complex],
   tolerance~ : Double = 1.0e-10,
-) -> StateVector raise @circuit.QuantumError {
+) -> StateVector raise @error.QError {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
   if amplitudes.length() != size ||
@@ -59,13 +59,13 @@ pub fn StateVector::from_amplitudes(
     tolerance.is_inf() ||
     tolerance <= 0.0 ||
     tolerance > 1.0e-6 {
-    raise @circuit.InvalidState("invalid amplitude count or tolerance")
+    raise @error.QError::InvalidState("invalid amplitude count or tolerance")
   }
   let mut norm = 0.0
   let mut correction = 0.0
   for amp in amplitudes {
     if !amp.is_finite() {
-      raise @circuit.InvalidState("amplitudes must be finite")
+      raise @error.QError::InvalidState("amplitudes must be finite")
     }
     let term = amp.norm_squared() - correction
     let next = norm + term
@@ -73,7 +73,7 @@ pub fn StateVector::from_amplitudes(
     norm = next
   }
   if norm.is_nan() || norm.is_inf() || (norm - 1.0).abs() > tolerance {
-    raise @circuit.InvalidState("amplitudes must have unit norm")
+    raise @error.QError::InvalidState("amplitudes must have unit norm")
   }
   let scale = 1.0 / norm.sqrt()
   {
@@ -99,9 +99,9 @@ pub fn StateVector::dimension(self : StateVector) -> Int32 {
 pub fn StateVector::amplitude(
   self : StateVector,
   index : Int32,
-) -> @maths.Complex raise @circuit.QuantumError {
+) -> @maths.Complex raise @error.QError {
   if index < 0 || index >= self.re.length() {
-    raise @circuit.InvalidBasis(index)
+    raise @error.QError::InvalidBasis(index)
   }
   { re: self.re[index], im: self.im[index], }
 }
@@ -139,9 +139,9 @@ pub fn StateVector::norm_squared(self : StateVector) -> Double {
 pub fn StateVector::inner_product(
   self : StateVector,
   other : StateVector,
-) -> @maths.Complex raise @circuit.QuantumError {
+) -> @maths.Complex raise @error.QError {
   if self.shape != other.shape {
-    raise @circuit.RegisterMismatch
+    raise @error.QError::RegisterMismatch
   }
   let mut re = 0.0
   let mut im = 0.0
@@ -150,6 +150,35 @@ pub fn StateVector::inner_product(
     im += self.re[i] * other.im[i] - self.im[i] * other.re[i]
   }
   { re, im, }
+}
+
+///|
+/// Calculate the marginal probability distribution of the selected wires.
+///
+/// For each possible measurement outcome of targets, sum the probabilities
+/// of all basis states that produce that outcome, ignoring the unselected wires.
+pub fn StateVector::marginal_probabilities(
+  self : StateVector,
+  targets : Array[Int32],
+) -> Array[Double] raise @error.QError {
+  let size = self.shape.selected_size(targets)
+  let prob = Array::make(size, 0.0)
+  let corrections = Array::make(size, 0.0)
+  let strides = self.shape.strides()
+  for basis in 0..<self.re.length() {
+    let mut index = 0
+    for wire in targets {
+      let dimension = self.shape[wire].reinterpret_as_int()
+      index = index * dimension + basis / strides[wire] % dimension
+    }
+    let weight = self.re[basis] * self.re[basis] +
+      self.im[basis] * self.im[basis]
+    let term = weight - corrections[index]
+    let next = prob[index] + term
+    corrections[index] = next - prob[index] - term
+    prob[index] = next
+  }
+  prob
 }
 
 ///|

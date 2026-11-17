@@ -22,7 +22,7 @@ struct QuditId {
 pub fn QuditId::new(
   id : UInt64,
   dimension : UInt32,
-) -> QuditId raise QuantumError {
+) -> QuditId raise @error.QError {
   if dimension < 2U {
     raise InvalidDimension(dimension)
   }

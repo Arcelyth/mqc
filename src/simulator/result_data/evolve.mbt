@@ -1,9 +1,7 @@
 ///|
 /// Execute unitary kernels. Terminal measurements leave the returned state unchanged.
 /// The first wire is the most significant basis digit.
-pub fn evolve(
-  program : @circuit.Program,
-) -> StateVector raise @circuit.QuantumError {
+pub fn evolve(program : @circuit.Program) -> StateVector raise @error.QError {
   // This path skips measurements and never draws random values.
   let state = StateVectorState::new(program.dim(), seed=0UL)
   let mut measuring = false
@@ -12,7 +10,9 @@ pub fn evolve(
       measuring = true
     } else {
       if measuring {
-        raise @circuit.InvalidState("evolve requires terminal measurements")
+        raise @error.QError::InvalidState(
+          "evolve requires terminal measurements",
+        )
       }
       execute_gate(state.vector, state.strides, instruction)
     }
@@ -27,31 +27,35 @@ fn execute_gate(
   state : StateVector,
   strides : Array[Int32],
   instruction : @circuit.Instruction,
-) -> Unit raise @circuit.QuantumError {
+) -> Unit raise @error.QError {
   let effect = instruction.effect()
   guard effect.try_unitary() is Some(gate) else {
-    raise @circuit.InvalidGate("unsupported effect: " + effect.name())
+    raise @error.QError::InvalidGate("unsupported effect: " + effect.name())
   }
 
   let targets = instruction.targets()
   let gate_shape = gate.shape()
   if gate_shape.length() != targets.length() {
-    raise @circuit.TargetCount(targets.length(), gate_shape.length())
+    raise @error.QError::TargetCount(targets.length(), gate_shape.length())
   }
 
   for i, target in targets {
     if gate_shape[i] != state.shape[target] {
-      raise @circuit.DimensionMismatch(i, state.shape[target], gate_shape[i])
+      raise @error.QError::DimensionMismatch(
+        i,
+        state.shape[target],
+        gate_shape[i],
+      )
     }
   }
   apply_local(state.re, state.im, state.shape, strides, gate, targets)
 }
 
 ///|
-fn validate_norm(state : StateVector) -> Unit raise @circuit.QuantumError {
+fn validate_norm(state : StateVector) -> Unit raise @error.QError {
   let norm = state.norm_squared()
   if norm.is_nan() || norm.is_inf() || (norm - 1.0).abs() > 1.0e-6 {
-    raise @circuit.InvalidState("kernel output must have unit norm")
+    raise @error.QError::InvalidState("kernel output must have unit norm")
   }
 }
 

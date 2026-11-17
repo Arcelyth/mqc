@@ -4,6 +4,7 @@ package "Arcelyth/mqc"
 import {
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/circuit/kernel",
+  "Arcelyth/mqc/error",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator",
   "Arcelyth/mqc/simulator/result",
@@ -12,37 +13,37 @@ import {
 
 // Values
 #alias(cx)
-pub fn[Q : @circuit.Qid] cnot(Q, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] cnot(Q, Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] cy(Q, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] cy(Q, Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] cz(Q, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] cz(Q, Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] h(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] h(Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] i(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] i(Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] measure(Array[Q], key? : String) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] measure(Array[Q], key? : String) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] phase(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] phase(Double, Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] rx(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] rx(Double, Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] ry(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] ry(Double, Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] rz(Double, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] rz(Double, Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] s(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] s(Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] swap(Q, Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] swap(Q, Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] t(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] t(Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] x(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] x(Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] y(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] y(Q) -> @circuit.Operation[Q] raise @error.QError
 
-pub fn[Q : @circuit.Qid] z(Q) -> @circuit.Operation[Q] raise @circuit.QuantumError
+pub fn[Q : @circuit.Qid] z(Q) -> @circuit.Operation[Q] raise @error.QError
 
 // Errors
 
@@ -69,7 +70,9 @@ pub using @circuit {type Operation}
 
 pub using @circuit {type Program}
 
-pub using @circuit {type QuantumError}
+pub using @error {type QError}
+
+pub using @error {type QError as QuantumError}
 
 pub using @circuit {type QubitId}
 

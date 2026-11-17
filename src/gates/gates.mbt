@@ -114,9 +114,9 @@ pub fn t() -> @circuit.Gate {
 
 ///|
 /// Require a finite rotation angle before computing gate coefficients.
-fn check_angle(angle : Double) -> Unit raise @circuit.QuantumError {
+fn check_angle(angle : Double) -> Unit raise @error.QError {
   if angle.is_nan() || angle.is_inf() {
-    raise @circuit.InvalidGate("angle must be finite")
+    raise @error.QError::InvalidGate("angle must be finite")
   }
 }
 
@@ -130,7 +130,7 @@ fn check_angle(angle : Double) -> Unit raise @circuit.QuantumError {
 /// -i\sin(\theta/2) & \cos(\theta/2)
 /// \end{bmatrix}.
 /// $$
-pub fn rx(angle : Double) -> @circuit.Gate raise @circuit.QuantumError {
+pub fn rx(angle : Double) -> @circuit.Gate raise @error.QError {
   check_angle(angle)
   let c = real(@math.cos(angle / 2.0))
   let s : @maths.Complex = { re: 0.0, im: -@math.sin(angle / 2.0), }
@@ -147,7 +147,7 @@ pub fn rx(angle : Double) -> @circuit.Gate raise @circuit.QuantumError {
 /// \sin(\theta/2) & \cos(\theta/2)
 /// \end{bmatrix}.
 /// $$
-pub fn ry(angle : Double) -> @circuit.Gate raise @circuit.QuantumError {
+pub fn ry(angle : Double) -> @circuit.Gate raise @error.QError {
   check_angle(angle)
   let c = real(@math.cos(angle / 2.0))
   let s = real(@math.sin(angle / 2.0))
@@ -164,7 +164,7 @@ pub fn ry(angle : Double) -> @circuit.Gate raise @circuit.QuantumError {
 /// 0 & e^{i\theta/2}
 /// \end{bmatrix}.
 /// $$
-pub fn rz(angle : Double) -> @circuit.Gate raise @circuit.QuantumError {
+pub fn rz(angle : Double) -> @circuit.Gate raise @error.QError {
   check_angle(angle)
   @circuit.Gate::unitary("Rz", [2U], [
     @maths.Complex::phase(-angle / 2.0),
@@ -188,7 +188,7 @@ pub fn rz(angle : Double) -> @circuit.Gate raise @circuit.QuantumError {
 ///
 /// The first diagonal entry is exactly one. The global phase relative to
 /// $R_z(\theta)$ affects the result when adding a control.
-pub fn phase(angle : Double) -> @circuit.Gate raise @circuit.QuantumError {
+pub fn phase(angle : Double) -> @circuit.Gate raise @error.QError {
   check_angle(angle)
   @circuit.Gate::unitary("Phase", [2U], [
     real(1.0),

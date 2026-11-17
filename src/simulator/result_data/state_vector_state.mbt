@@ -23,7 +23,7 @@ pub fn StateVectorState::new(
 pub fn StateVectorState::from_state(
   state : StateVector,
   seed? : UInt64,
-) -> StateVectorState raise @circuit.QuantumError {
+) -> StateVectorState raise @error.QError {
   validate_norm(state)
   {
     base: SimulationStateBase::new(seed?),
@@ -67,7 +67,7 @@ pub fn StateVectorState::records(
 ///|
 pub fn StateVectorState::validate(
   self : StateVectorState,
-) -> Unit raise @circuit.QuantumError {
+) -> Unit raise @error.QError {
   validate_norm(self.vector)
 }
 
@@ -76,7 +76,7 @@ pub fn StateVectorState::validate(
 pub fn StateVectorState::apply(
   self : StateVectorState,
   instruction : @circuit.Instruction,
-) -> Unit raise @circuit.QuantumError {
+) -> Unit raise @error.QError {
   if check_instruction(instruction) {
     self.validate()
     self.measure(instruction.targets(), self.base.draw())
@@ -90,7 +90,7 @@ fn StateVectorState::measure(
   self : StateVectorState,
   targets : Array[Int32],
   draw : Double,
-) -> Unit raise @circuit.QuantumError {
+) -> Unit raise @error.QError {
   let probabilities = self.vector.probabilities()
   let mut total = 0.0
   for probability in probabilities {
@@ -116,7 +116,7 @@ fn StateVectorState::measure(
     }
   }
   if probability <= 0.0 || probability.is_nan() || probability.is_inf() {
-    raise @circuit.InvalidState("invalid measurement probability")
+    raise @error.QError::InvalidState("invalid measurement probability")
   }
   let scale = 1.0 / probability.sqrt()
   for i in 0..<probabilities.length() {

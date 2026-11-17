@@ -11,6 +11,12 @@ pub using @circuit {
   type Circuit,
   type Program,
   type Instruction,
+}
+
+///|
+pub using @error {
+  type QError,
+  /// Alias of QError.
   type QuantumError,
 }
 
