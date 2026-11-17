@@ -3,7 +3,6 @@ import {
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/internal",
-  "moonbitlang/core/immut/hashmap",
   "moonbitlang/core/quickcheck/splitmix",
   "moonbitlang/core/random",
 }
