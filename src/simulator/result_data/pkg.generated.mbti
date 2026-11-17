@@ -15,6 +15,19 @@ pub fn evolve(@circuit.Program) -> StateVector raise @error.QError
 // Errors
 
 // Types and methods
+type DensityMatrix
+pub fn DensityMatrix::basis(Array[UInt32], Int32) -> Self raise @error.QError
+pub fn DensityMatrix::dim(Self) -> Array[UInt32]
+pub fn DensityMatrix::entries(Self) -> Array[@maths.Complex]
+pub fn DensityMatrix::entry(Self, Int32, Int32) -> @maths.Complex raise @error.QError
+pub fn DensityMatrix::from_mixture(Array[StateVector], Array[Double]) -> Self raise @error.QError
+pub fn DensityMatrix::from_state(StateVector) -> Self raise @error.QError
+pub fn DensityMatrix::probabilities(Self) -> Array[Double]
+pub fn DensityMatrix::purity(Self) -> Double
+pub fn DensityMatrix::size(Self) -> Int32
+pub fn DensityMatrix::trace(Self) -> Double
+pub fn DensityMatrix::zero(Array[UInt32]) -> Self raise @error.QError
+
 pub struct ResultData {
   values : @hashmap.HashMap[String, &ResultValue]
 }
@@ -38,12 +51,12 @@ pub fn StateVector::amplitude(Self, Int32) -> @maths.Complex raise @error.QError
 pub fn StateVector::amplitudes(Self) -> Array[@maths.Complex]
 pub fn StateVector::basis(Array[UInt32], Int32) -> Self raise @error.QError
 pub fn StateVector::dim(Self) -> Array[UInt32]
-pub fn StateVector::dimension(Self) -> Int32
 pub fn StateVector::from_amplitudes(Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise @error.QError
 pub fn StateVector::inner_product(Self, Self) -> @maths.Complex raise @error.QError
 pub fn StateVector::marginal_probabilities(Self, Array[Int32]) -> Array[Double] raise @error.QError
 pub fn StateVector::norm_squared(Self) -> Double
 pub fn StateVector::probabilities(Self) -> Array[Double]
+pub fn StateVector::size(Self) -> Int32
 pub fn StateVector::try_statevector(Self) -> Self?
 pub fn StateVector::type_name(Self) -> String
 pub fn StateVector::zero(Array[UInt32]) -> Self

@@ -5,4 +5,5 @@ pub using @result_data {
   trait ResultValue,
   type SimulationStateBase,
   type StateVectorState,
+  type DensityMatrix,
 }

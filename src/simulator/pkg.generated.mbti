@@ -52,6 +52,8 @@ pub(all) struct TrialResult[S] {
 }
 
 // Type aliases
+pub using @result_data {type DensityMatrix}
+
 pub using @result {type ExecutionResult}
 
 pub using @result {type ExecutionStatus}

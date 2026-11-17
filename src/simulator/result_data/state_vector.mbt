@@ -1,14 +1,14 @@
 ///|
 /// A quantum state represented by a complex state vector.
 ///
-/// For example, a two-qubit state |ψ⟩ = (|00⟩ + |11⟩) / √2:
+/// For example, a two-qubit state |ψ> = (|00> + |11>) / √2:
 ///
 ///   shape = [2, 2]
 ///   re    = [1/√2, 0, 0, 1/√2]
 ///   im    = [0,    0, 0, 0]
 ///
 /// The entries are stored in basis-state order:
-///   |00⟩, |01⟩, |10⟩, |11⟩.
+///   |00>, |01>, |10>, |11>.
 pub struct StateVector {
   /// Ordered wire dimensions.
   shape : @internal.Shape
@@ -23,7 +23,7 @@ pub fn StateVector::zero(dimensions : Array[UInt32]) -> StateVector {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
   let re = Array::make(size, 0.0)
-  // Amplitude of |0⟩, |00⟩, ... is 1.
+  // Amplitude of |0> |00> ... is 1.
   re[0] = 1.0
   { shape, re, im: Array::make(size, 0.0), }
 }
@@ -90,7 +90,7 @@ pub fn StateVector::dim(self : StateVector) -> Array[UInt32] {
 
 ///|
 /// Return the product of the wire dimensions, the number of basis states.
-pub fn StateVector::dimension(self : StateVector) -> Int32 {
+pub fn StateVector::size(self : StateVector) -> Int32 {
   self.re.length()
 }
 
