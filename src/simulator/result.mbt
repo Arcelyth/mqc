@@ -4,6 +4,8 @@ pub using @result {
   type ExecutionStatus,
   type ExperimentResult,
   type ResultError,
+  type ResultData,
+  trait ResultValue,
 }
 
 ///|

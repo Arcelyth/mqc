@@ -4,8 +4,9 @@ package "Arcelyth/mqc/simulator/result"
 import {
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/error",
-  "Arcelyth/mqc/simulator/result_data",
+  "Arcelyth/mqc/simulator/states",
   "moonbitlang/core/debug",
+  "moonbitlang/core/immut/hashmap",
 }
 
 // Values
@@ -39,8 +40,8 @@ pub fn ExecutionStatus::not_equal(Self, Self) -> Bool
 pub fn ExecutionStatus::to_repr(Self) -> @debug.Repr
 
 type ExperimentResult
-pub fn ExperimentResult::completed(@circuit.Program, @result_data.ResultData) -> Self
-pub fn ExperimentResult::data(Self) -> @result_data.ResultData
+pub fn ExperimentResult::completed(@circuit.Program, ResultData) -> Self
+pub fn ExperimentResult::data(Self) -> ResultData
 pub fn ExperimentResult::dim(Self) -> Array[UInt32]
 pub fn ExperimentResult::error(Self) -> @error.QError?
 pub fn ExperimentResult::failed(@circuit.Program, @error.QError) -> Self
@@ -48,6 +49,22 @@ pub fn ExperimentResult::is_completed(Self) -> Bool
 pub fn ExperimentResult::name(Self) -> String
 pub fn ExperimentResult::status(Self) -> ExecutionStatus
 
+pub struct ResultData {
+  values : @hashmap.HashMap[String, &ResultValue]
+}
+pub fn ResultData::density_matrix(Self) -> @states.DensityMatrix?
+pub fn ResultData::from_density_matrix(@states.DensityMatrix) -> Self
+pub fn ResultData::from_statevector(@states.StateVector) -> Self
+pub fn ResultData::new() -> Self
+pub fn ResultData::statevector(Self) -> @states.StateVector?
+
 // Type aliases
 
 // Traits
+pub(open) trait ResultValue {
+  fn type_name(Self) -> String
+  fn try_statevector(Self) -> @states.StateVector? = _
+  fn try_density_matrix(Self) -> @states.DensityMatrix? = _
+}
+pub impl ResultValue for @states.DensityMatrix
+pub impl ResultValue for @states.StateVector

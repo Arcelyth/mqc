@@ -85,7 +85,7 @@ test "gates after repeated measurements use the collapsed state in every shot" {
     1.0e-12,
   )
   // Since `evolve` is for fast path, it not support measurement.
-  let unsupported_fast_path = Ok(@result_data.evolve(program)) catch {
+  let unsupported_fast_path = Ok(@states.evolve(program)) catch {
     error => Err(error)
   }
   assert_true(unsupported_fast_path is Err(@error.QError::InvalidState(_)))

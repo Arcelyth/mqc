@@ -8,7 +8,7 @@ import {
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator",
   "Arcelyth/mqc/simulator/result",
-  "Arcelyth/mqc/simulator/result_data",
+  "Arcelyth/mqc/simulator/states",
 }
 
 // Values
@@ -78,21 +78,21 @@ pub using @circuit {type QubitId}
 
 pub using @circuit {type QuditId}
 
-pub using @result_data {type ResultData}
+pub using @result {type ResultData}
 
 pub using @result {type ResultError}
 
 pub using @simulator {type SamplerResult}
 
-pub using @result_data {type SimulationStateBase}
+pub using @states {type SimulationStateBase}
 
 pub using @simulator {type Simulator}
 
-pub using @result_data {type StateVector}
+pub using @states {type StateVector}
 
 pub using @simulator {type StateVectorSimulator}
 
-pub using @result_data {type StateVectorState}
+pub using @states {type StateVectorState}
 
 pub using @simulator {type StepResult}
 
@@ -102,7 +102,7 @@ pub using @circuit {trait Effect}
 
 pub using @circuit {trait Qid}
 
-pub using @result_data {trait ResultValue}
+pub using @result {trait ResultValue}
 
 pub using @simulator {trait Sampler}
 

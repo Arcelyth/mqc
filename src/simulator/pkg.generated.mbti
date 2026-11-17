@@ -6,7 +6,7 @@ import {
   "Arcelyth/mqc/error",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator/result",
-  "Arcelyth/mqc/simulator/result_data",
+  "Arcelyth/mqc/simulator/states",
 }
 
 // Values
@@ -34,10 +34,10 @@ type StateVectorSimulator
 pub fn StateVectorSimulator::name(Self) -> String
 pub fn StateVectorSimulator::new(seed? : UInt64) -> Self
 pub fn StateVectorSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @error.QError
-pub fn StateVectorSimulator::simulate(Self, @circuit.Program, initial_state? : @result_data.StateVectorState) -> TrialResult[@result_data.StateVectorState] raise @error.QError
-pub fn StateVectorSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@result_data.StateVectorState], @error.QError]]
-pub fn StateVectorSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@result_data.StateVectorState]) -> Unit raise @error.QError, initial_state? : @result_data.StateVectorState) -> TrialResult[@result_data.StateVectorState] raise @error.QError
-pub fn StateVectorSimulator::simulator(Self) -> Simulator[@result_data.StateVectorState]
+pub fn StateVectorSimulator::simulate(Self, @circuit.Program, initial_state? : @states.StateVectorState) -> TrialResult[@states.StateVectorState] raise @error.QError
+pub fn StateVectorSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@states.StateVectorState], @error.QError]]
+pub fn StateVectorSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@states.StateVectorState]) -> Unit raise @error.QError, initial_state? : @states.StateVectorState) -> TrialResult[@states.StateVectorState] raise @error.QError
+pub fn StateVectorSimulator::simulator(Self) -> Simulator[@states.StateVectorState]
 pub impl Sampler for StateVectorSimulator
 
 pub(all) struct StepResult[S] {
@@ -52,7 +52,7 @@ pub(all) struct TrialResult[S] {
 }
 
 // Type aliases
-pub using @result_data {type DensityMatrix}
+pub using @states {type DensityMatrix}
 
 pub using @result {type ExecutionResult}
 
@@ -60,17 +60,17 @@ pub using @result {type ExecutionStatus}
 
 pub using @result {type ExperimentResult}
 
-pub using @result_data {type ResultData}
+pub using @result {type ResultData}
 
 pub using @result {type ResultError}
 
-pub using @result_data {type SimulationStateBase}
+pub using @states {type SimulationStateBase}
 
-pub using @result_data {type StateVector}
+pub using @states {type StateVector}
 
-pub using @result_data {type StateVectorState}
+pub using @states {type StateVectorState}
 
-pub using @result_data {trait ResultValue}
+pub using @result {trait ResultValue}
 
 // Traits
 pub(open) trait Sampler {
@@ -84,5 +84,5 @@ pub(open) trait SimulationState {
   fn records(Self) -> @maths.Array3[Int32]
   fn validate(Self) -> Unit raise @error.QError
 }
-pub impl SimulationState for @result_data.DensityMatrixState
-pub impl SimulationState for @result_data.StateVectorState
+pub impl SimulationState for @states.DensityMatrixState
+pub impl SimulationState for @states.StateVectorState

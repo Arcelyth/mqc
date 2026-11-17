@@ -7,7 +7,7 @@ test "marginal probabilities sum unmeasured wires and preserve requested digit o
   // Marginalize wire 0:
   //   P(0) = 0.25 + 0.00 + 0.25 = 0.5
   //   P(1) = 0.00 + 0.25 + 0.25 = 0.5
-  let state = @result_data.StateVector::from_amplitudes([2U, 3U], [
+  let state = @states.StateVector::from_amplitudes([2U, 3U], [
     @maths.Complex::real(0.5),
     @maths.Complex::real(0.0),
     @maths.Complex::real(0.5),

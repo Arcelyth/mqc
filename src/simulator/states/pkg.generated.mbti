@@ -1,12 +1,11 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "Arcelyth/mqc/simulator/result_data"
+package "Arcelyth/mqc/simulator/states"
 
 import {
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/error",
   "Arcelyth/mqc/internal",
   "Arcelyth/mqc/maths",
-  "moonbitlang/core/immut/hashmap",
 }
 
 // Values
@@ -40,13 +39,6 @@ pub fn DensityMatrixState::new(Array[UInt32], seed? : UInt64) -> Self raise @err
 pub fn DensityMatrixState::records(Self) -> @maths.Array3[Int32]
 pub fn DensityMatrixState::validate(Self) -> Unit raise @error.QError
 
-pub struct ResultData {
-  values : @hashmap.HashMap[String, &ResultValue]
-}
-pub fn ResultData::from_statevector(StateVector) -> Self
-pub fn ResultData::new() -> Self
-pub fn ResultData::statevector(Self) -> StateVector?
-
 type SimulationStateBase
 pub fn SimulationStateBase::copy(Self) -> Self
 pub fn SimulationStateBase::draw(Self) -> Double
@@ -69,10 +61,7 @@ pub fn StateVector::marginal_probabilities(Self, Array[Int32]) -> Array[Double] 
 pub fn StateVector::norm_squared(Self) -> Double
 pub fn StateVector::probabilities(Self) -> Array[Double]
 pub fn StateVector::size(Self) -> Int32
-pub fn StateVector::try_statevector(Self) -> Self?
-pub fn StateVector::type_name(Self) -> String
 pub fn StateVector::zero(Array[UInt32]) -> Self
-pub impl ResultValue for StateVector
 
 type StateVectorState
 pub fn StateVectorState::apply(Self, @circuit.Instruction) -> Unit raise @error.QError
@@ -87,7 +76,3 @@ pub fn StateVectorState::validate(Self) -> Unit raise @error.QError
 // Type aliases
 
 // Traits
-pub(open) trait ResultValue {
-  fn type_name(Self) -> String
-  fn try_statevector(Self) -> StateVector? = _
-}

@@ -1,6 +1,6 @@
 import {
   "Arcelyth/mqc/error",
-  "Arcelyth/mqc/simulator/result_data",
+  "Arcelyth/mqc/simulator/states",
   "Arcelyth/mqc/simulator/result",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/circuit",

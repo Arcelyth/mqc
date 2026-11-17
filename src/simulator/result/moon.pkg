@@ -1,6 +1,7 @@
 import {
   "Arcelyth/mqc/error",
-  "Arcelyth/mqc/simulator/result_data",
+  "Arcelyth/mqc/simulator/states",
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/internal",
+  "moonbitlang/core/immut/hashmap",
 }

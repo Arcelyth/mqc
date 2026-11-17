@@ -16,7 +16,7 @@ pub fn StateVectorSimulator::new(seed? : UInt64) -> StateVectorSimulator {
   {
     random,
     engine: Simulator::new("statevector", shape => {
-      @result_data.StateVectorState::new(shape, seed=random.uint64())
+      @states.StateVectorState::new(shape, seed=random.uint64())
     }),
   }
 }
@@ -99,7 +99,7 @@ pub impl Sampler for StateVectorSimulator with fn run(
   }
 
   // Fast path for terminal measurement.
-  let state = @result_data.evolve(program)
+  let state = @states.evolve(program)
   let probabilities = state.probabilities()
   let mut total = 0.0
   for i in 0..<probabilities.length() {

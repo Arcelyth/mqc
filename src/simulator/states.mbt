@@ -1,8 +1,6 @@
 ///|
-pub using @result_data {
+pub using @states {
   type StateVector,
-  type ResultData,
-  trait ResultValue,
   type SimulationStateBase,
   type StateVectorState,
   type DensityMatrix,
