@@ -1,9 +1,9 @@
 import {
-  "moonbitlang/core/random",
   "Arcelyth/mqc/simulator/result_data",
   "Arcelyth/mqc/simulator/result",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/circuit",
+  "moonbitlang/core/random",
   "moonbitlang/core/immut/hashmap",
 }
 

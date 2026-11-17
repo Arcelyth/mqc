@@ -1,6 +1,7 @@
 ///|
 /// Mutable backend state. Copies must own independent mutable storage.
 pub(open) trait SimulationState {
+  fn dim(Self) -> Array[UInt32]
   /// Execute one compiled instruction and update this state in place.
   /// The backend owns any RNG needed by random instructions.
   fn apply(Self, @circuit.Instruction) -> Unit raise @circuit.QuantumError

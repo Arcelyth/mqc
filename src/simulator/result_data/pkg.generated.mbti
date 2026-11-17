@@ -50,6 +50,8 @@ pub impl ResultValue for StateVector
 type StateVectorState
 pub fn StateVectorState::apply(Self, @circuit.Instruction) -> Unit raise @circuit.QuantumError
 pub fn StateVectorState::copy(Self) -> Self
+pub fn StateVectorState::dim(Self) -> Array[UInt32]
+pub fn StateVectorState::from_state(StateVector, seed? : UInt64) -> Self raise @circuit.QuantumError
 pub fn StateVectorState::new(Array[UInt32], seed? : UInt64) -> Self
 pub fn StateVectorState::records(Self) -> @maths.Array3[Int32]
 pub fn StateVectorState::statevector(Self) -> StateVector

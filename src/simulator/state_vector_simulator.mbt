@@ -37,8 +37,9 @@ pub fn StateVectorSimulator::name(self : StateVectorSimulator) -> String {
 pub fn StateVectorSimulator::simulate(
   self : StateVectorSimulator,
   program : @circuit.Program,
+  initial_state? : StateVectorState,
 ) -> TrialResult[StateVectorState] raise @circuit.QuantumError {
-  self.engine.simulate(program)
+  self.engine.simulate(program, initial_state?)
 }
 
 ///|
@@ -46,8 +47,9 @@ pub fn StateVectorSimulator::simulate_steps(
   self : StateVectorSimulator,
   program : @circuit.Program,
   visit : (StepResult[StateVectorState]) -> Unit raise @circuit.QuantumError,
+  initial_state? : StateVectorState,
 ) -> TrialResult[StateVectorState] raise @circuit.QuantumError {
-  self.engine.simulate_steps(program, visit)
+  self.engine.simulate_steps(program, visit, initial_state?)
 }
 
 ///|

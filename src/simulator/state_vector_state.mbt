@@ -1,4 +1,11 @@
 ///|
+pub impl SimulationState for @result_data.StateVectorState with fn dim(self) -> Array[
+  UInt32,
+] {
+  self.dim()
+}
+
+///|
 pub impl SimulationState for @result_data.StateVectorState with fn apply(
   self,
   instruction,

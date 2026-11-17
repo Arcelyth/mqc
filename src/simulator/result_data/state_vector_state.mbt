@@ -20,6 +20,24 @@ pub fn StateVectorState::new(
 }
 
 ///|
+pub fn StateVectorState::from_state(
+  state : StateVector,
+  seed? : UInt64,
+) -> StateVectorState raise @circuit.QuantumError {
+  validate_norm(state)
+  {
+    base: SimulationStateBase::new(seed?),
+    vector: { shape: state.shape, re: state.re.copy(), im: state.im.copy(), },
+    strides: state.shape.strides(),
+  }
+}
+
+///|
+pub fn StateVectorState::dim(self : StateVectorState) -> Array[UInt32] {
+  self.vector.dim()
+}
+
+///|
 pub fn StateVectorState::copy(self : StateVectorState) -> StateVectorState {
   let vector = self.vector
   {

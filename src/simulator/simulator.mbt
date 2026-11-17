@@ -22,8 +22,9 @@ pub fn[S] Simulator::name(self : Simulator[S]) -> String {
 pub fn[S : SimulationState] Simulator::simulate(
   self : Simulator[S],
   program : @circuit.Program,
+  initial_state? : S,
 ) -> TrialResult[S] raise @circuit.QuantumError {
-  self.execute(program)
+  self.execute(program, initial_state?)
 }
 
 ///|
@@ -32,8 +33,9 @@ pub fn[S : SimulationState] Simulator::simulate_steps(
   self : Simulator[S],
   program : @circuit.Program,
   visit : (StepResult[S]) -> Unit raise @circuit.QuantumError,
+  initial_state? : S,
 ) -> TrialResult[S] raise @circuit.QuantumError {
-  self.execute(program, visit~)
+  self.execute(program, visit~, initial_state?)
 }
 
 ///|
@@ -41,8 +43,18 @@ fn[S : SimulationState] Simulator::execute(
   self : Simulator[S],
   program : @circuit.Program,
   visit? : (StepResult[S]) -> Unit raise @circuit.QuantumError,
+  initial_state? : S,
 ) -> TrialResult[S] raise @circuit.QuantumError {
-  let state = (self.initialize)(program.dim())
+  let dim = program.dim()
+  let state = match initial_state {
+    Some(state) => state.copy()
+    None => (self.initialize)(dim)
+  }
+  if state.dim() != dim {
+    raise @circuit.RegisterMismatch
+  }
+  state.validate()
+
   let mut index = 0
   for instruction in program.instructions() {
     state.apply(instruction)
