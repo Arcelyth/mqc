@@ -107,7 +107,7 @@ fn apply_local(
   im : Array[Double],
   shape : @internal.Shape,
   strides : Array[Int32],
-  kernel : &@circuit.UnitaryKernel,
+  kernel : &@circuit.LinearKernel,
   targets : Array[Int32],
   conjugate~ : Bool = false,
 ) -> Unit {

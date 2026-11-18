@@ -106,6 +106,8 @@ pub using @simulator {type TrialResult}
 
 pub using @circuit {trait Effect}
 
+pub using @kernel {trait LinearKernel}
+
 pub using @circuit {trait Qid}
 
 pub using @result {trait ResultValue}

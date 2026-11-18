@@ -7,13 +7,13 @@ pub(all) struct DenseKernel {
 }
 
 ///|
-pub impl UnitaryKernel for DenseKernel with fn size(self) -> Int32 {
+pub impl LinearKernel for DenseKernel with fn size(self) -> Int32 {
   self.size
 }
 
 ///|
 /// Multiply the row-order unitary matrix by the local input and write all outputs.
-pub impl UnitaryKernel for DenseKernel with fn apply(self, args) {
+pub impl LinearKernel for DenseKernel with fn apply(self, args) {
   for row in 0..<self.size {
     let mut re = 0.0
     let mut im = 0.0
@@ -36,4 +36,7 @@ pub impl UnitaryKernel for DenseKernel with fn adjoint(self) -> &UnitaryKernel {
 }
 
 ///|
-pub extend DenseKernel with UnitaryKernel::{size, apply, adjoint}
+pub extend DenseKernel with LinearKernel::{size, apply}
+
+///|
+pub extend DenseKernel with UnitaryKernel::{adjoint}

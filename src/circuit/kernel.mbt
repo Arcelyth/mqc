@@ -1,5 +1,6 @@
 ///|
 pub using @kernel {
+  trait LinearKernel,
   trait UnitaryKernel,
   type KernelArgs,
   type DenseKernel,

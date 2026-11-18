@@ -1,19 +1,19 @@
 ///|
 fn apply_kernel(
-  kernel : &@circuit.UnitaryKernel,
+  kernel : &@circuit.LinearKernel,
   input : Array[@maths.Complex],
 ) -> Array[@maths.Complex] {
   let input_re = input.map(fn(z) { z.re })
   let input_im = input.map(fn(z) { z.im })
-  let output_re = Array::make(input.length(), 0.0 / 0.0)
-  let output_im = Array::make(input.length(), 0.0 / 0.0)
+  let output_re = Array::make(kernel.size(), 0.0 / 0.0)
+  let output_im = Array::make(kernel.size(), 0.0 / 0.0)
   kernel.apply({
     input_re: input_re[:],
     input_im: input_im[:],
     output_re: output_re.mut_view(),
     output_im: output_im.mut_view(),
   })
-  Array::makei(input.length(), fn(i) {
+  Array::makei(kernel.size(), fn(i) {
     @maths.Complex::new(output_re[i], output_im[i])
   })
 }

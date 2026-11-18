@@ -2,6 +2,7 @@
 pub using @circuit {
   trait Qid,
   trait Effect,
+  trait LinearKernel,
   trait UnitaryKernel,
   type QubitId,
   type QuditId,

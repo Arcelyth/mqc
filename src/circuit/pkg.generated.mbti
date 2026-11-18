@@ -111,6 +111,8 @@ pub using @kernel {type KernelArgs}
 
 pub using @kernel {type MonomialKernel}
 
+pub using @kernel {trait LinearKernel}
+
 pub using @kernel {trait UnitaryKernel}
 
 // Traits

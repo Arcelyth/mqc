@@ -18,6 +18,7 @@ pub(all) struct ControlledKernel {
 pub fn ControlledKernel::adjoint(Self) -> &UnitaryKernel
 pub fn ControlledKernel::apply(Self, KernelArgs) -> Unit
 pub fn ControlledKernel::size(Self) -> Int32
+pub impl LinearKernel for ControlledKernel
 pub impl UnitaryKernel for ControlledKernel
 
 pub(all) struct DenseKernel {
@@ -27,6 +28,7 @@ pub(all) struct DenseKernel {
 pub fn DenseKernel::adjoint(Self) -> &UnitaryKernel
 pub fn DenseKernel::apply(Self, KernelArgs) -> Unit
 pub fn DenseKernel::size(Self) -> Int32
+pub impl LinearKernel for DenseKernel
 pub impl UnitaryKernel for DenseKernel
 
 pub(all) struct KernelArgs {
@@ -43,13 +45,17 @@ pub(all) struct MonomialKernel {
 pub fn MonomialKernel::adjoint(Self) -> &UnitaryKernel
 pub fn MonomialKernel::apply(Self, KernelArgs) -> Unit
 pub fn MonomialKernel::size(Self) -> Int32
+pub impl LinearKernel for MonomialKernel
 pub impl UnitaryKernel for MonomialKernel
 
 // Type aliases
 
 // Traits
-pub(open) trait UnitaryKernel {
+pub(open) trait LinearKernel {
   fn size(Self) -> Int32
   fn apply(Self, KernelArgs) -> Unit
+}
+
+pub(open) trait UnitaryKernel : LinearKernel {
   fn adjoint(Self) -> &UnitaryKernel
 }

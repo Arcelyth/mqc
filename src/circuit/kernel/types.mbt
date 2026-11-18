@@ -11,11 +11,19 @@ pub(all) struct KernelArgs {
 }
 
 ///|
-/// A pure, linear, unitary map on a local state vector.
-pub(open) trait UnitaryKernel {
+/// A linear map from a local complex vector to one of the same size.
+pub(open) trait LinearKernel {
+  /// Returns the dimension of the linear operator.
   fn size(Self) -> Int32
-  /// Apply U * input using the KernelArgs.
+  /// Applies the linear transformation to the input state.
   fn apply(Self, KernelArgs) -> Unit
-  /// Return an immutable kernel for U† on the same dimension.
+}
+
+///|
+/// A linear kernel that preserves inner products.
+pub(open) trait UnitaryKernel: LinearKernel {
+  /// Returns the adjoint (conjugate transpose) of this unitary operator.
+  ///
+  /// For a unitary kernel, the adjoint is equivalent to its inverse.
   fn adjoint(Self) -> &UnitaryKernel
 }

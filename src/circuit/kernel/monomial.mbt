@@ -12,13 +12,13 @@ pub(all) struct MonomialKernel {
 }
 
 ///|
-pub impl UnitaryKernel for MonomialKernel with fn size(self) -> Int32 {
+pub impl LinearKernel for MonomialKernel with fn size(self) -> Int32 {
   self.columns.length()
 }
 
 ///|
 /// Permute local inputs and multiply by one phase per output row.
-pub impl UnitaryKernel for MonomialKernel with fn apply(self, args) {
+pub impl LinearKernel for MonomialKernel with fn apply(self, args) {
   for row, col in self.columns {
     let value = self.phases[row]
     args.output_re[row] = value.re * args.input_re[col] -
@@ -41,4 +41,7 @@ pub impl UnitaryKernel for MonomialKernel with fn adjoint(self) -> &UnitaryKerne
 }
 
 ///|
-pub extend MonomialKernel with UnitaryKernel::{size, apply, adjoint}
+pub extend MonomialKernel with LinearKernel::{size, apply}
+
+///|
+pub extend MonomialKernel with UnitaryKernel::{adjoint}

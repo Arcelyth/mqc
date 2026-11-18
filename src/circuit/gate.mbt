@@ -67,7 +67,7 @@ pub fn Gate::from_kernel(
 ) -> Gate raise @error.QError {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
-  if kernel.size() != size {
+  if LinearKernel::size(kernel) != size {
     raise InvalidGate("kernel dimension or workspace is invalid")
   }
   { label: name, shape, kernel_value: kernel, }
