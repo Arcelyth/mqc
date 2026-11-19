@@ -14,6 +14,7 @@ pub(all) suberror QError {
   InvalidDimension(UInt32)
   SizeLimit(Int32)
   InvalidGate(String)
+  InvalidChannel(String)
   DuplicateQid(Int32)
   TargetCount(Int32, Int32)
   DimensionMismatch(Int32, UInt32, UInt32)

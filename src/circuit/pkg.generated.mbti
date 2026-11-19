@@ -16,6 +16,22 @@ pub fn[Q : Qid] measure(Array[Q], key? : String) -> Operation[Q] raise @error.QE
 
 // Types and methods
 type Channel
+pub fn Channel::amplitude_damp(Double) -> Self raise @error.QError
+pub fn Channel::arity(Self) -> Int32
+pub fn Channel::dim(Self) -> Array[UInt32]
+pub fn Channel::kernels(Self) -> Iter[&@kernel.LinearKernel]
+pub fn Channel::kraus(String, Array[UInt32], Array[Array[@maths.Complex]]) -> Self raise @error.QError
+pub fn Channel::kraus_operators(Self) -> Iter[ArrayView[@maths.Complex]]
+pub fn Channel::measurement_key(Self) -> String?
+pub fn Channel::name(Self) -> String
+pub fn Channel::parameters(Self) -> Array[String]
+pub fn Channel::shape(Self) -> @internal.Shape
+pub fn Channel::size(Self) -> Int32
+pub fn Channel::try_adjoint(Self) -> &Effect? raise @error.QError
+pub fn Channel::try_channel(Self) -> Self?
+pub fn Channel::try_decompose(Self) -> Program? raise @error.QError
+pub fn Channel::try_unitary(Self) -> Gate?
+pub impl Effect for Channel
 
 type Circuit[Q]
 pub fn[Q : Qid] Circuit::adjoint(Self[Q]) -> Self[Q] raise @error.QError
