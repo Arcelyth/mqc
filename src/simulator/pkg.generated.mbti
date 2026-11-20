@@ -32,6 +32,9 @@ pub(all) struct SamplerResult {
   records : @maths.Array3[Int32]
 }
 pub fn SamplerResult::new(params? : ParamBinding, @maths.Array3[Int32]) -> Self
+pub fn SamplerResult::output(Self, &Logger) -> Unit
+pub fn SamplerResult::to_string(Self) -> String
+pub impl Show for SamplerResult
 
 type Simulator[S]
 pub fn[S] Simulator::name(Self[S]) -> String

@@ -233,3 +233,66 @@ pub fn[Q : Qid] Circuit::adjoint(
   }
   result
 }
+
+///|
+/// Draw one row per wire. Numbered markers show the remaining targets of a gate.
+/// Inspired by Cirq.
+///
+/// For the Bell circuit, `println(circuit)` prints this diagram.
+///
+/// ```text
+/// 0: ───H───CNOT───M("bell")───
+/// 1: ───────#2─────M───────────
+/// ```
+pub impl[Q : Qid + Show] Show for Circuit[Q] with fn output(self, logger) {
+  let labels = self.wires.map(wire => Show::to_string(wire))
+  let label_width = labels.fold(init=0, (width, label) => {
+    width.max(label.length())
+  })
+  let rows = labels.map(label => {
+    let row = StringBuilder()
+    row.write_string(label.pad_start(label_width, ' '))
+    row.write_string(": ───")
+    row
+  })
+  for operation in self.ops {
+    operation.draw_column(rows, self.indices)
+  }
+  for wire, row in rows {
+    if wire > 0 {
+      logger.write_char('\n')
+    }
+    logger.write_string(row.to_string())
+  }
+}
+
+///|
+fn[Q : Qid] Operation::draw_column(
+  self : Operation[Q],
+  rows : Array[StringBuilder],
+  indices : Map[Q, Int32],
+) -> Unit {
+  let (label, measurement) = match self.effect.measurement_key() {
+    Some(key) => ("M(\{key.escape()})", true)
+    None => (self.effect.name(), false)
+  }
+  let symbols : Map[Int32, String] = Map([])
+  let mut width = label.length()
+  for index, wire in self.wires {
+    let symbol = if index == 0 {
+      label
+    } else if measurement {
+      "M"
+    } else {
+      "#\{index + 1}"
+    }
+    symbols[indices[wire]] = symbol
+    width = width.max(symbol.length())
+  }
+  for wire, row in rows {
+    row.write_string(symbols.get_or_default(wire, "").pad_end(width + 3, '─'))
+  }
+}
+
+///|
+pub extend Circuit with Show::{output, to_string}

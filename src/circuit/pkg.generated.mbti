@@ -46,8 +46,11 @@ pub fn[Q : Qid] Circuit::index_of(Self[Q], Q) -> Int32?
 pub fn[Q] Circuit::length(Self[Q]) -> Int32
 pub fn[Q : Qid] Circuit::new(Array[Q]) -> Self[Q] raise @error.QError
 pub fn[Q] Circuit::operations(Self[Q]) -> Iter[Operation[Q]]
+pub fn[Q : Qid + Show] Circuit::output(Self[Q], &Logger) -> Unit
 pub fn[Q] Circuit::qids(Self[Q]) -> Array[Q]
 pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise @error.QError
+pub fn[Q : Qid + Show] Circuit::to_string(Self[Q]) -> String
+pub impl[Q : Qid + Show] Show for Circuit[Q]
 
 type Gate
 pub fn Gate::adjoint(Self) -> Self
@@ -103,8 +106,11 @@ pub fn QubitId::op_ge(Self, Self) -> Bool
 pub fn QubitId::op_gt(Self, Self) -> Bool
 pub fn QubitId::op_le(Self, Self) -> Bool
 pub fn QubitId::op_lt(Self, Self) -> Bool
+pub fn QubitId::output(Self, &Logger) -> Unit
 pub fn QubitId::to_repr(Self) -> @debug.Repr
+pub fn QubitId::to_string(Self) -> String
 pub impl Qid for QubitId
+pub impl Show for QubitId
 
 #derive(Eq, Hash, @debug.Debug)
 type QuditId
@@ -114,9 +120,12 @@ pub fn QuditId::hash(Self) -> Int32
 pub fn QuditId::hash_combine(Self, Hasher) -> Unit
 pub fn QuditId::new(UInt64, UInt32) -> Self raise @error.QError
 pub fn QuditId::not_equal(Self, Self) -> Bool
+pub fn QuditId::output(Self, &Logger) -> Unit
 pub fn QuditId::to_repr(Self) -> @debug.Repr
+pub fn QuditId::to_string(Self) -> String
 pub fn QuditId::value(Self) -> UInt64
 pub impl Qid for QuditId
+pub impl Show for QuditId
 
 // Type aliases
 pub using @kernel {type ControlledKernel}

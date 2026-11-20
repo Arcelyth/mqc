@@ -9,6 +9,14 @@ pub impl Qid for QubitId with fn dim(_self) -> UInt32 {
 }
 
 ///|
+pub impl Show for QubitId with fn output(self, logger) {
+  logger.write_object(self.0)
+}
+
+///|
+pub extend QubitId with Show::{output, to_string}
+
+///|
 /// Identifies a qudit, a quantum system with a finite-dimensional
 /// state space.
 /// The `levels` field specifies the dimension of its local Hilbert space.
@@ -38,6 +46,14 @@ pub fn QuditId::value(self : QuditId) -> UInt64 {
 pub impl Qid for QuditId with fn dim(self) -> UInt32 {
   self.levels
 }
+
+///|
+pub impl Show for QuditId with fn output(self, logger) {
+  logger.write_string("\{self.id}[\{self.levels}]")
+}
+
+///|
+pub extend QuditId with Show::{output, to_string}
 
 ///|
 pub extend QubitId with Eq::{equal, not_equal}
