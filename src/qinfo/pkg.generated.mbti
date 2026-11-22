@@ -1,0 +1,18 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/qinfo"
+
+import {
+  "Arcelyth/mqc/circuit",
+  "Arcelyth/mqc/circuit/kernel",
+}
+
+// Values
+pub fn kraus_map(@circuit.Channel) -> &@kernel.LinearKernel
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

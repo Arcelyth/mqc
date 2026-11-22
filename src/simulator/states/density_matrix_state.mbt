@@ -95,8 +95,8 @@ pub fn DensityMatrixState::validate(
 /// Measurement instructions are handled separately by validating the
 /// current state and measuring the requested target wires.
 ///
-/// Unitary instructions evolve the density matrix according to:
-///   ρ' = U ρ U†
+/// A channel sums the contributions of its Kraus operators on the target
+/// wires. Only explicit measurements append digits to the shot record.
 pub fn DensityMatrixState::apply(
   self : DensityMatrixState,
   instruction : @circuit.Instruction[Int32],
@@ -111,6 +111,19 @@ pub fn DensityMatrixState::apply(
     self.measure(targets, name)
     return
   }
+  let columns = targets.map(wire => wire + self.matrix.shape.length())
+  if effect.try_channel() is Some(channel) {
+    check_target_shape(channel.shape(), targets, self.matrix.shape)
+    apply_local(
+      self.matrix.re,
+      self.matrix.im,
+      self.tensor_shape,
+      self.tensor_strides,
+      @qinfo.kraus_map(channel),
+      targets + columns,
+    )
+    return
+  }
   let gate = checked_unitary(effect, targets, self.matrix.shape)
   apply_local(
     self.matrix.re,
@@ -121,7 +134,6 @@ pub fn DensityMatrixState::apply(
     targets,
   )
   // Applying the conjugate kernel to column digits gives right multiplication by U-adjoint.
-  let columns = targets.map(wire => wire + self.matrix.shape.length())
   apply_local(
     self.matrix.re,
     self.matrix.im,

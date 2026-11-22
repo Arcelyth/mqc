@@ -1,6 +1,7 @@
 import {
   "Arcelyth/mqc/error",
   "Arcelyth/mqc/circuit",
+  "Arcelyth/mqc/qinfo",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/internal",
   "moonbitlang/core/quickcheck/splitmix",

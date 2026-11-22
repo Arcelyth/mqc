@@ -154,3 +154,61 @@ test "density measurement preserves Bell correlations and requested qudit digit 
   }
   assert_true(zeros > 0 && zeros < 32)
 }
+
+///|
+test "amplitude damping transfers one quarter of the excited population to ground" {
+  let q = @circuit.QubitId(0UL)
+  let program = @circuit.Circuit::from_op([
+    @circuit.Operation::new(@gates.x(), [q]),
+    @circuit.Operation::new(@circuit.Channel::amplitude_damp(0.25), [q]),
+  ]).compile()
+  let trial = @simulator.DensityMatrixSimulator::new().simulate(program)
+  assert_eq(trial.records.shape(), (1, 1, 0))
+  let matrix = trial.state.density_matrix()
+  for row in 0..<2 {
+    for col in 0..<2 {
+      let expected = if row != col {
+        0.0
+      } else if row == 0 {
+        0.25
+      } else {
+        0.75
+      }
+      assert_true(
+        (matrix.entry(row, col) - @maths.Complex::real(expected)).norm_squared() <
+        1.0e-24,
+      )
+    }
+  }
+}
+
+///|
+test "a local complex channel preserves the spectator and transforms Bell coherence" {
+  let a = @circuit.QubitId(0UL)
+  let b = @circuit.QubitId(1UL)
+  let zero = @maths.Complex::real(0.0)
+  let phase = @maths.Complex::new(0.0, 0.75.sqrt())
+  let channel = @circuit.Channel::kraus("damp and phase", [2U], [
+    [@maths.Complex::real(1.0), zero, zero, phase],
+    [zero, @maths.Complex::real(0.5), zero, zero],
+  ])
+  let program = @circuit.Circuit::from_op([
+    @circuit.Operation::new(@gates.h(), [a]),
+    @circuit.Operation::new(@gates.cnot(), [a, b]),
+    @circuit.Operation::new(channel, [b]),
+  ]).compile()
+  let matrix = @simulator.DensityMatrixSimulator::new().simulate(program).state.density_matrix()
+  for row in 0..<4 {
+    for col in 0..<4 {
+      let expected = match (row, col) {
+        (0, 0) => @maths.Complex::real(0.5)
+        (2, 2) => @maths.Complex::real(0.125)
+        (3, 3) => @maths.Complex::real(0.375)
+        (0, 3) => phase.conjugate().scale(0.5)
+        (3, 0) => phase.scale(0.5)
+        _ => zero
+      }
+      assert_true((matrix.entry(row, col) - expected).norm_squared() < 1.0e-24)
+    }
+  }
+}

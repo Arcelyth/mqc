@@ -49,17 +49,29 @@ fn checked_unitary(
     raise @error.QError::InvalidGate("unsupported effect: " + effect.name())
   }
 
-  let gate_shape = gate.shape()
-  if gate_shape.length() != targets.length() {
-    raise @error.QError::TargetCount(targets.length(), gate_shape.length())
+  check_target_shape(gate.shape(), targets, shape)
+  gate
+}
+
+///|
+/// Match each target wire to its dimension in the local gate or channel.
+fn check_target_shape(
+  target_shape : @internal.Shape,
+  targets : Array[Int32],
+  shape : @internal.Shape,
+) -> Unit raise @error.QError {
+  if target_shape.length() != targets.length() {
+    raise @error.QError::TargetCount(target_shape.length(), targets.length())
   }
 
   for i, target in targets {
-    if gate_shape[i] != shape[target] {
-      raise @error.QError::DimensionMismatch(i, shape[target], gate_shape[i])
+    if target < 0 || target >= shape.length() {
+      raise @error.InvalidBasis(target)
+    }
+    if target_shape[i] != shape[target] {
+      raise @error.QError::DimensionMismatch(i, target_shape[i], shape[target])
     }
   }
-  gate
 }
 
 ///|
