@@ -227,6 +227,7 @@ pub impl Debug for Gate with fn to_repr(self) {
 ///|
 pub extend Gate with Effect::{
   measurement_key,
+  try_conditional,
   try_unitary,
   try_channel,
   try_decompose,

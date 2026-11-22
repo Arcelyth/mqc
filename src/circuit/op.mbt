@@ -30,6 +30,22 @@ pub fn[Q : Qid] Operation::new(
 }
 
 ///|
+/// Applies a classical condition to this operation.
+/// The operation executes only when the condition evaluates to true.
+pub fn[Q] Operation::when(
+  self : Operation[Q],
+  conditions : &Condition,
+) -> Operation[Q] raise @error.QError {
+  if self.effect.measurement_key() is Some(_) {
+    raise InvalidCondition("measurements must execute on every shot")
+  }
+  {
+    ..self,
+    effect: ConditionalEffect::{ inner: self.effect, condition: conditions, },
+  }
+}
+
+///|
 /// Return the effect's direct unitary capability, if present.
 pub fn[Q] Operation::gate(self : Operation[Q]) -> Gate? {
   self.effect.try_unitary()

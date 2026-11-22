@@ -29,6 +29,7 @@ pub fn Channel::shape(Self) -> @internal.Shape
 pub fn Channel::size(Self) -> Int32
 pub fn Channel::try_adjoint(Self) -> &Effect? raise @error.QError
 pub fn Channel::try_channel(Self) -> Self?
+pub fn Channel::try_conditional(Self) -> ConditionalEffect?
 pub fn Channel::try_decompose(Self) -> Program? raise @error.QError
 pub fn Channel::try_unitary(Self) -> Gate?
 pub impl Effect for Channel
@@ -52,6 +53,22 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise @err
 pub fn[Q : Qid + Show] Circuit::to_string(Self[Q]) -> String
 pub impl[Q : Qid + Show] Show for Circuit[Q]
 
+pub struct ConditionalEffect {
+  inner : &Effect
+  condition : &Condition
+}
+pub fn ConditionalEffect::arity(Self) -> Int32
+pub fn ConditionalEffect::dim(Self) -> Array[UInt32]
+pub fn ConditionalEffect::measurement_key(Self) -> String?
+pub fn ConditionalEffect::name(Self) -> String
+pub fn ConditionalEffect::parameters(Self) -> Array[String]
+pub fn ConditionalEffect::try_adjoint(Self) -> &Effect? raise @error.QError
+pub fn ConditionalEffect::try_channel(Self) -> Channel?
+pub fn ConditionalEffect::try_conditional(Self) -> Self?
+pub fn ConditionalEffect::try_decompose(Self) -> Program? raise @error.QError
+pub fn ConditionalEffect::try_unitary(Self) -> Gate?
+pub impl Effect for ConditionalEffect
+
 type Gate
 pub fn Gate::adjoint(Self) -> Self
 pub fn Gate::arity(Self) -> Int32
@@ -69,6 +86,7 @@ pub fn Gate::size(Self) -> Int32
 pub fn Gate::to_repr(Self) -> @debug.Repr
 pub fn Gate::try_adjoint(Self) -> &Effect? raise @error.QError
 pub fn Gate::try_channel(Self) -> Channel?
+pub fn Gate::try_conditional(Self) -> ConditionalEffect?
 pub fn Gate::try_decompose(Self) -> Program? raise @error.QError
 pub fn Gate::try_unitary(Self) -> Self?
 pub fn Gate::unitary(String, Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise @error.QError
@@ -79,12 +97,23 @@ type Instruction
 pub fn Instruction::effect(Self) -> &Effect
 pub fn Instruction::targets(Self) -> Array[Int32]
 
+pub(all) enum MeasurementCondition {
+  Nonzero(String)
+  And(&Condition, &Condition)
+  Or(&Condition, &Condition)
+  Not(&Condition)
+}
+pub fn MeasurementCondition::evaluate(Self, &MeasurementRecord) -> Bool raise @error.QError
+pub fn MeasurementCondition::name(Self) -> String
+pub impl Condition for MeasurementCondition
+
 type Operation[Q]
 pub fn[Q] Operation::effect(Self[Q]) -> &Effect
 pub fn[Q] Operation::gate(Self[Q]) -> Gate?
 pub fn[Q : Qid] Operation::new(&Effect, Array[Q]) -> Self[Q] raise @error.QError
 pub fn[Q] Operation::targets(Self[Q]) -> Array[Q]
 pub fn[Q : @debug.Debug] Operation::to_repr(Self[Q]) -> @debug.Repr
+pub fn[Q] Operation::when(Self[Q], &Condition) -> Self[Q] raise @error.QError
 pub impl[Q : @debug.Debug] @debug.Debug for Operation[Q]
 
 type Program
@@ -141,16 +170,26 @@ pub using @kernel {trait LinearKernel}
 pub using @kernel {trait UnitaryKernel}
 
 // Traits
+pub(open) trait Condition {
+  fn evaluate(Self, &MeasurementRecord) -> Bool raise @error.QError
+  fn name(Self) -> String = _
+}
+
 pub(open) trait Effect {
   fn measurement_key(Self) -> String? = _
   fn name(Self) -> String
   fn dim(Self) -> Array[UInt32]
   fn arity(Self) -> Int32 = _
+  fn try_conditional(Self) -> ConditionalEffect? = _
   fn try_unitary(Self) -> Gate? = _
   fn try_channel(Self) -> Channel? = _
   fn try_decompose(Self) -> Program? raise @error.QError = _
   fn try_adjoint(Self) -> &Effect? raise @error.QError = _
   fn parameters(Self) -> Array[String] = _
+}
+
+pub(open) trait MeasurementRecord {
+  fn latest(Self, String) -> ArrayView[Int32] raise @error.QError
 }
 
 pub(open) trait Qid : Eq + Hash {

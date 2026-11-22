@@ -6,7 +6,12 @@ pub fn evolve(program : @circuit.Program) -> StateVector raise @error.QError {
   let state = StateVectorState::new(program.dim(), seed=0UL)
   let mut measuring = false
   for instruction in program.instructions() {
-    if check_instruction(instruction) {
+    if instruction.effect().try_conditional() is Some(_) {
+      raise @error.InvalidCondition(
+        "evolve cannot evaluate measurement conditions",
+      )
+    }
+    if check_instruction(instruction) is Some(_) {
       measuring = true
     } else {
       if measuring {
@@ -14,7 +19,12 @@ pub fn evolve(program : @circuit.Program) -> StateVector raise @error.QError {
           "evolve requires terminal measurements",
         )
       }
-      execute_gate(state.vector, state.strides, instruction)
+      execute_gate(
+        state.vector,
+        state.strides,
+        instruction.effect(),
+        instruction.targets(),
+      )
     }
   }
   state.validate()
@@ -26,10 +36,10 @@ pub fn evolve(program : @circuit.Program) -> StateVector raise @error.QError {
 fn execute_gate(
   state : StateVector,
   strides : Array[Int32],
-  instruction : @circuit.Instruction,
+  effect : &@circuit.Effect,
+  targets : Array[Int32],
 ) -> Unit raise @error.QError {
-  let targets = instruction.targets()
-  let gate = checked_unitary(instruction.effect(), targets, state.shape)
+  let gate = checked_unitary(effect, targets, state.shape)
   apply_local(state.re, state.im, state.shape, strides, gate.kernel(), targets)
 }
 

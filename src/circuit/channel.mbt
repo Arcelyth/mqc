@@ -181,6 +181,7 @@ pub extend Channel with Effect::{
   dim,
   arity,
   measurement_key,
+  try_conditional,
   try_unitary,
   try_channel,
   try_decompose,

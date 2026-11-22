@@ -43,9 +43,11 @@ pub fn DensityMatrixState::validate(Self) -> Unit raise @error.QError
 type SimulationStateBase
 pub fn SimulationStateBase::copy(Self) -> Self
 pub fn SimulationStateBase::draw(Self) -> Double
+pub fn SimulationStateBase::latest(Self, String) -> ArrayView[Int32] raise @error.QError
 pub fn SimulationStateBase::new(seed? : UInt64) -> Self
-pub fn SimulationStateBase::record(Self, ArrayView[Int32]) -> Unit
+pub fn SimulationStateBase::record(Self, ArrayView[Int32], key? : String) -> Unit
 pub fn SimulationStateBase::records(Self) -> @maths.Array3[Int32]
+pub impl @circuit.MeasurementRecord for SimulationStateBase
 
 pub struct StateVector {
   shape : @internal.Shape

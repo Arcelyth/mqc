@@ -77,11 +77,13 @@ pub fn StateVectorState::apply(
   self : StateVectorState,
   instruction : @circuit.Instruction,
 ) -> Unit raise @error.QError {
-  if check_instruction(instruction) {
+  let key = check_instruction(instruction)
+  guard self.base.resolve(instruction.effect()) is Some(effect) else { return }
+  if key is Some(name) {
     self.validate()
-    self.measure(instruction.targets())
+    self.measure(instruction.targets(), name)
   } else {
-    execute_gate(self.vector, self.strides, instruction)
+    execute_gate(self.vector, self.strides, effect, instruction.targets())
   }
 }
 
@@ -89,12 +91,13 @@ pub fn StateVectorState::apply(
 fn StateVectorState::measure(
   self : StateVectorState,
   targets : Array[Int32],
+  key : String,
 ) -> Unit raise @error.QError {
   let probabilities = self.vector.marginal_probabilities(targets)
   let outcome = measurement_outcome(probabilities, self.base.draw())
   let digits = measurement_digits(self.vector.shape, targets, outcome)
   self.collapse_measurement(targets, digits, probabilities[outcome])
-  self.base.record(digits[:])
+  self.base.record(digits[:], key~)
 }
 
 ///|

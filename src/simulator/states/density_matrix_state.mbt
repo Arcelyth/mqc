@@ -101,13 +101,15 @@ pub fn DensityMatrixState::apply(
   self : DensityMatrixState,
   instruction : @circuit.Instruction,
 ) -> Unit raise @error.QError {
-  if check_instruction(instruction) {
+  let key = check_instruction(instruction)
+  guard self.base.resolve(instruction.effect()) is Some(effect) else { return }
+  if key is Some(name) {
     self.validate()
-    self.measure(instruction.targets())
+    self.measure(instruction.targets(), name)
     return
   }
   let targets = instruction.targets()
-  let gate = checked_unitary(instruction.effect(), targets, self.matrix.shape)
+  let gate = checked_unitary(effect, targets, self.matrix.shape)
   apply_local(
     self.matrix.re,
     self.matrix.im,
@@ -133,12 +135,13 @@ pub fn DensityMatrixState::apply(
 fn DensityMatrixState::measure(
   self : DensityMatrixState,
   targets : Array[Int32],
+  key : String,
 ) -> Unit raise @error.QError {
   let probabilities = self.matrix.marginal_probabilities(targets)
   let outcome = measurement_outcome(probabilities, self.base.draw())
   self.collapse_measurement(targets, outcome, probabilities[outcome])
   let digits = measurement_digits(self.matrix.shape, targets, outcome)
-  self.base.record(digits[:])
+  self.base.record(digits[:], key~)
 }
 
 ///|

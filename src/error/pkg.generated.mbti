@@ -21,6 +21,7 @@ pub(all) suberror QError {
   RegisterMismatch
   InvalidBasis(Int32)
   InvalidState(String)
+  InvalidCondition(String)
 }
 pub fn QError::to_repr(Self) -> @debug.Repr
 

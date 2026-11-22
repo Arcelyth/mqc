@@ -28,6 +28,9 @@ fn sampling_plan(
   let mut terminal = true
   // Collects every measured wire into targets
   for instruction in program.instructions() {
+    if instruction.effect().try_conditional() is Some(_) {
+      terminal = false
+    }
     if instruction.effect().measurement_key() is Some(_) {
       measuring = true
       for wire in instruction.targets() {

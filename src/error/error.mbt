@@ -23,6 +23,8 @@ pub(all) suberror QError {
   InvalidBasis(Int32)
   /// State data or numerical output violates its contract. Carries the reason.
   InvalidState(String)
+  /// A measurement condition is invalid or reads a key before it is measured.
+  InvalidCondition(String)
 }
 
 ///|
