@@ -72,6 +72,8 @@ pub using @circuit {type Gate}
 
 pub using @circuit {type Instruction}
 
+pub using @circuit {type MeasurementCondition}
+
 pub using @circuit {type Operation}
 
 pub using @circuit {type Program}
@@ -104,9 +106,13 @@ pub using @simulator {type StepResult}
 
 pub using @simulator {type TrialResult}
 
+pub using @circuit {trait Condition}
+
 pub using @circuit {trait Effect}
 
 pub using @kernel {trait LinearKernel}
+
+pub using @circuit {trait MeasurementRecord}
 
 pub using @circuit {trait Qid}
 

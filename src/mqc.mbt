@@ -2,6 +2,9 @@
 pub using @circuit {
   trait Qid,
   trait Effect,
+  trait Condition,
+  trait MeasurementRecord,
+  type MeasurementCondition,
   trait LinearKernel,
   trait UnitaryKernel,
   type QubitId,
