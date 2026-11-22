@@ -136,7 +136,7 @@ pub fn[Q] Circuit::operations(self : Circuit[Q]) -> Iter[Operation[Q]] {
   .filter_map(i => {
     match i {
       Operation(op) => Some(op)
-      IfElse(_) | ForLoop(_) => None
+      IfElse(_) | ForLoop(_) | WhileLoop(_) => None
     }
   })
 }
@@ -238,6 +238,28 @@ pub fn[Q : Qid] Circuit::adjoint(
 }
 
 ///|
+/// Computes the measurement metadata for repeated circuit execution.
+fn[Q] Circuit::loop_metadata(
+  self : Circuit[Q],
+  count : Int32,
+) -> (Array[String], Int32) raise @error.QError {
+  let names : Array[String] = []
+  let mut width = 0
+  if count > 0 {
+    let per_iteration = self.record_width()
+    if per_iteration > 2147483647 / count {
+      raise SizeLimit(2147483647)
+    }
+    width = per_iteration * count
+    for name in self.parameter_names.iter() {
+      names.push(name)
+    }
+    names.sort_by(String::lexical_compare)
+  }
+  (names, width)
+}
+
+///|
 fn[Q : Qid] adjoint_body(
   wires : Array[Q],
   body : @vector.Vector[Instruction[Q]],
@@ -245,6 +267,7 @@ fn[Q : Qid] adjoint_body(
   let result = Circuit::new(wires)
   for i = body.length() - 1; i >= 0; i = i - 1 {
     match body[i] {
+      WhileLoop(_) => raise InvalidGate("while_loop has no circuit adjoint")
       IfElse(_) => raise InvalidGate("if_else has no circuit adjoint")
       ForLoop(block) =>
         if block.count > 0 {
@@ -287,6 +310,12 @@ pub impl[Q : Qid + Show] Show for Circuit[Q] with fn output(self, logger) {
   for instruction in self.ops {
     match instruction {
       Operation(operation) => operation.draw_column(rows, self.indices)
+      WhileLoop(block) => {
+        let label = "while " + block.condition.name()
+        for row in rows {
+          row.write_string(label + "───")
+        }
+      }
       ForLoop(block) =>
         for row in rows {
           row.write_string("repeat \{block.count}───")

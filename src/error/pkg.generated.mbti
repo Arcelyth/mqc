@@ -22,6 +22,7 @@ pub(all) suberror QError {
   InvalidBasis(Int32)
   InvalidState(String)
   InvalidCondition(String)
+  IterationLimit(Int32)
 }
 pub fn QError::to_repr(Self) -> @debug.Repr
 

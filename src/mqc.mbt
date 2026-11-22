@@ -18,6 +18,7 @@ pub using @circuit {
   type Instruction,
   type IfElse,
   type ForLoop,
+  type WhileLoop,
 }
 
 ///|

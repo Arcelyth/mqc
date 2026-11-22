@@ -54,6 +54,7 @@ pub fn[Q : Qid + Show] Circuit::output(Self[Q], &Logger) -> Unit
 pub fn[Q] Circuit::qids(Self[Q]) -> Array[Q]
 pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise @error.QError
 pub fn[Q : Qid + Show] Circuit::to_string(Self[Q]) -> String
+pub fn[Q : Qid] Circuit::while_loop(Self[Q], &Condition, Self[Q], max_iterations~ : Int32) -> Unit raise @error.QError
 pub impl[Q : Qid + Show] Show for Circuit[Q]
 
 pub struct ConditionalEffect {
@@ -110,6 +111,7 @@ pub enum Instruction[Q] {
   Operation(Operation[Q])
   IfElse(IfElse[Q])
   ForLoop(ForLoop[Q])
+  WhileLoop(WhileLoop[Q])
 }
 pub fn[Q] Instruction::parameters(Self[Q]) -> Array[String]
 pub fn[Q] Instruction::record_width(Self[Q]) -> Int32
@@ -172,6 +174,11 @@ pub fn QuditId::to_string(Self) -> String
 pub fn QuditId::value(Self) -> UInt64
 pub impl Qid for QuditId
 pub impl Show for QuditId
+
+type WhileLoop[Q]
+pub fn[Q] WhileLoop::body(Self[Q]) -> Iter[Instruction[Q]]
+pub fn[Q] WhileLoop::condition(Self[Q]) -> &Condition
+pub fn[Q] WhileLoop::max_iterations(Self[Q]) -> Int32
 
 // Type aliases
 pub using @kernel {type ControlledKernel}

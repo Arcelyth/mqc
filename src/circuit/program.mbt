@@ -28,7 +28,7 @@ pub fn Program::shape(self : Program) -> @internal.Shape {
 ///|
 /// Iterate over top-level instructions. 
 /// With expand_loops=true, yield each iteration in execution order. 
-/// Conditional branches remain single instructions.
+/// Conditional branches and while loops remain single instructions.
 pub fn Program::instructions(
   self : Program,
   expand_loops~ : Bool = false,

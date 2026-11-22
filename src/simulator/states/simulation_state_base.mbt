@@ -112,15 +112,41 @@ fn SimulationStateBase::dispatch(
       }
       None
     }
+    WhileLoop(block) => {
+      let start = self.digits.length()
+      let mut iterations = 0
+      while block.condition().evaluate(self) {
+        if iterations == block.max_iterations() {
+          raise @error.IterationLimit(iterations)
+        }
+        for child in block.body() {
+          apply(child)
+        }
+        iterations += 1
+      }
+      self.pad_records(start, instruction.record_width())
+      None
+    }
     IfElse(branch) => {
       let start = self.digits.length()
       for child in branch.select(self) {
         apply(child)
       }
-      for _ in (self.digits.length() - start)..<instruction.record_width() {
-        self.digits.push(-1)
-      }
+      self.pad_records(start, instruction.record_width())
       None
     }
+  }
+}
+
+///|
+/// Keep subsequent measurements at the same column in every shot. Padding
+/// belongs only to the flat record and has no measurement key.
+fn SimulationStateBase::pad_records(
+  self : SimulationStateBase,
+  start : Int32,
+  width : Int32,
+) -> Unit {
+  for _ in (self.digits.length() - start)..<width {
+    self.digits.push(-1)
   }
 }

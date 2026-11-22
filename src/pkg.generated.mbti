@@ -112,6 +112,8 @@ pub using @simulator {type StepResult}
 
 pub using @simulator {type TrialResult}
 
+pub using @circuit {type WhileLoop}
+
 pub using @circuit {trait Condition}
 
 pub using @circuit {trait Effect}

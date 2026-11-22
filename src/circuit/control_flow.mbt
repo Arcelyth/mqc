@@ -65,6 +65,7 @@ pub fn[Q] IfElse::on_false(self : IfElse[Q]) -> Iter[Instruction[Q]] {
 /// Both arms of a branch start at the same column and reserve space for the wider arm.
 pub fn[Q] Instruction::record_width(self : Instruction[Q]) -> Int32 {
   match self {
+    WhileLoop(block) => block.width
     ForLoop(loop_body) => loop_body.width
     IfElse(branch) => branch.width
     Operation(op) if op.effect.measurement_key() is Some(_) => op.wires.length()
@@ -106,19 +107,7 @@ pub fn[Q : Qid] Circuit::for_loop(
   if count < 0 {
     raise InvalidState("loop count must be nonnegative")
   }
-  let names : Array[String] = []
-  let mut width = 0
-  if count > 0 {
-    let per_iteration = body.record_width()
-    if per_iteration > 2147483647 / count {
-      raise SizeLimit(2147483647)
-    }
-    width = per_iteration * count
-    for name in body.parameter_names.iter() {
-      names.push(name)
-    }
-    names.sort_by(String::lexical_compare)
-  }
+  let (names, width) = body.loop_metadata(count)
   self.append_block(body, ForLoop({ count, body: body.ops, names, width, }))
 }
 
@@ -148,4 +137,51 @@ fn[Q : Qid] Circuit::append_block(
     instruction.parameters(),
   )
   self.ops = self.ops.push(instruction)
+}
+
+///|
+/// A measurement-controlled loop captures its body once. The iteration bound
+/// determines how many measurement columns the loop reserves in each shot.
+struct WhileLoop[Q] {
+  condition : &Condition
+  max_iterations : Int32
+  body : @vector.Vector[Instruction[Q]]
+  names : Array[String]
+  width : Int32
+}
+
+///|
+/// Test the condition before each iteration. Body measurements are available
+/// to the next test. If the condition still holds after max_iterations,
+/// execution raises IterationLimit. Unused record columns contain -1.
+pub fn[Q : Qid] Circuit::while_loop(
+  self : Circuit[Q],
+  condition : &Condition,
+  body : Circuit[Q],
+  max_iterations~ : Int32,
+) -> Unit raise @error.QError {
+  if max_iterations < 0 {
+    raise InvalidState("max_iterations must be nonnegative")
+  }
+  let (names, width) = body.loop_metadata(max_iterations)
+  self.append_block(
+    body,
+    WhileLoop({ condition, max_iterations, body: body.ops, names, width, }),
+  )
+}
+
+///|
+pub fn[Q] WhileLoop::condition(self : WhileLoop[Q]) -> &Condition {
+  self.condition
+}
+
+///|
+pub fn[Q] WhileLoop::max_iterations(self : WhileLoop[Q]) -> Int32 {
+  self.max_iterations
+}
+
+///|
+/// Iterate over one copy of the body in execution order.
+pub fn[Q] WhileLoop::body(self : WhileLoop[Q]) -> Iter[Instruction[Q]] {
+  self.body.iter()
 }

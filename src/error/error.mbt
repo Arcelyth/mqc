@@ -25,6 +25,8 @@ pub(all) suberror QError {
   InvalidState(String)
   /// A measurement condition is invalid or reads a key before it is measured.
   InvalidCondition(String)
+  /// A while condition remained true after this many iterations.
+  IterationLimit(Int32)
 }
 
 ///|
