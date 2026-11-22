@@ -99,16 +99,18 @@ pub fn DensityMatrixState::validate(
 ///   ρ' = U ρ U†
 pub fn DensityMatrixState::apply(
   self : DensityMatrixState,
-  instruction : @circuit.Instruction,
+  instruction : @circuit.Instruction[Int32],
 ) -> Unit raise @error.QError {
-  let key = check_instruction(instruction)
-  guard self.base.resolve(instruction.effect()) is Some(effect) else { return }
-  if key is Some(name) {
-    self.validate()
-    self.measure(instruction.targets(), name)
+  check_instruction(instruction)
+  guard self.base.dispatch(instruction, child => self.apply(child))
+    is Some((effect, targets)) else {
     return
   }
-  let targets = instruction.targets()
+  if effect.measurement_key() is Some(name) {
+    self.validate()
+    self.measure(targets, name)
+    return
+  }
   let gate = checked_unitary(effect, targets, self.matrix.shape)
   apply_local(
     self.matrix.re,

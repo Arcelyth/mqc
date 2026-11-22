@@ -1,25 +1,8 @@
 ///|
-/// A checked binding to ordered local wire indices.
-struct Instruction {
-  effect_value : &Effect
-  wires : Array[Int32]
-}
-
-///|
-pub fn Instruction::effect(self : Instruction) -> &Effect {
-  self.effect_value
-}
-
-///|
-pub fn Instruction::targets(self : Instruction) -> Array[Int32] {
-  self.wires.copy()
-}
-
-///|
 struct Program {
   label : String
   shape : @internal.Shape
-  ops : @vector.Vector[Instruction]
+  ops : @vector.Vector[Instruction[Int32]]
 }
 
 ///|
@@ -43,6 +26,6 @@ pub fn Program::shape(self : Program) -> @internal.Shape {
 }
 
 ///|
-pub fn Program::instructions(self : Program) -> Iter[Instruction] {
+pub fn Program::instructions(self : Program) -> Iter[Instruction[Int32]] {
   self.ops.iter()
 }

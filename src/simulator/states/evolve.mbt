@@ -6,12 +6,13 @@ pub fn evolve(program : @circuit.Program) -> StateVector raise @error.QError {
   let state = StateVectorState::new(program.dim(), seed=0UL)
   let mut measuring = false
   for instruction in program.instructions() {
-    if instruction.effect().try_conditional() is Some(_) {
+    guard instruction is Operation(op) && op.effect().try_conditional() is None else {
       raise @error.InvalidCondition(
         "evolve cannot evaluate measurement conditions",
       )
     }
-    if check_instruction(instruction) is Some(_) {
+    check_instruction(instruction)
+    if op.effect().measurement_key() is Some(_) {
       measuring = true
     } else {
       if measuring {
@@ -19,12 +20,7 @@ pub fn evolve(program : @circuit.Program) -> StateVector raise @error.QError {
           "evolve requires terminal measurements",
         )
       }
-      execute_gate(
-        state.vector,
-        state.strides,
-        instruction.effect(),
-        instruction.targets(),
-      )
+      execute_gate(state.vector, state.strides, op.effect(), op.targets())
     }
   }
   state.validate()

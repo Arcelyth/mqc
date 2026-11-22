@@ -10,6 +10,8 @@ pub using @result {
 
 ///|
 /// Measurement results produced by sampling a quantum program.
+/// An if_else block uses as many columns as its wider arm. Unused trailing
+/// columns in the selected arm contain -1, outside the range of basis digits.
 pub(all) struct SamplerResult {
   params : ParamBinding
   records : @maths.Array3[Int32]

@@ -23,7 +23,7 @@ pub(open) trait Effect {
   /// The number of local wires, not the product of their dimensions.
   fn arity(Self) -> Int32 = _
 
-  /// Return the guarded effect and its measurement test for classical feed-forward.
+  /// Expose the predicate and inner effect of a classically guarded action.
   fn try_conditional(Self) -> ConditionalEffect? = _
 
   /// Try to provide an exact unitary gate equivalent to this effect.
@@ -82,6 +82,6 @@ impl Effect with fn measurement_key(_self) -> String? {
 }
 
 ///|
-impl Effect with fn try_conditional(_self) -> ConditionalEffect? {
+impl Effect with fn try_conditional(_) -> ConditionalEffect? {
   None
 }

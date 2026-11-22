@@ -1,5 +1,5 @@
 ///|
-/// An effect bound to distinct, ordered quantum IDs.
+/// A circuit operation bound to distinct, ordered quantum IDs.
 struct Operation[Q] {
   effect : &Effect
   wires : Array[Q]
@@ -41,7 +41,7 @@ pub fn[Q] Operation::when(
   }
   {
     ..self,
-    effect: ConditionalEffect::{ inner: self.effect, condition: conditions, },
+    effect: ConditionalEffect::{ condition: conditions, inner: self.effect, },
   }
 }
 
@@ -52,7 +52,6 @@ pub fn[Q] Operation::gate(self : Operation[Q]) -> Gate? {
 }
 
 ///|
-/// Return the immutable effect bound by this operation.
 pub fn[Q] Operation::effect(self : Operation[Q]) -> &Effect {
   self.effect
 }

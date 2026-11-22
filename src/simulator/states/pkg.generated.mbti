@@ -30,7 +30,7 @@ pub fn DensityMatrix::trace(Self) -> Double
 pub fn DensityMatrix::zero(Array[UInt32]) -> Self raise @error.QError
 
 type DensityMatrixState
-pub fn DensityMatrixState::apply(Self, @circuit.Instruction) -> Unit raise @error.QError
+pub fn DensityMatrixState::apply(Self, @circuit.Instruction[Int32]) -> Unit raise @error.QError
 pub fn DensityMatrixState::copy(Self) -> Self
 pub fn DensityMatrixState::density_matrix(Self) -> DensityMatrix
 pub fn DensityMatrixState::dim(Self) -> Array[UInt32]
@@ -67,7 +67,7 @@ pub fn StateVector::size(Self) -> Int32
 pub fn StateVector::zero(Array[UInt32]) -> Self
 
 type StateVectorState
-pub fn StateVectorState::apply(Self, @circuit.Instruction) -> Unit raise @error.QError
+pub fn StateVectorState::apply(Self, @circuit.Instruction[Int32]) -> Unit raise @error.QError
 pub fn StateVectorState::copy(Self) -> Self
 pub fn StateVectorState::dim(Self) -> Array[UInt32]
 pub fn StateVectorState::from_state(StateVector, seed? : UInt64) -> Self raise @error.QError

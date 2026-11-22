@@ -75,15 +75,18 @@ pub fn StateVectorState::validate(
 /// Execute one instruction and change this state in place.
 pub fn StateVectorState::apply(
   self : StateVectorState,
-  instruction : @circuit.Instruction,
+  instruction : @circuit.Instruction[Int32],
 ) -> Unit raise @error.QError {
-  let key = check_instruction(instruction)
-  guard self.base.resolve(instruction.effect()) is Some(effect) else { return }
-  if key is Some(name) {
+  check_instruction(instruction)
+  guard self.base.dispatch(instruction, child => self.apply(child))
+    is Some((effect, targets)) else {
+    return
+  }
+  if effect.measurement_key() is Some(name) {
     self.validate()
-    self.measure(instruction.targets(), name)
+    self.measure(targets, name)
   } else {
-    execute_gate(self.vector, self.strides, effect, instruction.targets())
+    execute_gate(self.vector, self.strides, effect, targets)
   }
 }
 

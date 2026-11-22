@@ -12,9 +12,11 @@ pub using @circuit {
   type Gate,
   type Channel,
   type Operation,
+  type ConditionalEffect,
   type Circuit,
   type Program,
   type Instruction,
+  type IfElse,
 }
 
 ///|

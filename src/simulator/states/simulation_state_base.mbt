@@ -91,3 +91,28 @@ pub impl @circuit.MeasurementRecord for SimulationStateBase with fn latest(
 
 ///|
 pub extend SimulationStateBase with @circuit.MeasurementRecord::{latest}
+
+///|
+/// Run a branch on the same state so measurements inside it are available
+/// to later instructions. 
+/// Fill unused columns with -1 after the arm finishes.
+fn SimulationStateBase::dispatch(
+  self : SimulationStateBase,
+  instruction : @circuit.Instruction[Int32],
+  apply : (@circuit.Instruction[Int32]) -> Unit raise @error.QError,
+) -> (&@circuit.Effect, Array[Int32])? raise @error.QError {
+  match instruction {
+    Operation(op) =>
+      self.resolve(op.effect()).map(effect => (effect, op.targets()))
+    IfElse(branch) => {
+      let start = self.digits.length()
+      for child in branch.select(self) {
+        apply(child)
+      }
+      for _ in (self.digits.length() - start)..<instruction.record_width() {
+        self.digits.push(-1)
+      }
+      None
+    }
+  }
+}

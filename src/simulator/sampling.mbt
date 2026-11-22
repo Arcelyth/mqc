@@ -10,6 +10,12 @@ fn simulator_random(seed : UInt64?) -> @random.Rand {
 }
 
 ///|
+priv enum SamplingPlan {
+  Terminal(Array[Int32])
+  Shots(Int32)
+}
+
+///|
 /// Analyze the program and determine its measurement sampling strategy.
 ///
 /// Returns the measured wires in instruction order and whether all
@@ -18,7 +24,7 @@ fn simulator_random(seed : UInt64?) -> @random.Rand {
 fn sampling_plan(
   program : @circuit.Program,
   repetitions : Int32,
-) -> (Array[Int32], Bool) raise @error.QError {
+) -> SamplingPlan raise @error.QError {
   if repetitions < 0 {
     raise @error.QError::InvalidState("repetitions must be nonnegative")
   }
@@ -26,14 +32,20 @@ fn sampling_plan(
   let targets : Array[Int32] = []
   let mut measuring = false
   let mut terminal = true
-  // Collects every measured wire into targets
+  let mut width = 0
   for instruction in program.instructions() {
-    if instruction.effect().try_conditional() is Some(_) {
-      terminal = false
+    let count = instruction.record_width()
+    if count > 2147483647 - width {
+      raise @error.SizeLimit(2147483647)
     }
-    if instruction.effect().measurement_key() is Some(_) {
+    width += count
+    guard instruction is Operation(op) && op.effect().try_conditional() is None else {
+      terminal = false
+      continue
+    }
+    if op.effect().measurement_key() is Some(_) {
       measuring = true
-      for wire in instruction.targets() {
+      for wire in op.targets() {
         targets.push(wire)
       }
     } else if measuring {
@@ -41,7 +53,6 @@ fn sampling_plan(
     }
   }
 
-  let width = targets.length()
   if width == 0 {
     raise @error.QError::InvalidState("run requires a measurement")
   }
@@ -49,7 +60,11 @@ fn sampling_plan(
     raise @error.QError::SizeLimit(2147483647)
   }
 
-  (targets, terminal)
+  if terminal {
+    Terminal(targets)
+  } else {
+    Shots(width)
+  }
 }
 
 ///|

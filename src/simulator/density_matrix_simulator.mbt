@@ -63,17 +63,16 @@ pub impl Sampler for DensityMatrixSimulator with fn run(
   repetitions?,
 ) -> SamplerResult raise @error.QError {
   let repetitions = repetitions.unwrap_or(1)
-  let (targets, terminal) = sampling_plan(program, repetitions)
-  if terminal {
-    sample_terminal(
-      density_terminal_probabilities(program),
-      program,
-      targets,
-      repetitions,
-      self.random,
-    )
-  } else {
-    sample_shots(self.engine, program, repetitions, targets.length())
+  match sampling_plan(program, repetitions) {
+    Terminal(targets) =>
+      sample_terminal(
+        density_terminal_probabilities(program),
+        program,
+        targets,
+        repetitions,
+        self.random,
+      )
+    Shots(width) => sample_shots(self.engine, program, repetitions, width)
   }
 }
 
@@ -84,9 +83,8 @@ fn density_terminal_probabilities(
 ) -> Array[Double] raise @error.QError {
   let state = DensityMatrixState::new(program.dim(), seed=0UL)
   for instruction in program.instructions() {
-    let effect = instruction.effect()
-    if effect.measurement_key() is Some(_) {
-      if !effect.parameters().is_empty() {
+    if instruction is Operation(op) && op.effect().measurement_key() is Some(_) {
+      if !op.effect().parameters().is_empty() {
         raise @error.InvalidState("unbound parameters are not supported")
       }
     } else {

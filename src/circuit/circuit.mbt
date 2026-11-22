@@ -8,7 +8,7 @@ struct Circuit[Q] {
   /// Positions for each local id.
   mut indices : Map[Q, Int32]
   /// Instruction sequence in execution order.
-  mut ops : @vector.Vector[Operation[Q]]
+  mut ops : @vector.Vector[Instruction[Q]]
   /// The union of names from every effect in current circuit.
   mut parameter_names : @hashset.HashSet[String]
 }
@@ -105,7 +105,7 @@ pub fn[Q : Qid] Circuit::extend_ops(
         }
       }
     }
-    ops = ops.push(operation)
+    ops = ops.push(Operation(operation))
     parameter_names = add_names(parameter_names, operation.effect.parameters())
   }
   self.wires = wires
@@ -128,13 +128,27 @@ pub fn[Q] Circuit::dim(self : Circuit[Q]) -> Array[UInt32] {
 }
 
 ///|
-/// Iterate over immutable operations in execution order.
+/// Iterate over top-level quantum operations. Use instructions() to visit
+/// control flow as well.
 pub fn[Q] Circuit::operations(self : Circuit[Q]) -> Iter[Operation[Q]] {
+  self.ops
+  .iter()
+  .filter_map(i => {
+    match i {
+      Operation(op) => Some(op)
+      IfElse(_) => None
+    }
+  })
+}
+
+///|
+/// Iterate over the full sequence, including circuit-level branches.
+pub fn[Q] Circuit::instructions(self : Circuit[Q]) -> Iter[Instruction[Q]] {
   self.ops.iter()
 }
 
 ///|
-/// Return the stored operation count, counting a nested effect as one operation.
+/// Count top-level instructions. Each branch occupies one position.
 pub fn[Q] Circuit::length(self : Circuit[Q]) -> Int32 {
   self.ops.length()
 }
@@ -151,12 +165,11 @@ pub fn[Q : Qid] Circuit::compile(
   self : Circuit[Q],
   name~ : String = "circuit",
 ) -> Program {
-  let mut ops = @vector.Vector::new()
-  for operation in self.ops {
-    let wires = operation.wires.map(fn(q) { self.indices[q] })
-    ops = ops.push(Instruction::{ effect_value: operation.effect, wires, })
+  {
+    label: name,
+    shape: self.shape,
+    ops: map_instructions(self.ops, q => self.indices[q]),
   }
-  { label: name, shape: self.shape, ops, }
 }
 
 ///|
@@ -209,10 +222,8 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
     }
   }
   let result = Circuit::new(wires)
-  for operation in self.ops {
-    let targets = operation.wires.map(fn(qid) { wires[self.indices[qid]] })
-    result.append(Operation::new(operation.effect, targets))
-  }
+  result.ops = map_instructions(self.ops, q => wires[self.indices[q]])
+  result.parameter_names = self.parameter_names
   result
 }
 
@@ -225,7 +236,9 @@ pub fn[Q : Qid] Circuit::adjoint(
 ) -> Circuit[Q] raise @error.QError {
   let result = Circuit::new(self.wires)
   for i = self.ops.length() - 1; i >= 0; i = i - 1 {
-    let operation = self.ops[i]
+    guard self.ops[i] is Operation(operation) else {
+      raise InvalidGate("if_else has no circuit adjoint")
+    }
     guard operation.effect.try_adjoint() is Some(inverse) else {
       raise InvalidGate("effect has no adjoint: " + operation.effect.name())
     }
@@ -255,8 +268,16 @@ pub impl[Q : Qid + Show] Show for Circuit[Q] with fn output(self, logger) {
     row.write_string(": ───")
     row
   })
-  for operation in self.ops {
-    operation.draw_column(rows, self.indices)
+  for instruction in self.ops {
+    match instruction {
+      Operation(operation) => operation.draw_column(rows, self.indices)
+      IfElse(branch) => {
+        let label = "if " + branch.condition.name()
+        for row in rows {
+          row.write_string(label + "───")
+        }
+      }
+    }
   }
   for wire, row in rows {
     if wire > 0 {

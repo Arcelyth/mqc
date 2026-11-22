@@ -94,7 +94,7 @@ pub(open) trait Sampler {
 
 pub(open) trait SimulationState {
   fn dim(Self) -> Array[UInt32]
-  fn apply(Self, @circuit.Instruction) -> Unit raise @error.QError
+  fn apply(Self, @circuit.Instruction[Int32]) -> Unit raise @error.QError
   fn copy(Self) -> Self
   fn records(Self) -> @maths.Array3[Int32]
   fn validate(Self) -> Unit raise @error.QError

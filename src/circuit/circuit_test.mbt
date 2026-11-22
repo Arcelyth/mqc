@@ -22,7 +22,10 @@ test "circuit discovers wires and compiles targets in operation order" {
   assert_eq(program.dim(), [3U, 2U, 2U])
   let targets = []
   for instruction in program.instructions() {
-    targets.push(instruction.targets())
+    guard instruction is Operation(op) else {
+      fail("expected a quantum operation")
+    }
+    targets.push(op.targets())
   }
   assert_eq(targets, [[0, 1], [2, 0], [1]])
 }
@@ -57,7 +60,10 @@ test "concatenation retains idle wires and remapping preserves local target posi
   assert_eq(mapped.dim(), [2U, 2U, 2U])
   let targets = []
   for instruction in mapped.compile().instructions() {
-    targets.push(instruction.targets())
+    guard instruction is Operation(op) else {
+      fail("expected a quantum operation")
+    }
+    targets.push(op.targets())
   }
   assert_eq(targets, [[1], [0]])
   let duplicate = Ok(joined.remap(fn(_) { a })) catch { error => Err(error) }
