@@ -39,9 +39,19 @@ fn sampling_plan(
       raise @error.SizeLimit(2147483647)
     }
     width += count
+  }
+
+  if width == 0 {
+    raise @error.QError::InvalidState("run requires a measurement")
+  }
+  if repetitions > 2147483647 / width {
+    raise @error.QError::SizeLimit(2147483647)
+  }
+
+  for instruction in program.instructions(expand_loops=true) {
     guard instruction is Operation(op) && op.effect().try_conditional() is None else {
       terminal = false
-      continue
+      break
     }
     if op.effect().measurement_key() is Some(_) {
       measuring = true
@@ -50,14 +60,8 @@ fn sampling_plan(
       }
     } else if measuring {
       terminal = false
+      break
     }
-  }
-
-  if width == 0 {
-    raise @error.QError::InvalidState("run requires a measurement")
-  }
-  if repetitions > 2147483647 / width {
-    raise @error.QError::SizeLimit(2147483647)
   }
 
   if terminal {

@@ -70,6 +70,8 @@ pub using @result {type ExecutionStatus}
 
 pub using @result {type ExperimentResult}
 
+pub using @circuit {type ForLoop}
+
 pub using @circuit {type Gate}
 
 pub using @circuit {type IfElse}

@@ -42,6 +42,7 @@ pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise @error.QError
 pub fn[Q] Circuit::copy(Self[Q]) -> Self[Q]
 pub fn[Q] Circuit::dim(Self[Q]) -> Array[UInt32]
 pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise @error.QError
+pub fn[Q : Qid] Circuit::for_loop(Self[Q], Int32, Self[Q]) -> Unit raise @error.QError
 pub fn[Q : Qid] Circuit::from_op(Array[Operation[Q]]) -> Self[Q] raise @error.QError
 pub fn[Q : Qid] Circuit::if_else(Self[Q], &Condition, Self[Q], Self[Q]) -> Unit raise @error.QError
 pub fn[Q : Qid] Circuit::index_of(Self[Q], Q) -> Int32?
@@ -70,6 +71,10 @@ pub fn ConditionalEffect::try_conditional(Self) -> Self?
 pub fn ConditionalEffect::try_decompose(Self) -> Program? raise @error.QError
 pub fn ConditionalEffect::try_unitary(Self) -> Gate?
 pub impl Effect for ConditionalEffect
+
+type ForLoop[Q]
+pub fn[Q] ForLoop::body(Self[Q]) -> Iter[Instruction[Q]]
+pub fn[Q] ForLoop::count(Self[Q]) -> Int32
 
 type Gate
 pub fn Gate::adjoint(Self) -> Self
@@ -104,6 +109,7 @@ pub fn[Q] IfElse::select(Self[Q], &MeasurementRecord) -> Iter[Instruction[Q]] ra
 pub enum Instruction[Q] {
   Operation(Operation[Q])
   IfElse(IfElse[Q])
+  ForLoop(ForLoop[Q])
 }
 pub fn[Q] Instruction::parameters(Self[Q]) -> Array[String]
 pub fn[Q] Instruction::record_width(Self[Q]) -> Int32
@@ -129,7 +135,7 @@ pub impl[Q : @debug.Debug] @debug.Debug for Operation[Q]
 
 type Program
 pub fn Program::dim(Self) -> Array[UInt32]
-pub fn Program::instructions(Self) -> Iter[Instruction[Int32]]
+pub fn Program::instructions(Self, expand_loops? : Bool) -> Iter[Instruction[Int32]]
 pub fn Program::length(Self) -> Int32
 pub fn Program::name(Self) -> String
 pub fn Program::shape(Self) -> @internal.Shape

@@ -136,7 +136,7 @@ pub fn[Q] Circuit::operations(self : Circuit[Q]) -> Iter[Operation[Q]] {
   .filter_map(i => {
     match i {
       Operation(op) => Some(op)
-      IfElse(_) => None
+      IfElse(_) | ForLoop(_) => None
     }
   })
 }
@@ -234,15 +234,31 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
 pub fn[Q : Qid] Circuit::adjoint(
   self : Circuit[Q],
 ) -> Circuit[Q] raise @error.QError {
-  let result = Circuit::new(self.wires)
-  for i = self.ops.length() - 1; i >= 0; i = i - 1 {
-    guard self.ops[i] is Operation(operation) else {
-      raise InvalidGate("if_else has no circuit adjoint")
+  adjoint_body(self.wires, self.ops)
+}
+
+///|
+fn[Q : Qid] adjoint_body(
+  wires : Array[Q],
+  body : @vector.Vector[Instruction[Q]],
+) -> Circuit[Q] raise @error.QError {
+  let result = Circuit::new(wires)
+  for i = body.length() - 1; i >= 0; i = i - 1 {
+    match body[i] {
+      IfElse(_) => raise InvalidGate("if_else has no circuit adjoint")
+      ForLoop(block) =>
+        if block.count > 0 {
+          result.for_loop(block.count, adjoint_body([], block.body))
+        } else {
+          result.ops = result.ops.push(body[i])
+        }
+      Operation(operation) => {
+        guard operation.effect.try_adjoint() is Some(inverse) else {
+          raise InvalidGate("effect has no adjoint: " + operation.effect.name())
+        }
+        result.append(Operation::new(inverse, operation.wires))
+      }
     }
-    guard operation.effect.try_adjoint() is Some(inverse) else {
-      raise InvalidGate("effect has no adjoint: " + operation.effect.name())
-    }
-    result.append(Operation::new(inverse, operation.wires))
   }
   result
 }
@@ -271,6 +287,10 @@ pub impl[Q : Qid + Show] Show for Circuit[Q] with fn output(self, logger) {
   for instruction in self.ops {
     match instruction {
       Operation(operation) => operation.draw_column(rows, self.indices)
+      ForLoop(block) =>
+        for row in rows {
+          row.write_string("repeat \{block.count}───")
+        }
       IfElse(branch) => {
         let label = "if " + branch.condition.name()
         for row in rows {

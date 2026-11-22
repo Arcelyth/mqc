@@ -104,6 +104,14 @@ fn SimulationStateBase::dispatch(
   match instruction {
     Operation(op) =>
       self.resolve(op.effect()).map(effect => (effect, op.targets()))
+    ForLoop(block) => {
+      for _ in 0..<block.count() {
+        for child in block.body() {
+          apply(child)
+        }
+      }
+      None
+    }
     IfElse(branch) => {
       let start = self.digits.length()
       for child in branch.select(self) {

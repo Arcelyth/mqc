@@ -5,7 +5,7 @@ pub fn evolve(program : @circuit.Program) -> StateVector raise @error.QError {
   // This path skips measurements and never draws random values.
   let state = StateVectorState::new(program.dim(), seed=0UL)
   let mut measuring = false
-  for instruction in program.instructions() {
+  for instruction in program.instructions(expand_loops=true) {
     guard instruction is Operation(op) && op.effect().try_conditional() is None else {
       raise @error.InvalidCondition(
         "evolve cannot evaluate measurement conditions",

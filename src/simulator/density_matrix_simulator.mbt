@@ -82,7 +82,7 @@ fn density_terminal_probabilities(
   program : @circuit.Program,
 ) -> Array[Double] raise @error.QError {
   let state = DensityMatrixState::new(program.dim(), seed=0UL)
-  for instruction in program.instructions() {
+  for instruction in program.instructions(expand_loops=true) {
     if instruction is Operation(op) && op.effect().measurement_key() is Some(_) {
       if !op.effect().parameters().is_empty() {
         raise @error.InvalidState("unbound parameters are not supported")

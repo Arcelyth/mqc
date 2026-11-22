@@ -4,6 +4,7 @@
 pub enum Instruction[Q] {
   Operation(Operation[Q])
   IfElse(IfElse[Q])
+  ForLoop(ForLoop[Q])
 }
 
 ///|
@@ -13,6 +14,13 @@ fn[Q, R] Instruction::map_wires(
 ) -> Instruction[R] {
   match self {
     Operation(op) => Operation({ effect: op.effect, wires: op.wires.map(map), })
+    ForLoop(block) =>
+      ForLoop({
+        count: block.count,
+        body: map_instructions(block.body, map),
+        names: block.names,
+        width: block.width,
+      })
     IfElse(branch) =>
       IfElse({
         condition: branch.condition,
@@ -40,6 +48,7 @@ fn[Q, R] map_instructions(
 pub fn[Q] Instruction::parameters(self : Instruction[Q]) -> Array[String] {
   match self {
     Operation(op) => op.effect.parameters()
+    ForLoop(block) => block.names.copy()
     IfElse(branch) => branch.names.copy()
   }
 }
