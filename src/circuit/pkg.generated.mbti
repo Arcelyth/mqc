@@ -23,6 +23,8 @@ pub fn Channel::kernels(Self) -> Iter[&@kernel.LinearKernel]
 pub fn Channel::kraus(String, Array[UInt32], Array[Array[@maths.Complex]]) -> Self raise @error.QError
 pub fn Channel::kraus_operators(Self) -> Iter[ArrayView[@maths.Complex]]
 pub fn Channel::measurement_key(Self) -> String?
+pub fn Channel::mixture(Array[(Double, Gate)], name? : String, tolerance? : Double) -> Self raise @error.QError
+pub fn Channel::mixture_terms(Self) -> ArrayView[(Double, Gate)]?
 pub fn Channel::name(Self) -> String
 pub fn Channel::parameters(Self) -> Array[String]
 pub fn Channel::reset(UInt32) -> Self raise @error.QError
@@ -189,6 +191,8 @@ pub using @kernel {type DenseKernel}
 pub using @kernel {type KernelArgs}
 
 pub using @kernel {type MonomialKernel}
+
+pub using @kernel {type ScaledKernel}
 
 pub using @kernel {trait LinearKernel}
 

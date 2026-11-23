@@ -100,7 +100,10 @@ pub fn StateVectorState::apply(
 /// p_i = \bigl\|K_i |\psi\rangle\bigr\|^2.
 /// $$
 ///
-/// Continue the shot with the normalized state
+/// A unitary mixture supplies these probabilities directly. Sample a gate
+/// from the mixture and apply it to the current state.
+///
+/// For a general Kraus channel, continue the shot with the normalized state
 ///
 /// $$
 /// |\psi'\rangle = \frac{K_i |\psi\rangle}{\sqrt{p_i}}.
@@ -112,6 +115,19 @@ pub fn StateVectorState::apply_channel(
 ) -> Unit raise @error.QError {
   let state = self.vector
   check_target_shape(channel.shape(), targets, state.shape)
+  if channel.mixture_terms() is Some(terms) {
+    let weights = terms.iter().map(term => term.0).collect()
+    let index = sample_outcome(weights, self.base.draw())
+    apply_local(
+      state.re,
+      state.im,
+      state.shape,
+      self.strides,
+      terms[index].1.kernel(),
+      targets,
+    )
+    return
+  }
   let scratch = self.statevector()
   let kernels = channel.kernels().collect()
   let weights = []

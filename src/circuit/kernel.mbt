@@ -4,6 +4,7 @@ pub using @kernel {
   trait UnitaryKernel,
   type KernelArgs,
   type DenseKernel,
+  type ScaledKernel,
   type MonomialKernel,
   type ControlledKernel,
 }

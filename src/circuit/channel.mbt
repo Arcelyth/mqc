@@ -9,7 +9,13 @@
 struct Channel {
   label : String
   shape : @internal.Shape
-  operators : Array[DenseKernel]
+  representation : ChannelRepresentation
+}
+
+///|
+priv enum ChannelRepresentation {
+  Kraus(Array[DenseKernel])
+  Mixture(Array[(Double, Gate)])
 }
 
 ///|
@@ -48,10 +54,9 @@ pub fn Channel::kraus(
   {
     label: name,
     shape: @internal.Shape::new(dimensions),
-    operators: operators.map(matrix => DenseKernel::{
-      data: matrix.copy(),
-      size,
-    }),
+    representation: Kraus(
+      operators.map(matrix => DenseKernel::{ data: matrix.copy(), size, }),
+    ),
   }
 }
 
@@ -81,8 +86,8 @@ fn kraus_size(
 fn check_trace_preserving(
   operators : Array[Array[@maths.Complex]],
   size : Int32,
+  tolerance~ : Double = 1.0e-10,
 ) -> Unit raise @error.QError {
-  let tolerance = 1.0e-10
   for column in 0..<size {
     for other in column..<size {
       let mut re = 0.0
@@ -145,7 +150,10 @@ pub fn Channel::shape(self : Channel) -> @internal.Shape {
 pub fn Channel::kraus_operators(
   self : Channel,
 ) -> Iter[ArrayView[@maths.Complex]] {
-  self.operators.iter().map(operator => operator.data[:])
+  match self.representation {
+    Kraus(operators) => operators.iter().map(operator => operator.data[:])
+    Mixture(_) => self.kernels().map(kernel => kernel_matrix(kernel)[:])
+  }
 }
 
 ///|
@@ -157,7 +165,106 @@ pub fn Channel::size(self : Channel) -> Int32 {
 ///|
 /// Iterate over the linear kernels for the Kraus operators.
 pub fn Channel::kernels(self : Channel) -> Iter[&LinearKernel] {
-  self.operators.iter().map(operator => operator)
+  match self.representation {
+    Kraus(operators) => operators.iter().map(operator => operator)
+    Mixture(terms) =>
+      terms
+      .iter()
+      .map(term => {
+        let (probability, gate) = term
+        ScaledKernel::{ scale: probability.sqrt(), inner: gate.kernel(), }
+      })
+  }
+}
+
+///|
+/// Choose one of the supplied gates with its stated probability. All gates
+/// must act on the same ordered wire dimensions. Probabilities must be
+/// finite, nonnegative, and sum to one within 1e-10.
+///
+/// $$
+/// \mathcal{E}(\rho) = \sum_i p_i U_i \rho U_i^\dagger,
+/// \qquad K_i = \sqrt{p_i}\,U_i.
+/// $$
+pub fn Channel::mixture(
+  terms : Array[(Double, Gate)],
+  name~ : String = "Mixture",
+  tolerance~ : Double = 1.0e-10,
+) -> Channel raise @error.QError {
+  guard terms.get(0) is Some((_, first)) else {
+    raise InvalidChannel("a unitary mixture needs at least one gate")
+  }
+  let shape = first.shape()
+  // Each Kraus matrix must fit in one row-major array when requested.
+  let mut size = 1
+  for dimension in first.dim() {
+    if dimension < 2U {
+      raise InvalidDimension(dimension)
+    }
+    if dimension > (2147483647 / size).reinterpret_as_uint() {
+      raise SizeLimit(2147483647)
+    }
+    size *= dimension.reinterpret_as_int()
+  }
+  if size > 2147483647 / size {
+    raise SizeLimit(2147483647)
+  }
+  let mut total = 0.0
+  let mut correction = 0.0
+  for (probability, gate) in terms {
+    if !(probability >= 0.0 && probability <= 1.0) {
+      raise InvalidChannel("mixture probabilities must be in [0, 1]")
+    }
+    if gate.shape() != shape {
+      raise InvalidChannel(
+        "mixture gates must have the same ordered wire dimensions",
+      )
+    }
+    let term = probability - correction
+    let next = total + term
+    correction = next - total - term
+    total = next
+  }
+  if (total - 1.0).abs() > tolerance {
+    raise InvalidChannel("mixture probabilities must sum to one")
+  }
+  { label: name, shape, representation: Mixture(terms.copy()), }
+}
+
+///|
+/// Read the fixed probabilities and gates of a mixed-unitary channel.
+/// General Kraus channels have state-dependent outcome probabilities.
+pub fn Channel::mixture_terms(self : Channel) -> ArrayView[(Double, Gate)]? {
+  match self.representation {
+    Mixture(terms) => Some(terms[:])
+    Kraus(_) => None
+  }
+}
+
+///|
+/// Apply the kernel to each basis vector to get the matrix columns.
+/// Only explicit matrix export needs this expansion.
+fn kernel_matrix(kernel : &LinearKernel) -> Array[@maths.Complex] {
+  let size = kernel.size()
+  let matrix = Array::make(size * size, @maths.Complex::real(0.0))
+  let basis = Array::make(size, 0.0)
+  let zeros = Array::make(size, 0.0)
+  let re = Array::make(size, 0.0)
+  let im = Array::make(size, 0.0)
+  for column in 0..<size {
+    basis[column] = 1.0
+    kernel.apply({
+      input_re: basis[:],
+      input_im: zeros[:],
+      output_re: re.mut_view(),
+      output_im: im.mut_view(),
+    })
+    for row in 0..<size {
+      matrix[row * size + column] = @maths.Complex::new(re[row], im[row])
+    }
+    basis[column] = 0.0
+  }
+  matrix
 }
 
 ///|
@@ -214,5 +321,9 @@ pub fn Channel::reset(d : UInt32) -> Channel raise @error.QError {
     data[digit] = one
     DenseKernel::{ data, size, }
   })
-  { label: "Reset", shape: @internal.Shape::new([d]), operators, }
+  {
+    label: "Reset",
+    shape: @internal.Shape::new([d]),
+    representation: Kraus(operators),
+  }
 }

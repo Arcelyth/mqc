@@ -48,6 +48,14 @@ pub fn MonomialKernel::size(Self) -> Int32
 pub impl LinearKernel for MonomialKernel
 pub impl UnitaryKernel for MonomialKernel
 
+pub(all) struct ScaledKernel {
+  inner : &LinearKernel
+  scale : Double
+}
+pub fn ScaledKernel::apply(Self, KernelArgs) -> Unit
+pub fn ScaledKernel::size(Self) -> Int32
+pub impl LinearKernel for ScaledKernel
+
 // Type aliases
 
 // Traits
