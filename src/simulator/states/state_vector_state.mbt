@@ -94,7 +94,7 @@ pub fn StateVectorState::apply(
 
 ///|
 /// Apply a channel to the target wires for one state-vector trajectory.
-/// For the current state $|\psi\rangle$, draw a Kraus operator $K_i$ with probability
+/// Draw a Kraus operator with probability equal to the squared norm of the state it produces.
 ///
 /// $$
 /// p_i = \bigl\|K_i |\psi\rangle\bigr\|^2.

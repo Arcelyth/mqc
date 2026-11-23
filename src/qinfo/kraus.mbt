@@ -2,9 +2,12 @@
 priv struct KrausMap(@circuit.Channel)
 
 ///|
-/// Return the channel's linear action on a row-major density matrix block.
-/// The input and output each contain d² complex entries for a channel of
-/// dimension d. The block may be an off-diagonal block of a larger system.
+/// Return the channel's linear action on a row-major square matrix block.
+/// The block may be an off-diagonal block of a larger system.
+///
+/// $$
+/// \mathcal E(B)=\sum_k K_k B K_k^\dagger,\qquad B\in\mathbb C^{d\times d}.
+/// $$
 pub fn kraus_map(channel : @circuit.Channel) -> &@circuit.LinearKernel {
   KrausMap(channel)
 }

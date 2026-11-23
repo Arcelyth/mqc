@@ -8,10 +8,15 @@ struct Gate {
 }
 
 ///|
-/// Check shape, finite entries, and U†U before accepting a matrix.
-/// Entries are in row order: row * dimension + column.
-/// Tolerance must be finite and in (0, 1e-6]; it bounds absolute errors in
-/// column inner products. Accepted entries are kept without normalization.
+/// Check the shape, finite entries, and unitarity before accepting a matrix.
+/// For a matrix of dimension d, the entries use row-major order.
+///
+/// $$
+/// U^\dagger U = I,\qquad \mathrm{offset}(r,c) = r d + c.
+/// $$
+///
+/// The tolerance must be finite, positive, and at most 0.000001. It bounds
+/// absolute errors in column inner products. Accepted entries are kept without normalization.
 pub fn Gate::unitary(
   name : String,
   dimensions : Array[UInt32],
@@ -166,8 +171,9 @@ pub fn Gate::adjoint(self : Gate) -> Gate {
 ///
 /// `control_dimensions` specifies the dimension of each control wire.
 /// `control_values` specifies the required basis-state value of each control wire to activate the gate. 
-/// For example, `control_values = [1, 2]` means the gate is applied only when the first control wire is in state |1⟩ 
-/// and the second is in state |2⟩. Defaults to the highest basis value of each control wire (dimension - 1).
+/// For example, control values [1, 2] activate the gate when the first two
+/// control wires have basis digits 1 and 2, respectively. The default for
+/// each control is its highest basis digit.
 pub fn Gate::controlled(
   self : Gate,
   control_dimensions~ : Array[UInt32] = [2U],

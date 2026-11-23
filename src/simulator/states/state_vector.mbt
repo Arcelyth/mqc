@@ -1,14 +1,12 @@
 ///|
 /// A quantum state represented by a complex state vector.
+/// For a Bell pair, the wire dimensions are [2, 2]. The basis order is 00, 01, 10, 11.
 ///
-/// For example, a two-qubit state |ψ> = (|00> + |11>) / √2:
+/// $$
+/// |\psi\rangle=\frac{|00\rangle+|11\rangle}{\sqrt{2}}=\frac{1}{\sqrt{2}}(1,0,0,1)^{\mathsf T}.
+/// $$
 ///
-///   shape = [2, 2]
-///   re    = [1/√2, 0, 0, 1/√2]
-///   im    = [0,    0, 0, 0]
-///
-/// The entries are stored in basis-state order:
-///   |00>, |01>, |10>, |11>.
+/// The real array stores the four amplitudes shown above. The imaginary array contains zeros.
 pub struct StateVector {
   /// Ordered wire dimensions.
   shape : @internal.Shape
@@ -89,7 +87,11 @@ pub fn StateVector::dim(self : StateVector) -> Array[UInt32] {
 }
 
 ///|
-/// Return the product of the wire dimensions, the number of basis states.
+/// Return the number of basis states for the ordered wire dimensions.
+///
+/// $$
+/// D=\prod_j d_j.
+/// $$
 pub fn StateVector::size(self : StateVector) -> Int32 {
   self.re.length()
 }
@@ -113,7 +115,11 @@ pub fn StateVector::amplitudes(self : StateVector) -> Array[@maths.Complex] {
 }
 
 ///|
-/// Return squared amplitude magnitudes in basis order.
+/// Return the measurement probability of each basis state, in basis order.
+///
+/// $$
+/// p_i=|\psi_i|^2.
+/// $$
 pub fn StateVector::probabilities(self : StateVector) -> Array[Double] {
   Array::makei(self.re.length(), fn(i) {
     self.re[i] * self.re[i] + self.im[i] * self.im[i]
@@ -121,7 +127,11 @@ pub fn StateVector::probabilities(self : StateVector) -> Array[Double] {
 }
 
 ///|
-/// Sum squared amplitude magnitudes with compensated accumulation.
+/// Return the squared norm using compensated summation.
+///
+/// $$
+/// \|\psi\|^2=\sum_i|\psi_i|^2.
+/// $$
 pub fn StateVector::norm_squared(self : StateVector) -> Double {
   let mut sum = 0.0
   let mut correction = 0.0
@@ -135,7 +145,11 @@ pub fn StateVector::norm_squared(self : StateVector) -> Double {
 }
 
 ///|
-/// Sum conjugate(self.amplitude(i)) * other.amplitude(i) over basis indices.
+/// Return the inner product, conjugating the amplitudes of the first vector.
+///
+/// $$
+/// \langle\psi|\phi\rangle=\sum_i\overline{\psi_i}\,\phi_i.
+/// $$
 pub fn StateVector::inner_product(
   self : StateVector,
   other : StateVector,
@@ -153,10 +167,12 @@ pub fn StateVector::inner_product(
 }
 
 ///|
-/// Calculate the marginal probability distribution of the selected wires.
+/// Return the probabilities for the selected wires in target order. For each
+/// outcome, sum over basis states with matching digits on those wires.
 ///
-/// For each possible measurement outcome of targets, sum the probabilities
-/// of all basis states that produce that outcome, ignoring the unselected wires.
+/// $$
+/// p_T(a)=\sum_{i:\,i_T=a}|\psi_i|^2.
+/// $$
 pub fn StateVector::marginal_probabilities(
   self : StateVector,
   targets : Array[Int32],

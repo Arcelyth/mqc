@@ -1,20 +1,17 @@
 ///|
 /// A quantum state represented by a complex density matrix.
+/// For a Bell pair, the wire dimensions are [2, 2]. The basis order is 00, 01, 10, 11.
 ///
-/// For example, a two-qubit state |ψ> = (|00> + |11>) / √2:
+/// $$
+/// |\psi\rangle=\frac{|00\rangle+|11\rangle}{\sqrt{2}},\qquad \rho=|\psi\rangle\langle\psi|=\frac12 \begin{bmatrix}1 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 1 & 0 & 0 & 1\end{bmatrix}.
+/// $$
 ///
-///   shape = [2, 2]
-///   re    = [1/2, 0, 0, 1/2,
-///              0, 0, 0,   0,
-///              0, 0, 0,   0,
-///            1/2, 0, 0, 1/2]
-///   im    = [0, 0, 0, 0,
-///            0, 0, 0, 0,
-///            0, 0, 0, 0,
-///            0, 0, 0, 0]
+/// The real and imaginary arrays store entries in row-major order. The imaginary
+/// entries are all zero in this example. For a matrix of dimension d, the flat index is
 ///
-/// Rows and columns follow basis-state order: |00>, |01>, |10>, |11>.
-/// Entries are stored one row after another, at row * size + column.
+/// $$
+/// \mathrm{offset}(r,c)=r d+c.
+/// $$
 struct DensityMatrix {
   shape : @internal.Shape
   re : Array[Double]
@@ -74,8 +71,11 @@ pub fn DensityMatrix::basis(
 }
 
 ///|
-/// Given a normalized state vector, constructs its density
-/// matrix by computing the outer product:
+/// Construct a density matrix from a normalized pure state.
+///
+/// $$
+/// \rho=|\psi\rangle\langle\psi|.
+/// $$
 pub fn DensityMatrix::from_state(
   state : StateVector,
 ) -> DensityMatrix raise @error.QError {
@@ -89,6 +89,10 @@ pub fn DensityMatrix::from_state(
 ///|
 /// Mix pure states with finite, nonnegative weights that sum to one.
 /// All states must have the same ordered wire dimensions. Inputs are copied.
+///
+/// $$
+/// \rho=\sum_i p_i|\psi_i\rangle\langle\psi_i|.
+/// $$
 pub fn DensityMatrix::from_mixture(
   states : Array[StateVector],
   weights : Array[Double],
@@ -228,7 +232,11 @@ pub fn DensityMatrix::marginal_probabilities(
 }
 
 ///|
-/// Return the trace of the density matrix:
+/// Return the trace of the density matrix.
+///
+/// $$
+/// \operatorname{Tr}(\rho)=\sum_i\rho_{ii}.
+/// $$
 pub fn DensityMatrix::trace(self : DensityMatrix) -> Double {
   let size = self.size()
   let mut sum = 0.0
@@ -244,6 +252,10 @@ pub fn DensityMatrix::trace(self : DensityMatrix) -> Double {
 
 ///|
 /// Return the purity of the quantum state.
+///
+/// $$
+/// \operatorname{Tr}(\rho^2)=\sum_{i,j}|\rho_{ij}|^2.
+/// $$
 pub fn DensityMatrix::purity(self : DensityMatrix) -> Double {
   let mut sum = 0.0
   let mut correction = 0.0

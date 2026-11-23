@@ -1,11 +1,10 @@
 ///|
-/// Represents a matrix with exactly one nonzero entry in each row and column.
-/// For example, Pauli Y: 
-/// Y= [ 0  -i ]
-///    [ i  0  ]
-///    
-/// columns = [1, 0]
-/// phases  = [-i, i]
+/// A matrix with exactly one nonzero entry in each row and column.
+/// For Pauli Y, the column indices are 1 and 0, in row order.
+///
+/// $$
+/// Y = \begin{bmatrix}0 & -i \\ i & 0\end{bmatrix},\qquad \mathrm{phases}=(-i,i).
+/// $$
 pub(all) struct MonomialKernel {
   columns : Array[Int32]
   phases : Array[@maths.Complex]

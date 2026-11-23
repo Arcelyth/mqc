@@ -228,9 +228,12 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
 }
 
 ///|
-/// Reverse operation order and replace each effect with its adjoint:
-/// (U₁ U₂ ... Uₙ)† = Uₙ† ... U₂† U₁†.
+/// Reverse the operation order and replace each effect with its adjoint.
 /// Reject effects without an adjoint.
+///
+/// $$
+/// (U_1 U_2 \cdots U_n)^\dagger = U_n^\dagger \cdots U_2^\dagger U_1^\dagger.
+/// $$
 pub fn[Q : Qid] Circuit::adjoint(
   self : Circuit[Q],
 ) -> Circuit[Q] raise @error.QError {
