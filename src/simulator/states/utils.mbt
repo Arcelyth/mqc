@@ -1,14 +1,22 @@
 ///|
-/// Sample a marginal outcome. Ignore zero-probability outcomes at the edges.
-fn measurement_outcome(
+/// Choose an outcome from nonnegative weights using a uniform draw in [0, 1).
+/// Scaling all weights by the same factor preserves the distribution.
+fn sample_outcome(
   probabilities : Array[Double],
   draw : Double,
 ) -> Int32 raise @error.QError {
-  let total = probabilities.fold(init=0.0, (sum, probability) => {
-    sum + probability
-  })
+  if !(draw >= 0.0 && draw < 1.0) {
+    raise @error.InvalidState("outcome draw must be in [0, 1)")
+  }
+  let mut total = 0.0
+  for probability in probabilities {
+    if !(probability >= 0.0) {
+      raise @error.InvalidState("invalid outcome weight")
+    }
+    total += probability
+  }
   if total <= 0.0 || total.is_nan() || total.is_inf() {
-    raise @error.InvalidState("invalid measurement probability")
+    raise @error.InvalidState("invalid total outcome weight")
   }
   let threshold = draw * total
   let mut cumulative = 0.0

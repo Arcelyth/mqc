@@ -85,8 +85,62 @@ pub fn StateVectorState::apply(
   if effect.measurement_key() is Some(name) {
     self.validate()
     self.measure(targets, name)
+  } else if effect.try_channel() is Some(channel) {
+    self.apply_channel(channel, targets)
   } else {
     execute_gate(self.vector, self.strides, effect, targets)
+  }
+}
+
+///|
+/// Apply a channel to the target wires for one state-vector trajectory.
+/// For the current state $|\psi\rangle$, draw a Kraus operator $K_i$ with probability
+///
+/// $$
+/// p_i = \bigl\|K_i |\psi\rangle\bigr\|^2.
+/// $$
+///
+/// Continue the shot with the normalized state
+///
+/// $$
+/// |\psi'\rangle = \frac{K_i |\psi\rangle}{\sqrt{p_i}}.
+/// $$
+pub fn StateVectorState::apply_channel(
+  self : StateVectorState,
+  channel : @circuit.Channel,
+  targets : Array[Int32],
+) -> Unit raise @error.QError {
+  let state = self.vector
+  check_target_shape(channel.shape(), targets, state.shape)
+  let scratch = self.statevector()
+  let kernels = channel.kernels().collect()
+  let weights = []
+  for kernel in kernels {
+    state.re[:].blit_to(scratch.re)
+    state.im[:].blit_to(scratch.im)
+    apply_local(
+      scratch.re,
+      scratch.im,
+      state.shape,
+      self.strides,
+      kernel,
+      targets,
+    )
+    weights.push(scratch.norm_squared())
+  }
+  let outcome = sample_outcome(weights, self.base.draw())
+  apply_local(
+    state.re,
+    state.im,
+    state.shape,
+    self.strides,
+    kernels[outcome],
+    targets,
+  )
+  let norm = weights[outcome].sqrt()
+  for i in 0..<state.re.length() {
+    state.re[i] /= norm
+    state.im[i] /= norm
   }
 }
 
@@ -97,7 +151,7 @@ fn StateVectorState::measure(
   key : String,
 ) -> Unit raise @error.QError {
   let probabilities = self.vector.marginal_probabilities(targets)
-  let outcome = measurement_outcome(probabilities, self.base.draw())
+  let outcome = sample_outcome(probabilities, self.base.draw())
   let digits = measurement_digits(self.vector.shape, targets, outcome)
   self.collapse_measurement(targets, digits, probabilities[outcome])
   self.base.record(digits[:], key~)

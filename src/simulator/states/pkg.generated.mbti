@@ -68,6 +68,7 @@ pub fn StateVector::zero(Array[UInt32]) -> Self
 
 type StateVectorState
 pub fn StateVectorState::apply(Self, @circuit.Instruction[Int32]) -> Unit raise @error.QError
+pub fn StateVectorState::apply_channel(Self, @circuit.Channel, Array[Int32]) -> Unit raise @error.QError
 pub fn StateVectorState::copy(Self) -> Self
 pub fn StateVectorState::dim(Self) -> Array[UInt32]
 pub fn StateVectorState::from_state(StateVector, seed? : UInt64) -> Self raise @error.QError

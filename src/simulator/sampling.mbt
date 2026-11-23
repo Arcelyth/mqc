@@ -24,6 +24,7 @@ priv enum SamplingPlan {
 fn sampling_plan(
   program : @circuit.Program,
   repetitions : Int32,
+  sample_channels~ : Bool = false,
 ) -> SamplingPlan raise @error.QError {
   if repetitions < 0 {
     raise @error.QError::InvalidState("repetitions must be nonnegative")
@@ -58,7 +59,8 @@ fn sampling_plan(
       for wire in op.targets() {
         targets.push(wire)
       }
-    } else if measuring {
+    } else if measuring ||
+      (sample_channels && op.effect().try_channel() is Some(_)) {
       terminal = false
       break
     }

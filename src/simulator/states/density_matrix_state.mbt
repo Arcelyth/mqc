@@ -152,7 +152,7 @@ fn DensityMatrixState::measure(
   key : String,
 ) -> Unit raise @error.QError {
   let probabilities = self.matrix.marginal_probabilities(targets)
-  let outcome = measurement_outcome(probabilities, self.base.draw())
+  let outcome = sample_outcome(probabilities, self.base.draw())
   self.collapse_measurement(targets, outcome, probabilities[outcome])
   let digits = measurement_digits(self.matrix.shape, targets, outcome)
   self.base.record(digits[:], key~)
