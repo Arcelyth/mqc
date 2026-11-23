@@ -1,6 +1,6 @@
 name = "Arcelyth/mqc"
 
-version = "0.1.3"
+version = "0.1.6"
 
 readme = "README.mbt.md"
 
