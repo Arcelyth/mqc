@@ -1,0 +1,22 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Arcelyth/mqc/noise"
+
+import {
+  "Arcelyth/mqc/circuit",
+  "Arcelyth/mqc/error",
+}
+
+// Values
+pub fn bit_flip(Double) -> @circuit.Channel raise @error.QError
+
+pub fn depolarize(Double) -> @circuit.Channel raise @error.QError
+
+pub fn phase_flip(Double) -> @circuit.Channel raise @error.QError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
