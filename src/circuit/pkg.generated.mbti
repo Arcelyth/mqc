@@ -25,6 +25,7 @@ pub fn Channel::kraus_operators(Self) -> Iter[ArrayView[@maths.Complex]]
 pub fn Channel::measurement_key(Self) -> String?
 pub fn Channel::name(Self) -> String
 pub fn Channel::parameters(Self) -> Array[String]
+pub fn Channel::reset(UInt32) -> Self raise @error.QError
 pub fn Channel::shape(Self) -> @internal.Shape
 pub fn Channel::size(Self) -> Int32
 pub fn Channel::try_adjoint(Self) -> &Effect? raise @error.QError

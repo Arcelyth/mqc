@@ -188,3 +188,31 @@ pub extend Channel with Effect::{
   try_adjoint,
   parameters,
 }
+
+///|
+/// Prepare one wire of dimension `d` in the ground state. For each input
+/// basis digit, one Kraus operator maps that digit to zero:
+///
+/// $$
+/// K_j = |0\rangle\langle j|, \qquad j = 0,\ldots,d-1.
+/// $$
+///
+/// Resetting one wire of an entangled state preserves the reduced state
+/// of the other wires. The channel produces no measurement record.
+pub fn Channel::reset(d : UInt32) -> Channel raise @error.QError {
+  if d < 2U {
+    raise @error.InvalidDimension(d)
+  }
+  if d > 2147483647U / d {
+    raise @error.SizeLimit(2147483647)
+  }
+  let size = d.reinterpret_as_int()
+  let zero = @maths.Complex::real(0.0)
+  let one = @maths.Complex::real(1.0)
+  let operators = Array::makei(size, digit => {
+    let data = Array::make(size * size, zero)
+    data[digit] = one
+    DenseKernel::{ data, size, }
+  })
+  { label: "Reset", shape: @internal.Shape::new([d]), operators, }
+}

@@ -27,6 +27,8 @@ pub fn[Q : @circuit.Qid] measure(Array[Q], key? : String) -> @circuit.Operation[
 
 pub fn[Q : @circuit.Qid] phase(Double, Q) -> @circuit.Operation[Q] raise @error.QError
 
+pub fn[Q : @circuit.Qid] reset(Q) -> @circuit.Operation[Q] raise @error.QError
+
 pub fn[Q : @circuit.Qid] rx(Double, Q) -> @circuit.Operation[Q] raise @error.QError
 
 pub fn[Q : @circuit.Qid] ry(Double, Q) -> @circuit.Operation[Q] raise @error.QError

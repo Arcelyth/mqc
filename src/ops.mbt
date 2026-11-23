@@ -119,3 +119,12 @@ pub fn[Q : @circuit.Qid] measure(
 ) -> @circuit.Operation[Q] raise @error.QError {
   @circuit.measure(targets, key~)
 }
+
+///|
+/// Reset the target qubit or qudit to its ground state.
+/// The wire can be used again by later operations in the same circuit.
+pub fn[Q : @circuit.Qid] reset(
+  target : Q,
+) -> @circuit.Operation[Q] raise @error.QError {
+  @circuit.Operation::new(@circuit.Channel::reset(target.dim()), [target])
+}
