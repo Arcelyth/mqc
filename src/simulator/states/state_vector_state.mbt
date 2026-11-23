@@ -208,3 +208,12 @@ fn StateVectorState::matches_digits(
   }
   true
 }
+
+///|
+/// Return the columns measured under each key in this shot.
+/// The returned spans can be retained across further changes to the state.
+pub fn StateVectorState::measurement_layout(
+  self : StateVectorState,
+) -> MeasurementLayout {
+  self.base.history.copy_ranges()
+}

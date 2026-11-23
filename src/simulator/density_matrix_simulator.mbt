@@ -64,15 +64,23 @@ pub impl Sampler for DensityMatrixSimulator with fn run(
 ) -> SamplerResult raise @error.QError {
   let repetitions = repetitions.unwrap_or(1)
   match sampling_plan(program, repetitions) {
-    Terminal(targets) =>
+    Terminal(targets, layout) =>
       sample_terminal(
         density_terminal_probabilities(program),
         program,
         targets,
+        layout,
         repetitions,
         self.random,
       )
-    Shots(width) => sample_shots(self.engine, program, repetitions, width)
+    Shots(width) =>
+      sample_shots(
+        self.engine,
+        program,
+        repetitions,
+        width,
+        DensityMatrixState::measurement_layout,
+      )
   }
 }
 

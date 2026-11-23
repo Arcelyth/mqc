@@ -62,15 +62,23 @@ pub impl Sampler for StateVectorSimulator with fn run(
 ) -> SamplerResult raise @error.QError {
   let repetitions = repetitions.unwrap_or(1)
   match sampling_plan(program, repetitions, sample_channels=true) {
-    Terminal(targets) =>
+    Terminal(targets, layout) =>
       sample_terminal(
         @states.evolve(program).probabilities(),
         program,
         targets,
+        layout,
         repetitions,
         self.random,
       )
-    Shots(width) => sample_shots(self.engine, program, repetitions, width)
+    Shots(width) =>
+      sample_shots(
+        self.engine,
+        program,
+        repetitions,
+        width,
+        StateVectorState::measurement_layout,
+      )
   }
 }
 

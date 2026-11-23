@@ -35,6 +35,7 @@ pub fn DensityMatrixState::copy(Self) -> Self
 pub fn DensityMatrixState::density_matrix(Self) -> DensityMatrix
 pub fn DensityMatrixState::dim(Self) -> Array[UInt32]
 pub fn DensityMatrixState::from_density(DensityMatrix, seed? : UInt64) -> Self raise @error.QError
+pub fn DensityMatrixState::measurement_layout(Self) -> Map[String, Array[(Int32, Int32)]]
 pub fn DensityMatrixState::new(Array[UInt32], seed? : UInt64) -> Self raise @error.QError
 pub fn DensityMatrixState::probabilities(Self) -> Array[Double]
 pub fn DensityMatrixState::records(Self) -> @maths.Array3[Int32]
@@ -72,11 +73,13 @@ pub fn StateVectorState::apply_channel(Self, @circuit.Channel, Array[Int32]) -> 
 pub fn StateVectorState::copy(Self) -> Self
 pub fn StateVectorState::dim(Self) -> Array[UInt32]
 pub fn StateVectorState::from_state(StateVector, seed? : UInt64) -> Self raise @error.QError
+pub fn StateVectorState::measurement_layout(Self) -> Map[String, Array[(Int32, Int32)]]
 pub fn StateVectorState::new(Array[UInt32], seed? : UInt64) -> Self
 pub fn StateVectorState::records(Self) -> @maths.Array3[Int32]
 pub fn StateVectorState::statevector(Self) -> StateVector
 pub fn StateVectorState::validate(Self) -> Unit raise @error.QError
 
 // Type aliases
+pub type MeasurementLayout = Map[String, Array[(Int32, Int32)]]
 
 // Traits

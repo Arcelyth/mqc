@@ -20,7 +20,9 @@ test "if_else selects once per block and records only the selected arm" {
   for sampler in samplers {
     // The false arm leaves an empty column. The true arm records zero,
     // then finishes its final flip even though the condition has changed.
-    assert_eq(sampler.run(program).records.to_array(), [0, -1, 1, 0, 1])
+    let result = sampler.run(program)
+    assert_eq(result.records.to_array(), [0, -1, 1, 0, 1])
+    assert_eq(result.records.for_key("m"), [[[0], [1], [0], [1]]])
   }
 }
 

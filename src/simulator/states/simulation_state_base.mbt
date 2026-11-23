@@ -1,9 +1,8 @@
 ///|
 /// Common data for backends that need randomness and measurement records.
 struct SimulationStateBase {
+  history : MeasurementHistory
   rng : @splitmix.RandomState
-  digits : Array[Int32]
-  latest : Map[String, ArrayView[Int32]]
 }
 
 ///|
@@ -12,8 +11,7 @@ pub fn SimulationStateBase::new(seed? : UInt64) -> SimulationStateBase {
     rng: @splitmix.RandomState(
       seed=seed.unwrap_or_else(fn() { @random.Rand().uint64() }),
     ),
-    digits: [],
-    latest: Map([]),
+    history: MeasurementHistory::new(),
   }
 }
 
@@ -22,11 +20,7 @@ pub fn SimulationStateBase::new(seed? : UInt64) -> SimulationStateBase {
 pub fn SimulationStateBase::copy(
   self : SimulationStateBase,
 ) -> SimulationStateBase {
-  {
-    rng: self.rng.clone(),
-    digits: self.digits.copy(),
-    latest: self.latest.copy(),
-  }
+  { rng: self.rng.clone(), history: self.history.copy(), }
 }
 
 ///|
@@ -42,13 +36,7 @@ pub fn SimulationStateBase::record(
   digits : ArrayView[Int32],
   key? : String,
 ) -> Unit {
-  let start = self.digits.length()
-  for digit in digits {
-    self.digits.push(digit)
-  }
-  if key is Some(name) {
-    self.latest[name] = self.digits[start:]
-  }
+  self.history.append(digits, key?)
 }
 
 ///|
@@ -60,7 +48,7 @@ fn SimulationStateBase::resolve(
 ) -> &@circuit.Effect? raise @error.QError {
   guard effect.try_conditional() is Some(guarded) else { return Some(effect) }
   let inner = self.resolve(guarded.inner)
-  if guarded.condition.evaluate(self) {
+  if guarded.condition.evaluate(self.history) {
     inner
   } else {
     None
@@ -73,9 +61,7 @@ fn SimulationStateBase::resolve(
 pub fn SimulationStateBase::records(
   self : SimulationStateBase,
 ) -> @maths.Array3[Int32] {
-  @maths.Array3::makei(1, 1, self.digits.length(), fn(_, _, i) {
-    self.digits[i]
-  })
+  self.history.to_array3()
 }
 
 ///|
@@ -83,10 +69,7 @@ pub impl @circuit.MeasurementRecord for SimulationStateBase with fn latest(
   self,
   key,
 ) {
-  guard self.latest.get(key) is Some(digits) else {
-    raise @error.InvalidCondition("no measurement recorded for " + key)
-  }
-  digits
+  @circuit.MeasurementRecord::latest(self.history, key)
 }
 
 ///|
@@ -113,9 +96,9 @@ fn SimulationStateBase::dispatch(
       None
     }
     WhileLoop(block) => {
-      let start = self.digits.length()
+      let start = self.history.digits.length()
       let mut iterations = 0
-      while block.condition().evaluate(self) {
+      while block.condition().evaluate(self.history) {
         if iterations == block.max_iterations() {
           raise @error.IterationLimit(iterations)
         }
@@ -124,29 +107,16 @@ fn SimulationStateBase::dispatch(
         }
         iterations += 1
       }
-      self.pad_records(start, instruction.record_width())
+      self.history.pad(start, instruction.record_width())
       None
     }
     IfElse(branch) => {
-      let start = self.digits.length()
-      for child in branch.select(self) {
+      let start = self.history.digits.length()
+      for child in branch.select(self.history) {
         apply(child)
       }
-      self.pad_records(start, instruction.record_width())
+      self.history.pad(start, instruction.record_width())
       None
     }
-  }
-}
-
-///|
-/// Keep subsequent measurements at the same column in every shot. Padding
-/// belongs only to the flat record and has no measurement key.
-fn SimulationStateBase::pad_records(
-  self : SimulationStateBase,
-  start : Int32,
-  width : Int32,
-) -> Unit {
-  for _ in (self.digits.length() - start)..<width {
-    self.digits.push(-1)
   }
 }

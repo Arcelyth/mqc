@@ -82,6 +82,8 @@ pub using @circuit {type Instruction}
 
 pub using @circuit {type MeasurementCondition}
 
+pub using @simulator {type MeasurementRecords}
+
 pub using @circuit {type Operation}
 
 pub using @circuit {type Program}

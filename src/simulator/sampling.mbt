@@ -11,7 +11,7 @@ fn simulator_random(seed : UInt64?) -> @random.Rand {
 
 ///|
 priv enum SamplingPlan {
-  Terminal(Array[Int32])
+  Terminal(Array[Int32], @states.MeasurementLayout)
   Shots(Int32)
 }
 
@@ -31,6 +31,7 @@ fn sampling_plan(
   }
 
   let targets : Array[Int32] = []
+  let layout : @states.MeasurementLayout = Map([])
   let mut measuring = false
   let mut terminal = true
   let mut width = 0
@@ -54,9 +55,11 @@ fn sampling_plan(
       terminal = false
       break
     }
-    if op.effect().measurement_key() is Some(_) {
+    if op.effect().measurement_key() is Some(key) {
+      let wires = op.targets()
+      layout.get_or_init(key, () => []).push((targets.length(), wires.length()))
       measuring = true
-      for wire in op.targets() {
+      for wire in wires {
         targets.push(wire)
       }
     } else if measuring ||
@@ -67,7 +70,7 @@ fn sampling_plan(
   }
 
   if terminal {
-    Terminal(targets)
+    Terminal(targets, layout)
   } else {
     Shots(width)
   }
@@ -79,6 +82,7 @@ fn sample_terminal(
   probabilities : Array[Double],
   program : @circuit.Program,
   targets : Array[Int32],
+  layout : @states.MeasurementLayout,
   repetitions : Int32,
   random : @random.Rand,
 ) -> SamplerResult {
@@ -104,7 +108,10 @@ fn sample_terminal(
       )
     }
   }
-  SamplerResult::new(records)
+  {
+    records: { digits: records, layouts: [layout], },
+    params: ParamBinding::empty(),
+  }
 }
 
 ///|
@@ -130,15 +137,18 @@ fn[S : SimulationState] sample_shots(
   program : @circuit.Program,
   repetitions : Int32,
   width : Int32,
+  measurement_layout : (S) -> @states.MeasurementLayout,
 ) -> SamplerResult raise @error.QError {
   let records = @maths.Array3::make(repetitions, 1, width, 0)
+  let layouts = []
   for shot in 0..<repetitions {
     let trial = engine.simulate(program)
+    layouts.push(measurement_layout(trial.state))
     for column in 0..<width {
       ignore(
         records.set(shot, 0, column, trial.records.get(0, 0, column).unwrap()),
       )
     }
   }
-  SamplerResult::new(records)
+  { records: { digits: records, layouts, }, params: ParamBinding::empty(), }
 }

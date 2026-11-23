@@ -14,7 +14,7 @@ pub using @result {
 /// columns in the selected arm contain -1, outside the range of basis digits.
 pub(all) struct SamplerResult {
   params : ParamBinding
-  records : @maths.Array3[Int32]
+  records : MeasurementRecords
 }
 
 ///|
@@ -22,37 +22,22 @@ pub fn SamplerResult::new(
   params~ : ParamBinding = ParamBinding::empty(),
   records : @maths.Array3[Int32],
 ) -> SamplerResult {
-  { params, records, }
+  { params, records: { digits: records, layouts: [], }, }
 }
 
 ///|
-/// Print the shots for each record column, with commas between columns.
-///
-/// For two wires measured over five shots, `println(result)` might print this.
-///
-/// ```text
-/// 10111, 10111
-/// ```
+/// Retrieve the occurrences of a key in each shot.
+/// See MeasurementRecords::for_key for the digit order.
+pub fn SamplerResult::records_for(
+  self : SamplerResult,
+  key : String,
+) -> Array[Array[Array[Int32]]] {
+  self.records.for_key(key)
+}
+
+///|
 pub impl Show for SamplerResult with fn output(self, logger) {
-  let (shots, groups, width) = self.records.shape()
-  if shots == 0 {
-    return
-  }
-  for group in 0..<groups {
-    for column in 0..<width {
-      if group > 0 || column > 0 {
-        logger.write_string(", ")
-      }
-      for shot in 0..<shots {
-        let digit = self.records.get(shot, group, column).unwrap()
-        if digit >= 0 && digit < 10 {
-          logger.write_object(digit)
-        } else {
-          logger.write_string("[\{digit}]")
-        }
-      }
-    }
-  }
+  self.records.output(logger)
 }
 
 ///|

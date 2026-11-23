@@ -24,15 +24,28 @@ pub fn DensityMatrixSimulator::simulate_steps(Self, @circuit.Program, (StepResul
 pub fn DensityMatrixSimulator::simulator(Self) -> Simulator[@states.DensityMatrixState]
 pub impl Sampler for DensityMatrixSimulator
 
+pub struct MeasurementRecords {
+  digits : @maths.Array3[Int32]
+  // private fields
+}
+pub fn MeasurementRecords::for_key(Self, String) -> Array[Array[Array[Int32]]]
+pub fn MeasurementRecords::get(Self, Int32, Int32, Int32) -> Int32?
+pub fn MeasurementRecords::output(Self, &Logger) -> Unit
+pub fn MeasurementRecords::shape(Self) -> (Int32, Int32, Int32)
+pub fn MeasurementRecords::to_array(Self) -> Array[Int32]
+pub fn MeasurementRecords::to_string(Self) -> String
+pub impl Show for MeasurementRecords
+
 type ParamBinding
 pub fn ParamBinding::empty() -> Self
 
 pub(all) struct SamplerResult {
   params : ParamBinding
-  records : @maths.Array3[Int32]
+  records : MeasurementRecords
 }
 pub fn SamplerResult::new(params? : ParamBinding, @maths.Array3[Int32]) -> Self
 pub fn SamplerResult::output(Self, &Logger) -> Unit
+pub fn SamplerResult::records_for(Self, String) -> Array[Array[Array[Int32]]]
 pub fn SamplerResult::to_string(Self) -> String
 pub impl Show for SamplerResult
 

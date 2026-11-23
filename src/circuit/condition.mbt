@@ -1,12 +1,4 @@
 ///|
-/// Measurement results available to a condition during one shot. Digits are
-/// returned in target order. 
-/// Reading a key before its measurement raises `InvalidCondition`.
-pub(open) trait MeasurementRecord {
-  fn latest(Self, String) -> ArrayView[Int32] raise @error.QError
-}
-
-///|
 /// A predicate over the current shot. 
 /// Implement this trait to compare digits across keys 
 /// or to supply a different rule for selecting a branch.

@@ -6,6 +6,14 @@ pub(open) trait Qid: Eq + Hash {
 }
 
 ///|
+/// Measurement results available to a condition during one shot. Digits are
+/// returned in target order. 
+/// Reading a key before its measurement raises `InvalidCondition`.
+pub(open) trait MeasurementRecord {
+  fn latest(Self, String) -> ArrayView[Int32] raise @error.QError
+}
+
+///|
 pub(open) trait NoiseModel {
   /// Choose channels to insert after a gate. The targets are zero-based positions
   /// in the input circuit's qids(), including idle wires.

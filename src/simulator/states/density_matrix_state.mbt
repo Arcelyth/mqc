@@ -225,3 +225,12 @@ fn validate_density(matrix : DensityMatrix) -> Unit raise @error.QError {
     }
   }
 }
+
+///|
+/// Return the columns measured under each key in this shot.
+/// The returned spans can be retained across further changes to the state.
+pub fn DensityMatrixState::measurement_layout(
+  self : DensityMatrixState,
+) -> MeasurementLayout {
+  self.base.history.copy_ranges()
+}

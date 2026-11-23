@@ -52,5 +52,6 @@ pub using @simulator {
   type StateVectorState,
   trait Sampler,
   type StateVectorSimulator,
+  type MeasurementRecords,
   type SamplerResult,
 }
