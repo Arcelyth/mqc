@@ -1,0 +1,6 @@
+import {
+  "Arcelyth/mqc",
+  "Arcelyth/mqc/noise",
+}
+
+pkgtype(kind: "executable")
