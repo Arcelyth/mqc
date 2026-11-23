@@ -260,6 +260,93 @@ fn[Q] Circuit::loop_metadata(
 }
 
 ///|
+/// Return a circuit with the model's noise inserted after each unitary gate.
+/// The model visits each original gate once, including gates inside branches
+/// and loop bodies. A guarded gate and its noise share one branch decision.
+pub fn[Q : Qid] Circuit::with_noise(
+  self : Circuit[Q],
+  model : &NoiseModel,
+) -> Circuit[Q] raise @error.QError {
+  self.noisy_body(self.ops, self.wires, model)
+}
+
+///|
+fn[Q : Qid] Circuit::noisy_body(
+  self : Circuit[Q],
+  body : @vector.Vector[Instruction[Q]],
+  wires : Array[Q],
+  model : &NoiseModel,
+) -> Circuit[Q] raise @error.QError {
+  let result = Circuit::new(wires)
+  for instruction in body {
+    match instruction {
+      Operation(op) => self.append_noisy_gate(result, op, model)
+      IfElse(branch) =>
+        result.if_else(
+          branch.condition,
+          self.noisy_body(branch.on_true, [], model),
+          self.noisy_body(branch.on_false, [], model),
+        )
+      ForLoop(block) =>
+        result.for_loop(block.count, self.noisy_body(block.body, [], model))
+      WhileLoop(block) =>
+        result.while_loop(
+          block.condition,
+          self.noisy_body(block.body, [], model),
+          max_iterations=block.max_iterations,
+        )
+    }
+  }
+  result
+}
+
+///|
+fn[Q : Qid] Circuit::append_noisy_gate(
+  self : Circuit[Q],
+  result : Circuit[Q],
+  op : Operation[Q],
+  model : &NoiseModel,
+) -> Unit raise @error.QError {
+  let mut effect = op.effect
+  let guards = []
+  while effect.try_conditional() is Some(guarded) {
+    guards.push(guarded.condition)
+    effect = guarded.inner
+  }
+  if !effect.parameters().is_empty() {
+    raise InvalidState("resolve gate parameters before applying a noise model")
+  }
+  guard effect.try_unitary() is Some(gate) else { return result.append(op) }
+  let positions = op.wires.map(q => self.indices[q])
+  let noise = model.after_gate(gate, positions[:])
+  if noise.is_empty() {
+    return result.append(op)
+  }
+  let ops = [{ ..op, effect, }]
+  for (channel, targets) in noise {
+    let wires = []
+    for target in targets {
+      guard self.wires.get(target) is Some(q) else {
+        raise InvalidBasis(target)
+      }
+      wires.push(q)
+    }
+    ops.push(Operation::new(channel, wires))
+  }
+  match guards {
+    [] => result.extend_ops(ops)
+    [condition] =>
+      result.if_else(condition, Circuit::from_op(ops), Circuit::new([]))
+    _ =>
+      result.if_else(
+        ChainedCondition(guards),
+        Circuit::from_op(ops),
+        Circuit::new([]),
+      )
+  }
+}
+
+///|
 fn[Q : Qid] adjoint_body(
   wires : Array[Q],
   body : @vector.Vector[Instruction[Q]],

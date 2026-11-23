@@ -15,6 +15,8 @@ pub fn[Q : Qid] measure(Array[Q], key? : String) -> Operation[Q] raise @error.QE
 // Errors
 
 // Types and methods
+pub(all) struct ChainedCondition(Array[&Condition])
+
 type Channel
 pub fn Channel::amplitude_damp(Double) -> Self raise @error.QError
 pub fn Channel::arity(Self) -> Int32
@@ -58,6 +60,7 @@ pub fn[Q] Circuit::qids(Self[Q]) -> Array[Q]
 pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise @error.QError
 pub fn[Q : Qid + Show] Circuit::to_string(Self[Q]) -> String
 pub fn[Q : Qid] Circuit::while_loop(Self[Q], &Condition, Self[Q], max_iterations~ : Int32) -> Unit raise @error.QError
+pub fn[Q : Qid] Circuit::with_noise(Self[Q], &NoiseModel) -> Self[Q] raise @error.QError
 pub impl[Q : Qid + Show] Show for Circuit[Q]
 
 pub struct ConditionalEffect {
@@ -219,6 +222,10 @@ pub(open) trait Effect {
 
 pub(open) trait MeasurementRecord {
   fn latest(Self, String) -> ArrayView[Int32] raise @error.QError
+}
+
+pub(open) trait NoiseModel {
+  fn after_gate(Self, Gate, ArrayView[Int32]) -> Array[(Channel, Array[Int32])] raise @error.QError
 }
 
 pub(open) trait Qid : Eq + Hash {

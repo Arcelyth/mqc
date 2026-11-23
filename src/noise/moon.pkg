@@ -3,3 +3,7 @@ import {
   "Arcelyth/mqc/error",
   "Arcelyth/mqc/gates",
 }
+
+import {
+  "Arcelyth/mqc/simulator",
+} for "test"

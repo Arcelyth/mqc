@@ -4,3 +4,10 @@
 pub(open) trait Qid: Eq + Hash {
   fn dim(Self) -> UInt32
 }
+
+///|
+pub(open) trait NoiseModel {
+  /// Choose channels to insert after a gate. The targets are zero-based positions
+  /// in the input circuit's qids(), including idle wires.
+  fn after_gate(Self, Gate, ArrayView[Int32]) -> Array[(Channel, Array[Int32])] raise @error.QError
+}

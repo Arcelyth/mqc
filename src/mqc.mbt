@@ -3,6 +3,7 @@ pub using @circuit {
   trait Qid,
   trait Effect,
   trait Condition,
+  trait NoiseModel,
   trait MeasurementRecord,
   type MeasurementCondition,
   trait LinearKernel,

@@ -16,7 +16,12 @@ pub fn phase_flip(Double) -> @circuit.Channel raise @error.QError
 // Errors
 
 // Types and methods
+type PerTargetNoise
+pub fn PerTargetNoise::after_gate(Self, @circuit.Gate, ArrayView[Int32]) -> Array[(@circuit.Channel, Array[Int32])] raise @error.QError
+pub fn PerTargetNoise::new(@circuit.Channel) -> Self raise @error.QError
+pub impl @circuit.NoiseModel for PerTargetNoise
 
 // Type aliases
+pub using @circuit {trait NoiseModel}
 
 // Traits

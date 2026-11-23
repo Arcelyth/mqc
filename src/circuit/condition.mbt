@@ -50,6 +50,21 @@ pub impl Condition for MeasurementCondition with fn name(self) {
 }
 
 ///|
+/// Chained when calls are unwrapped outermost first. Evaluate them in the
+/// original order, including later predicates when an earlier one is false.
+pub(all) struct ChainedCondition(Array[&Condition])
+
+///|
+impl Condition for ChainedCondition with fn evaluate(self, record) {
+  let mut enabled = true
+  for i = self.0.length() - 1; i >= 0; i = i - 1 {
+    let passes = self.0[i].evaluate(record)
+    enabled = enabled && passes
+  }
+  enabled
+}
+
+///|
 /// Execute the inner effect only when the measurement satisfies the condition.
 pub struct ConditionalEffect {
   inner : &Effect

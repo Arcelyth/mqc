@@ -124,6 +124,8 @@ pub using @kernel {trait LinearKernel}
 
 pub using @circuit {trait MeasurementRecord}
 
+pub using @circuit {trait NoiseModel}
+
 pub using @circuit {trait Qid}
 
 pub using @result {trait ResultValue}
