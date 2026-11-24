@@ -59,6 +59,31 @@ pub fn MeasurementRecords::for_key(
 }
 
 ///|
+/// Count each recorded outcome for a key. A skipped measurement contributes nothing.
+pub fn MeasurementRecords::histogram(
+  self : MeasurementRecords,
+  key : String,
+) -> Map[ReadOnlyArray[Int32], Int32] {
+  let counts = Map([])
+  if self.layouts.is_empty() {
+    return counts
+  }
+  let (shots, _, _) = self.shape()
+  for shot in 0..<shots {
+    if self.layout(shot).get(key) is Some(spans) {
+      for span in spans {
+        let (start, width) = span
+        let outcome = ReadOnlyArray::makei(width, i => {
+          self.get(shot, 0, start + i).unwrap()
+        })
+        counts.update(outcome, count => Some(count.unwrap_or(0) + 1))
+      }
+    }
+  }
+  counts
+}
+
+///|
 /// Print one line per key. A dash marks a missing digit.
 pub impl Show for MeasurementRecords with fn output(self, logger) {
   if self.layouts.is_empty() {

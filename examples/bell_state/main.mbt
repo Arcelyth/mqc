@@ -28,14 +28,11 @@ fn measure_bell() -> Unit raise @mqc.QuantumError {
 ///|
 fn show_result(result : @mqc.SamplerResult) -> Unit raise @mqc.QuantumError {
   let (shots, _, _) = result.records.shape()
-  let mut zeros = 0
-  let mut ones = 0
-  for shot in 0..<shots {
-    match (result.records.get(shot, 0, 0), result.records.get(shot, 0, 1)) {
-      (Some(0), Some(0)) => zeros += 1
-      (Some(1), Some(1)) => ones += 1
-      _ => raise @mqc.QuantumError::InvalidState("unexpected Bell measurement")
-    }
+  let counts = result.records.histogram("bell")
+  let zeros = counts.get_or_default([0, 0], 0)
+  let ones = counts.get_or_default([1, 1], 0)
+  if zeros + ones != shots {
+    raise @mqc.QuantumError::InvalidState("unexpected Bell measurement")
   }
 
   println("Bell pair (\{shots} shots):")

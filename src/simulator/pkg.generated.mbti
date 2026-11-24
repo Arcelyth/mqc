@@ -30,6 +30,7 @@ pub struct MeasurementRecords {
 }
 pub fn MeasurementRecords::for_key(Self, String) -> Array[Array[Array[Int32]]]
 pub fn MeasurementRecords::get(Self, Int32, Int32, Int32) -> Int32?
+pub fn MeasurementRecords::histogram(Self, String) -> Map[ReadOnlyArray[Int32], Int32]
 pub fn MeasurementRecords::output(Self, &Logger) -> Unit
 pub fn MeasurementRecords::shape(Self) -> (Int32, Int32, Int32)
 pub fn MeasurementRecords::to_array(Self) -> Array[Int32]

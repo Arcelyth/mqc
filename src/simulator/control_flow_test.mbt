@@ -22,6 +22,7 @@ test "if_else selects once per block and records only the selected arm" {
     // then finishes its final flip even though the condition has changed.
     let result = sampler.run(program)
     assert_eq(result.records.to_array(), [0, -1, 1, 0, 1])
+    assert_true(result.records.histogram("m") == Map([([0], 2), ([1], 2)]))
     assert_eq(result.records.for_key("m"), [[[0], [1], [0], [1]]])
   }
 }
