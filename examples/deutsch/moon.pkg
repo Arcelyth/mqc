@@ -1,0 +1,5 @@
+import {
+  "Arcelyth/mqc",
+}
+
+pkgtype(kind: "executable")
