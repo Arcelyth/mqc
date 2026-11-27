@@ -33,9 +33,9 @@ fn main {
 
 ///|
 fn measure_parity() -> Unit raise @mqc.QuantumError {
-  let a = QubitId(0UL)
-  let b = QubitId(1UL)
-  let output = QubitId(2UL)
+  let a = QubitId(0U)
+  let b = QubitId(1U)
+  let output = QubitId(2U)
   let odd = Parity::{ left: "a", right: "b", }
   let circuit = Circuit::from_op([
     h(a),

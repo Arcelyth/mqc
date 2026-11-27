@@ -1,7 +1,7 @@
 ///|
 test "state-vector simulator samples Bell correlations and returns a collapsed trial" {
-  let a = @circuit.QubitId(0UL)
-  let b = @circuit.QubitId(1UL)
+  let a = @circuit.QubitId(0U)
+  let b = @circuit.QubitId(1U)
   let circuit = @circuit.Circuit::from_op([
     @circuit.Operation::new(@gates.h(), [a]),
     @circuit.Operation::new(@gates.cnot(), [a, b]),
@@ -51,7 +51,7 @@ test "state-vector simulator samples Bell correlations and returns a collapsed t
 
 ///|
 test "gates after repeated measurements use the collapsed state in every shot" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let circuit = @circuit.Circuit::from_op([
     @circuit.Operation::new(@gates.h(), [q]),
     @circuit.measure([q]),

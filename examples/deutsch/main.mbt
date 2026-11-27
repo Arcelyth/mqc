@@ -32,8 +32,8 @@ fn oracle(
 fn classify(
   query : (QubitId, QubitId) -> Array[@mqc.Operation[QubitId]] raise QError,
 ) -> String raise QError {
-  let input = QubitId(0UL)
-  let target = QubitId(1UL)
+  let input = QubitId(0U)
+  let target = QubitId(1U)
   // Prepare |+> on the input and |-> on the target. Flipping |-> changes its sign.
   let circuit = Circuit::from_op([h(input), x(target), h(target)])
   circuit.extend_ops(query(input, target))

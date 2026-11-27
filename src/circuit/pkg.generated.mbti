@@ -45,7 +45,7 @@ pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise @error.QErr
 pub fn[Q : Qid] Circuit::compile(Self[Q], name? : String) -> Program
 pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise @error.QError
 pub fn[Q] Circuit::copy(Self[Q]) -> Self[Q]
-pub fn[Q] Circuit::dim(Self[Q]) -> Array[UInt32]
+pub fn[Q : Qid] Circuit::dim(Self[Q]) -> Array[UInt32]
 pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise @error.QError
 pub fn[Q : Qid] Circuit::for_loop(Self[Q], Int32, Self[Q]) -> Unit raise @error.QError
 pub fn[Q : Qid] Circuit::from_op(Array[Operation[Q]]) -> Self[Q] raise @error.QError
@@ -148,13 +148,16 @@ pub fn Program::length(Self) -> Int32
 pub fn Program::name(Self) -> String
 pub fn Program::shape(Self) -> @internal.Shape
 
+#alias(Qubit)
 #derive(Compare, Eq, Hash, @debug.Debug)
-pub(all) struct QubitId(UInt64)
+pub(all) struct QubitId(UInt32)
 pub fn QubitId::compare(Self, Self) -> Int32
 pub fn QubitId::dim(Self) -> UInt32
 pub fn QubitId::equal(Self, Self) -> Bool
 pub fn QubitId::hash(Self) -> Int32
 pub fn QubitId::hash_combine(Self, Hasher) -> Unit
+pub fn QubitId::id(Self) -> UInt32
+pub fn QubitId::name(Self) -> String
 pub fn QubitId::not_equal(Self, Self) -> Bool
 pub fn QubitId::op_ge(Self, Self) -> Bool
 pub fn QubitId::op_gt(Self, Self) -> Bool
@@ -166,20 +169,35 @@ pub fn QubitId::to_string(Self) -> String
 pub impl Qid for QubitId
 pub impl Show for QubitId
 
+#alias(Qudit)
 #derive(Eq, Hash, @debug.Debug)
 type QuditId
 pub fn QuditId::dim(Self) -> UInt32
 pub fn QuditId::equal(Self, Self) -> Bool
 pub fn QuditId::hash(Self) -> Int32
 pub fn QuditId::hash_combine(Self, Hasher) -> Unit
-pub fn QuditId::new(UInt64, UInt32) -> Self raise @error.QError
+pub fn QuditId::id(Self) -> UInt32
+pub fn QuditId::name(Self) -> String
+pub fn QuditId::new(UInt32, UInt32) -> Self raise @error.QError
 pub fn QuditId::not_equal(Self, Self) -> Bool
 pub fn QuditId::output(Self, &Logger) -> Unit
 pub fn QuditId::to_repr(Self) -> @debug.Repr
 pub fn QuditId::to_string(Self) -> String
-pub fn QuditId::value(Self) -> UInt64
 pub impl Qid for QuditId
 pub impl Show for QuditId
+
+pub struct Registry[Q] {
+  // private fields
+}
+pub fn[Q : Qid] Registry::add(Self[Q], Q) -> Self[Q] raise @error.QError
+pub fn[Q] Registry::at(Self[Q], Int32) -> Q?
+pub fn[Q : Qid] Registry::dim_at(Self[Q], Int32) -> UInt32
+pub fn[Q : Qid] Registry::dims(Self[Q]) -> Array[UInt32]
+pub fn[Q : Qid] Registry::get(Self[Q], Q) -> Int32?
+pub fn[Q] Registry::is_empty(Self[Q]) -> Bool
+pub fn[Q] Registry::len(Self[Q]) -> Int32
+pub fn[Q : Qid] Registry::merge(Self[Q], Self[Q]) -> Self[Q] raise @error.QError
+pub fn[Q : Qid] Registry::new(Array[Q]) -> Self[Q] raise @error.QError
 
 type WhileLoop[Q]
 pub fn[Q] WhileLoop::body(Self[Q]) -> Iter[Instruction[Q]]
@@ -229,5 +247,8 @@ pub(open) trait NoiseModel {
 }
 
 pub(open) trait Qid : Eq + Hash {
+  fn name(Self) -> String
+  fn id(Self) -> UInt32
   fn dim(Self) -> UInt32
+  fn is_dim(Self, UInt32) -> Bool = _
 }

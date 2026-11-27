@@ -1,7 +1,7 @@
 ///|
 test "repeated measurements are grouped and counted by key" {
-  let a = @circuit.QubitId(0UL)
-  let b = @circuit.QubitId(1UL)
+  let a = @circuit.QubitId(0U)
+  let b = @circuit.QubitId(1U)
   let circuit = @circuit.Circuit::from_op([
     @circuit.Operation::new(@gates.x(), [a]),
     @circuit.measure([a, b], key="pair"),

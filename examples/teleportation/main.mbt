@@ -21,9 +21,9 @@ fn main {
 
 ///|
 fn teleport() -> Unit raise QError {
-  let input = QubitId(0UL)
-  let alice = QubitId(1UL)
-  let bob = QubitId(2UL)
+  let input = QubitId(0U)
+  let alice = QubitId(1U)
+  let bob = QubitId(2U)
   let angle = 1.2
   let ph = 0.7
   let circuit = Circuit::from_op([

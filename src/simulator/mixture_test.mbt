@@ -1,6 +1,6 @@
 ///|
 test "a fixed I/X mixture evolves populations and samples one gate per shot" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let channel = @circuit.Channel::mixture([
     (0.75, @gates.i()),
     (0.25, @gates.x()),

@@ -2,11 +2,7 @@
 /// Represent a quantum circuit which shares the operation sequence.
 struct Circuit[Q] {
   /// Logical wire identifiers in basis order.
-  mut wires : Array[Q]
-  /// Ordered wire dimensions.
-  mut shape : @internal.Shape
-  /// Positions for each local id.
-  mut indices : Map[Q, Int32]
+  mut wires : Registry[Q]
   /// Instruction sequence in execution order.
   mut ops : @vector.Vector[Instruction[Q]]
   /// The union of names from every effect in current circuit.
@@ -16,25 +12,10 @@ struct Circuit[Q] {
 ///|
 /// Create an empty circuit over an ordered list of distinct logical IDs.
 pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise @error.QError {
-  let indices : Map[Q, Int32] = Map([])
-  let shape : Array[UInt32] = []
-  for i, q in qids {
-    if indices.contains(q) {
-      raise DuplicateQid(i)
-    }
-    let dim = q.dim()
-    if dim < 2U {
-      raise InvalidDimension(dim)
-    }
-    indices[q] = i
-    shape.push(dim)
-  }
   {
-    wires: qids.copy(),
-    shape: @internal.Shape::new(shape),
-    indices,
-    ops: @vector.Vector::new(),
-    parameter_names: @hashset.HashSet::new(),
+    wires: Registry::new(qids),
+    ops: @vector.empty(),
+    parameter_names: @hashset.empty(),
   }
 }
 
@@ -51,13 +32,7 @@ pub fn[Q : Qid] Circuit::from_op(
 ///|
 /// Copy this circuit.
 pub fn[Q] Circuit::copy(self : Circuit[Q]) -> Circuit[Q] {
-  {
-    wires: self.wires,
-    shape: self.shape,
-    indices: self.indices,
-    ops: self.ops,
-    parameter_names: self.parameter_names,
-  }
+  { wires: self.wires, ops: self.ops, parameter_names: self.parameter_names, }
 }
 
 ///|
@@ -75,42 +50,14 @@ pub fn[Q : Qid] Circuit::extend_ops(
   self : Circuit[Q],
   operations : Array[Operation[Q]],
 ) -> Unit raise @error.QError {
-  let mut wires = self.wires
-  let shape = self.shape.to_array()
-  let mut indices = self.indices
-  let mut copied_wires = false
+  let wires = self.wires.with_targets(operations.iter().map(op => op.wires))
   let mut ops = self.ops
   let mut parameter_names = self.parameter_names
   for operation in operations {
-    for i, qid in operation.wires {
-      let dim = qid.dim()
-      match indices.get(qid) {
-        Some(index) =>
-          if dim != shape[index] {
-            raise DimensionMismatch(i, shape[index], dim)
-          }
-        None => {
-          if dim < 2U {
-            raise InvalidDimension(dim)
-          }
-          // Copy when first new Qid appears.
-          if !copied_wires {
-            wires = wires.copy()
-            indices = indices.copy()
-            copied_wires = true
-          }
-          indices[qid] = wires.length()
-          wires.push(qid)
-          shape.push(dim)
-        }
-      }
-    }
     ops = ops.push(Operation(operation))
     parameter_names = add_names(parameter_names, operation.effect.parameters())
   }
   self.wires = wires
-  self.shape = @internal.Shape::new(shape)
-  self.indices = indices
   self.ops = ops
   self.parameter_names = parameter_names
 }
@@ -118,13 +65,13 @@ pub fn[Q : Qid] Circuit::extend_ops(
 ///|
 /// Return a copy of the logical IDs in order.
 pub fn[Q] Circuit::qids(self : Circuit[Q]) -> Array[Q] {
-  self.wires.copy()
+  self.wires.items.copy()
 }
 
 ///|
-/// Return a copy of the ordered wire dimensions.
-pub fn[Q] Circuit::dim(self : Circuit[Q]) -> Array[UInt32] {
-  self.shape.to_array()
+/// Return wire dimensions in basis order.
+pub fn[Q : Qid] Circuit::dim(self : Circuit[Q]) -> Array[UInt32] {
+  self.wires.dims()
 }
 
 ///|
@@ -156,7 +103,7 @@ pub fn[Q] Circuit::length(self : Circuit[Q]) -> Int32 {
 ///|
 /// Find a logical ID's position. Return `None` if absent.
 pub fn[Q : Qid] Circuit::index_of(self : Circuit[Q], qid : Q) -> Int32? {
-  self.indices.get(qid)
+  self.wires.get(qid)
 }
 
 ///|
@@ -165,10 +112,12 @@ pub fn[Q : Qid] Circuit::compile(
   self : Circuit[Q],
   name~ : String = "circuit",
 ) -> Program {
+  let wires = self.wires
+  let ops = self.ops
   {
     label: name,
-    shape: self.shape,
-    ops: map_instructions(self.ops, q => self.indices[q]),
+    shape: @internal.Shape::new(wires.dims()),
+    ops: map_instructions(ops, q => wires.index(q)),
   }
 }
 
@@ -179,32 +128,10 @@ pub fn[Q : Qid] Circuit::concat(
   self : Circuit[Q],
   other : Circuit[Q],
 ) -> Circuit[Q] raise @error.QError {
-  let wires = self.wires.copy()
-  let shape = self.shape.to_array()
-  let indices = self.indices.copy()
-  for i, qid in other.wires {
-    match indices.get(qid) {
-      Some(index) =>
-        if shape[index] != other.shape[i] {
-          raise DimensionMismatch(i, shape[index], other.shape[i])
-        }
-      None => {
-        indices[qid] = wires.length()
-        wires.push(qid)
-        shape.push(other.shape[i])
-      }
-    }
-  }
-  let mut parameter_names = self.parameter_names
-  for name in other.parameter_names.iter() {
-    parameter_names = parameter_names.add(name)
-  }
   {
-    wires,
-    shape: @internal.Shape::new(shape),
-    indices,
+    wires: self.wires.merge(other.wires),
     ops: self.ops.concat(other.ops),
-    parameter_names,
+    parameter_names: self.parameter_names.union(other.parameter_names),
   }
 }
 
@@ -214,16 +141,20 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
   self : Circuit[Q],
   map : (Q) -> R,
 ) -> Circuit[R] raise @error.QError {
-  let wires = self.wires.map(map)
+  let registry = self.wires
+  let ops = self.ops
+  let parameter_names = self.parameter_names
+  let wires = registry.items.map(map)
   for i, qid in wires {
     let dim = qid.dim()
-    if dim != self.shape[i] {
-      raise DimensionMismatch(i, self.shape[i], dim)
+    let expected = registry.dim_at(i)
+    if dim != expected {
+      raise DimensionMismatch(i, expected, dim)
     }
   }
   let result = Circuit::new(wires)
-  result.ops = map_instructions(self.ops, q => wires[self.indices[q]])
-  result.parameter_names = self.parameter_names
+  result.ops = map_instructions(ops, q => wires[registry.index(q)])
+  result.parameter_names = parameter_names
   result
 }
 
@@ -237,7 +168,7 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
 pub fn[Q : Qid] Circuit::adjoint(
   self : Circuit[Q],
 ) -> Circuit[Q] raise @error.QError {
-  adjoint_body(self.wires, self.ops)
+  adjoint_body(self.wires.items, self.ops)
 }
 
 ///|
@@ -270,7 +201,7 @@ pub fn[Q : Qid] Circuit::with_noise(
   self : Circuit[Q],
   model : &NoiseModel,
 ) -> Circuit[Q] raise @error.QError {
-  self.noisy_body(self.ops, self.wires, model)
+  self.noisy_body(self.ops, self.wires.items, model)
 }
 
 ///|
@@ -320,7 +251,8 @@ fn[Q : Qid] Circuit::append_noisy_gate(
     raise InvalidState("resolve gate parameters before applying a noise model")
   }
   guard effect.try_unitary() is Some(gate) else { return result.append(op) }
-  let positions = op.wires.map(q => self.indices[q])
+  let registry = self.wires
+  let positions = op.wires.map(q => registry.index(q))
   let noise = model.after_gate(gate, positions[:])
   if noise.is_empty() {
     return result.append(op)
@@ -329,9 +261,7 @@ fn[Q : Qid] Circuit::append_noisy_gate(
   for (channel, targets) in noise {
     let wires = []
     for target in targets {
-      guard self.wires.get(target) is Some(q) else {
-        raise InvalidBasis(target)
-      }
+      guard registry.at(target) is Some(q) else { raise InvalidBasis(target) }
       wires.push(q)
     }
     ops.push(Operation::new(channel, wires))
@@ -387,7 +317,9 @@ fn[Q : Qid] adjoint_body(
 /// 1: ───────#2─────M───────────
 /// ```
 pub impl[Q : Qid + Show] Show for Circuit[Q] with fn output(self, logger) {
-  let labels = self.wires.map(wire => Show::to_string(wire))
+  let wires = self.wires
+  let ops = self.ops
+  let labels = wires.items.map(wire => Show::to_string(wire))
   let label_width = labels.fold(init=0, (width, label) => {
     width.max(label.length())
   })
@@ -397,9 +329,9 @@ pub impl[Q : Qid + Show] Show for Circuit[Q] with fn output(self, logger) {
     row.write_string(": ───")
     row
   })
-  for instruction in self.ops {
+  for instruction in ops {
     match instruction {
-      Operation(operation) => operation.draw_column(rows, self.indices)
+      Operation(operation) => operation.draw_column(rows, wires)
       WhileLoop(block) => {
         let label = "while " + block.condition.name()
         for row in rows {
@@ -430,7 +362,7 @@ pub impl[Q : Qid + Show] Show for Circuit[Q] with fn output(self, logger) {
 fn[Q : Qid] Operation::draw_column(
   self : Operation[Q],
   rows : Array[StringBuilder],
-  indices : Map[Q, Int32],
+  wires : Registry[Q],
 ) -> Unit {
   let (label, measurement) = match self.effect.measurement_key() {
     Some(key) => ("M(\{key.escape()})", true)
@@ -446,7 +378,7 @@ fn[Q : Qid] Operation::draw_column(
     } else {
       "#\{index + 1}"
     }
-    symbols[indices[wire]] = symbol
+    symbols[wires.index(wire)] = symbol
     width = width.max(symbol.length())
   }
   for wire, row in rows {

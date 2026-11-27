@@ -1,6 +1,6 @@
 ///|
 test "if_else selects once per block and records only the selected arm" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let flip = @circuit.Operation::new(@gates.x(), [q])
   let measure = @circuit.measure([q], key="m")
   let condition = @circuit.MeasurementCondition::Nonzero("m")
@@ -29,7 +29,7 @@ test "if_else selects once per block and records only the selected arm" {
 
 ///|
 test "for_loop carries the state and records measurements across iterations" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let body = @circuit.Circuit::from_op([
     @circuit.Operation::new(@gates.x(), [q]),
     @circuit.measure([q]),
@@ -49,7 +49,7 @@ test "for_loop carries the state and records measurements across iterations" {
 
 ///|
 test "while_loop retests the measurement and pads unused iterations" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let flip = @circuit.Operation::new(@gates.x(), [q])
   let measure = @circuit.measure([q], key="m")
   let condition = @circuit.MeasurementCondition::Nonzero("m")
@@ -70,7 +70,7 @@ test "while_loop retests the measurement and pads unused iterations" {
 
 ///|
 test "while_loop reports a condition still true at the bound" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let measure = @circuit.measure([q], key="m")
   let circuit = @circuit.Circuit::from_op([
     @circuit.Operation::new(@gates.x(), [q]),

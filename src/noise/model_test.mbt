@@ -16,9 +16,9 @@ impl @noise.NoiseModel for FlipNeighbor with fn after_gate(self, gate, targets) 
 
 ///|
 test "noise on another wire follows a guarded gate inside a counted loop" {
-  let control = @circuit.QubitId(10UL)
-  let target = @circuit.QubitId(20UL)
-  let neighbor = @circuit.QubitId(30UL)
+  let control = @circuit.QubitId(10U)
+  let target = @circuit.QubitId(20U)
+  let neighbor = @circuit.QubitId(30U)
   let condition = @circuit.MeasurementCondition::Nonzero("m")
   let guarded = @circuit.Operation::new(@gates.x(), [target]).when(condition)
   let circuit = @circuit.Circuit::new([control, target, neighbor])
@@ -48,8 +48,8 @@ test "noise on another wire follows a guarded gate inside a counted loop" {
 
 ///|
 test "per-target noise applies the channel to each target of a gate" {
-  let a = @circuit.QubitId(0UL)
-  let b = @circuit.QubitId(1UL)
+  let a = @circuit.QubitId(0U)
+  let b = @circuit.QubitId(1U)
   let circuit = @circuit.Circuit::from_op([
     @circuit.Operation::new(@gates.cnot(), [a, b]),
     @circuit.measure([a, b]),

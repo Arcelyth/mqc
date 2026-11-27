@@ -1,8 +1,8 @@
 ///|
 test "evolve preserves phase and target order before terminal measurements" {
-  let a = @circuit.QuditId::new(0UL, 2U)
-  let spectator = @circuit.QuditId::new(1UL, 3U)
-  let b = @circuit.QuditId::new(2UL, 2U)
+  let a = @circuit.QuditId::new(0U, 2U)
+  let spectator = @circuit.QuditId::new(1U, 3U)
+  let b = @circuit.QuditId::new(2U, 2U)
   let circuit = @circuit.Circuit::new([a, spectator, b])
   circuit.extend_ops([
     @circuit.Operation::new(@gates.h(), [b]),

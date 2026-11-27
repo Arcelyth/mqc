@@ -3,7 +3,7 @@ using @mqc {h, measure, type Circuit, type QubitId, type StateVectorSimulator}
 
 ///|
 fn main raise {
-  let qubit = QubitId(0UL)
+  let qubit = QubitId(0U)
   let circuit = Circuit::from_op([h(qubit), measure([qubit], key="m")])
   println("Circuit:")
   println(circuit)

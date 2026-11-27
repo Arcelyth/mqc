@@ -15,7 +15,7 @@ fn main {
 
 ///|
 fn print_measurement() -> Unit raise @mqc.QuantumError {
-  let a = QubitId(0UL)
+  let a = QubitId(0U)
   let c = Circuit::from_op([x(a), h(a), measure([a])])
 
   let simulator = StateVectorSimulator::new()

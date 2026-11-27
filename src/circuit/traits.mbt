@@ -2,7 +2,15 @@
 /// Identifies a quantum object. Equal IDs must have the same, fixed dimension.
 /// Dimensions must be at least two.
 pub(open) trait Qid: Eq + Hash {
+  fn name(Self) -> String
+  fn id(Self) -> UInt32
   fn dim(Self) -> UInt32
+  fn is_dim(Self, UInt32) -> Bool = _
+}
+
+///|
+impl Qid with fn is_dim(self, dim : UInt32) -> Bool {
+  self.dim() == dim
 }
 
 ///|

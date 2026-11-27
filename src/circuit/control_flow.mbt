@@ -19,8 +19,11 @@ pub fn[Q : Qid] Circuit::if_else(
   on_true : Circuit[Q],
   on_false : Circuit[Q],
 ) -> Unit raise @error.QError {
-  let joined = on_true.concat(on_false)
-  let names = joined.parameter_names.iter().collect()
+  let wires = on_true.wires.merge(on_false.wires)
+  let names = on_true.parameter_names
+    .union(on_false.parameter_names)
+    .iter()
+    .collect()
   names.sort_by(String::lexical_compare)
   let branch = IfElse::{
     condition,
@@ -29,7 +32,7 @@ pub fn[Q : Qid] Circuit::if_else(
     names,
     width: on_true.record_width().max(on_false.record_width()),
   }
-  self.append_block(joined, IfElse(branch))
+  self.append_block(wires, IfElse(branch))
 }
 
 ///|
@@ -108,7 +111,10 @@ pub fn[Q : Qid] Circuit::for_loop(
     raise InvalidState("loop count must be nonnegative")
   }
   let (names, width) = body.loop_metadata(count)
-  self.append_block(body, ForLoop({ count, body: body.ops, names, width, }))
+  self.append_block(
+    body.wires,
+    ForLoop({ count, body: body.ops, names, width, }),
+  )
 }
 
 ///|
@@ -125,13 +131,10 @@ pub fn[Q] ForLoop::body(self : ForLoop[Q]) -> Iter[Instruction[Q]] {
 ///|
 fn[Q : Qid] Circuit::append_block(
   self : Circuit[Q],
-  body : Circuit[Q],
+  body_wires : Registry[Q],
   instruction : Instruction[Q],
 ) -> Unit raise @error.QError {
-  let merged = self.concat(body)
-  self.wires = merged.wires
-  self.shape = merged.shape
-  self.indices = merged.indices
+  self.wires = self.wires.merge(body_wires)
   self.parameter_names = add_names(
     self.parameter_names,
     instruction.parameters(),
@@ -165,7 +168,7 @@ pub fn[Q : Qid] Circuit::while_loop(
   }
   let (names, width) = body.loop_metadata(max_iterations)
   self.append_block(
-    body,
+    body.wires,
     WhileLoop({ condition, max_iterations, body: body.ops, names, width, }),
   )
 }

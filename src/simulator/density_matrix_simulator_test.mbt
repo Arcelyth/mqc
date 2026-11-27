@@ -1,8 +1,8 @@
 ///|
 test "density evolution matches complex pure-state evolution on nonadjacent reversed targets" {
-  let a = @circuit.QuditId::new(0UL, 2U)
-  let spectator = @circuit.QuditId::new(1UL, 3U)
-  let b = @circuit.QuditId::new(2UL, 2U)
+  let a = @circuit.QuditId::new(0U, 2U)
+  let spectator = @circuit.QuditId::new(1U, 3U)
+  let b = @circuit.QuditId::new(2U, 2U)
   let circuit = @circuit.Circuit::new([a, spectator, b])
   circuit.extend_ops([
     @circuit.Operation::new(@gates.h(), [b]),
@@ -38,8 +38,8 @@ test "density evolution matches complex pure-state evolution on nonadjacent reve
 
 ///|
 test "density partial measurement preserves unmeasured coherence and supports later gates" {
-  let a = @circuit.QubitId(0UL)
-  let b = @circuit.QubitId(1UL)
+  let a = @circuit.QubitId(0U)
+  let b = @circuit.QubitId(1U)
   let circuit = @circuit.Circuit::from_op([
     @circuit.Operation::new(@gates.h(), [a]),
     @circuit.Operation::new(@gates.h(), [b]),
@@ -94,7 +94,7 @@ test "density partial measurement preserves unmeasured coherence and supports la
 
 ///|
 test "density simulator evolves mixtures without mutating the initial state" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let mixed = @simulator.DensityMatrix::from_mixture(
     [
       @simulator.StateVector::basis([2U], 0),
@@ -120,9 +120,9 @@ test "density simulator evolves mixtures without mutating the initial state" {
 
 ///|
 test "density measurement preserves Bell correlations and requested qudit digit order" {
-  let a = @circuit.QuditId::new(0UL, 2U)
-  let spectator = @circuit.QuditId::new(1UL, 3U)
-  let b = @circuit.QuditId::new(2UL, 2U)
+  let a = @circuit.QuditId::new(0U, 2U)
+  let spectator = @circuit.QuditId::new(1U, 3U)
+  let b = @circuit.QuditId::new(2U, 2U)
   let circuit = @circuit.Circuit::new([a, spectator, b])
   let shift = @circuit.Gate::monomial("shift", [3U], [2, 0, 1], [
     @maths.Complex::real(1.0),
@@ -157,7 +157,7 @@ test "density measurement preserves Bell correlations and requested qudit digit 
 
 ///|
 test "amplitude damping transfers one quarter of the excited population to ground" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let program = @circuit.Circuit::from_op([
     @circuit.Operation::new(@gates.x(), [q]),
     @circuit.Operation::new(@circuit.Channel::amplitude_damp(0.25), [q]),
@@ -184,8 +184,8 @@ test "amplitude damping transfers one quarter of the excited population to groun
 
 ///|
 test "a local complex channel preserves the spectator and transforms Bell coherence" {
-  let a = @circuit.QubitId(0UL)
-  let b = @circuit.QubitId(1UL)
+  let a = @circuit.QubitId(0U)
+  let b = @circuit.QubitId(1U)
   let zero = @maths.Complex::real(0.0)
   let phase = @maths.Complex::new(0.0, 0.75.sqrt())
   let channel = @circuit.Channel::kraus("damp and phase", [2U], [

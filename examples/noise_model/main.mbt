@@ -16,7 +16,7 @@ fn main {
 
 ///|
 fn compare_damping() -> Unit raise @mqc.QError {
-  let q = QubitId(0UL)
+  let q = QubitId(0U)
   let preparation = Circuit::from_op([x(q)])
   let damping = Channel::amplitude_damp(0.25)
   let circuit = preparation.with_noise(@noise.PerTargetNoise::new(damping))

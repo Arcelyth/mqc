@@ -1,7 +1,7 @@
 ///|
 test "when skips or applies a gate using the latest measurement" {
-  let control = @circuit.QubitId(0UL)
-  let target = @circuit.QubitId(1UL)
+  let control = @circuit.QubitId(0U)
+  let target = @circuit.QubitId(1U)
   let flip = @circuit.Operation::new(@gates.x(), [target]).when(
     @circuit.MeasurementCondition::Nonzero("control"),
   )

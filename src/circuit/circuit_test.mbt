@@ -1,17 +1,23 @@
 ///|
 test "circuit discovers wires and compiles targets in operation order" {
-  let a = @circuit.QuditId::new(0UL, 2U)
-  let b = @circuit.QuditId::new(1UL, 3U)
-  let c = @circuit.QuditId::new(2UL, 2U)
+  let a = @circuit.QuditId::new(0U, 2U)
+  let b = @circuit.QuditId::new(1U, 3U)
+  let c = @circuit.QuditId::new(2U, 2U)
   let circuit = @circuit.Circuit::from_op([
     @circuit.measure([b, a], key="first"),
   ])
+  let copy = circuit.copy()
   circuit.append(@circuit.measure([c, b], key="second"))
   circuit.extend_ops([@circuit.measure([a], key="third")])
+  let qids = circuit.qids()
+  qids[0] = c
   assert_eq(circuit.qids(), [b, a, c])
   assert_eq(circuit.dim(), [3U, 2U, 2U])
   assert_eq(circuit.index_of(a), Some(1))
   assert_eq(circuit.index_of(c), Some(2))
+  assert_eq(copy.qids(), [b, a])
+  assert_eq(copy.index_of(c), None)
+  assert_eq(copy.length(), 1)
 
   let keys = []
   for operation in circuit.operations() {
@@ -32,16 +38,16 @@ test "circuit discovers wires and compiles targets in operation order" {
 
 ///|
 test "circuit rejects duplicate wire IDs" {
-  let q = @circuit.QubitId(0UL)
+  let q = @circuit.QubitId(0U)
   let result = Ok(@circuit.Circuit::new([q, q])) catch { error => Err(error) }
   assert_true(result is Err(@error.QError::DuplicateQid(1)))
 }
 
 ///|
 test "concatenation retains idle wires and remapping preserves local target positions" {
-  let a = @circuit.QubitId(0UL)
-  let b = @circuit.QubitId(1UL)
-  let c = @circuit.QubitId(2UL)
+  let a = @circuit.QubitId(0U)
+  let b = @circuit.QubitId(1U)
+  let c = @circuit.QubitId(2U)
   let left = @circuit.Circuit::new([b, a])
   left.append(@circuit.measure([a], key="left"))
   let right = @circuit.Circuit::new([c, b])
@@ -54,7 +60,7 @@ test "concatenation retains idle wires and remapping preserves local target posi
   let mut calls = 0
   let mapped = joined.remap(fn(q) {
     calls += 1
-    @circuit.QubitId(q.0 + 10UL)
+    @circuit.QubitId(q.0 + 10U)
   })
   assert_eq(calls, 3)
   assert_eq(mapped.dim(), [2U, 2U, 2U])
