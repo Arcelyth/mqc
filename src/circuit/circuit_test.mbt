@@ -44,6 +44,34 @@ test "circuit rejects duplicate wire IDs" {
 }
 
 ///|
+test "a classical bit can be registered by its identity" {
+  let bit = @circuit.Clbit(7U)
+  let other = @circuit.Clbit(2U)
+  let registry = @circuit.Registry::new([bit])
+  let extended = registry.add(other)
+  assert_eq(bit.id(), 7U)
+  assert_eq(extended.get(bit), Some(0))
+  assert_eq(extended.get(other), Some(1))
+  assert_eq(registry.get(other), None)
+}
+
+///|
+test "appending preserves captured loop bodies and existing iterators" {
+  let q = @circuit.QubitId(0U)
+  let measurement = @circuit.measure([q])
+  let body = @circuit.Circuit::from_op([measurement])
+  let instructions = body.instructions()
+  let circuit = @circuit.Circuit::new([])
+  circuit.for_loop(2, body)
+  body.append(measurement)
+  assert_eq(instructions.collect().length(), 1)
+  assert_eq(
+    circuit.compile().instructions(expand_loops=true).collect().length(),
+    2,
+  )
+}
+
+///|
 test "concatenation retains idle wires and remapping preserves local target positions" {
   let a = @circuit.QubitId(0U)
   let b = @circuit.QubitId(1U)

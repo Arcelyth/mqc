@@ -5,12 +5,12 @@
 pub(all) struct QubitId(UInt32)
 
 ///|
-pub impl Qid for QubitId with fn name(_self) -> String {
+pub impl Id for QubitId with fn name(_self) -> String {
   "Qubit"
 }
 
 ///|
-pub impl Qid for QubitId with fn id(self) -> UInt32 {
+pub impl Id for QubitId with fn id(self) -> UInt32 {
   self.0
 }
 
@@ -47,12 +47,12 @@ pub fn QuditId::new(
 }
 
 ///|
-pub impl Qid for QuditId with fn name(_self) -> String {
+pub impl Id for QuditId with fn name(_self) -> String {
   "Qudit"
 }
 
 ///|
-pub impl Qid for QuditId with fn id(self) -> UInt32 {
+pub impl Id for QuditId with fn id(self) -> UInt32 {
   self.id
 }
 
@@ -65,6 +65,33 @@ pub impl Qid for QuditId with fn dim(self) -> UInt32 {
 pub impl Show for QuditId with fn output(self, logger) {
   logger.write_string("\{self.id}[\{self.dim}]")
 }
+
+///|
+/// A logical classical bit ID.
+#alias(Clbit)
+#derive(Eq, Hash, Debug)
+pub(all) struct ClbitId(UInt32)
+
+///|
+pub impl Id for ClbitId with fn name(_self) -> String {
+  "Clbit"
+}
+
+///|
+pub impl Id for ClbitId with fn id(self) -> UInt32 {
+  self.0
+}
+
+///|
+pub impl Show for ClbitId with fn output(self, logger) {
+  logger.write_string("c\{self.0}")
+}
+
+///|
+pub extend ClbitId with Show::{output, to_string}
+
+///|
+pub extend ClbitId with Id::{name, id}
 
 ///|
 pub extend QubitId with Show::{output, to_string}
@@ -82,7 +109,10 @@ pub extend QubitId with Compare::{compare, op_lt, op_le, op_gt, op_ge}
 pub extend QubitId with Debug::{to_repr}
 
 ///|
-pub extend QubitId with Qid::{name, id, dim}
+pub extend QubitId with Id::{name, id}
+
+///|
+pub extend QubitId with Qid::{dim}
 
 ///|
 pub extend QuditId with Show::{output, to_string}
@@ -97,4 +127,7 @@ pub extend QuditId with Hash::{hash, hash_combine}
 pub extend QuditId with Debug::{to_repr}
 
 ///|
-pub extend QuditId with Qid::{name, id, dim}
+pub extend QuditId with Id::{name, id}
+
+///|
+pub extend QuditId with Qid::{dim}

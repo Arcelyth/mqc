@@ -43,14 +43,10 @@ fn[Q, R] Instruction::map_wires(
 
 ///|
 fn[Q, R] map_instructions(
-  body : @vector.Vector[Instruction[Q]],
+  body : Array[Instruction[Q]],
   map : (Q) -> R,
-) -> @vector.Vector[Instruction[R]] {
-  let mut result = @vector.Vector::new()
-  for instruction in body {
-    result = result.push(instruction.map_wires(map))
-  }
-  result
+) -> Array[Instruction[R]] {
+  body.map(instruction => instruction.map_wires(map))
 }
 
 ///|

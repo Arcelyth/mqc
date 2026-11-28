@@ -2,7 +2,7 @@
 struct Program {
   label : String
   shape : @internal.Shape
-  ops : @vector.Vector[Instruction[Int32]]
+  ops : Array[Instruction[Int32]]
 }
 
 ///|

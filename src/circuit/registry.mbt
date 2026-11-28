@@ -1,16 +1,14 @@
 ///|
-/// Assign each wire a stable index in basis order.
-pub struct Registry[Q] {
-  priv items : Array[Q]
-  priv indices : @hashmap.HashMap[Q, Int32]
+/// Assign each identifier a stable index in registration order.
+pub struct Registry[I] {
+  priv items : Array[I]
+  priv indices : @hashmap.HashMap[I, Int32]
 }
 
 ///|
-/// Register distinct wires in the supplied order.
-pub fn[Q : Qid] Registry::new(
-  qids : Array[Q],
-) -> Registry[Q] raise CircuitError {
-  let items = qids.copy()
+/// Register distinct identifiers in the supplied order.
+pub fn[I : Id] Registry::new(ids : Array[I]) -> Registry[I] raise CircuitError {
+  let items = ids.copy()
   let mut indices = @hashmap.empty()
   for i, qid in items {
     if indices.contains(qid) {
@@ -22,72 +20,75 @@ pub fn[Q : Qid] Registry::new(
 }
 
 ///|
-/// Return a registry with a new wire at the end. Reject duplicate IDs.
-pub fn[Q : Qid] Registry::add(
-  self : Registry[Q],
-  qid : Q,
-) -> Registry[Q] raise CircuitError {
-  if self.get(qid) is Some(_) {
-    raise DuplicateQid(self.len())
+/// Return a registry with a new identifier at the end. Reject duplicates.
+pub fn[I : Id] Registry::add(
+  self : Registry[I],
+  qid : I,
+) -> Registry[I] raise CircuitError {
+  let index = self.len()
+  if self.indices.contains(qid) {
+    raise DuplicateQid(index)
   }
-  self.with_targets(Iter::singleton([qid]))
+  let items = self.items.copy()
+  items.push(qid)
+  { items, indices: self.indices.insert(qid, index), }
 }
 
 ///|
-pub fn[Q] Registry::len(self : Registry[Q]) -> Int32 {
+pub fn[I] Registry::len(self : Registry[I]) -> Int32 {
   self.items.length()
 }
 
 ///|
-pub fn[Q] Registry::is_empty(self : Registry[Q]) -> Bool {
+pub fn[I] Registry::is_empty(self : Registry[I]) -> Bool {
   self.items.is_empty()
 }
 
 ///|
 /// Keep existing indices and append new wires in the other registry's order.
 /// Wires shared by both registries must agree on their dimension.
-pub fn[Q : Qid] Registry::merge(
-  self : Registry[Q],
-  other : Registry[Q],
-) -> Registry[Q] raise CircuitError {
+pub fn[I : Qid] Registry::merge(
+  self : Registry[I],
+  other : Registry[I],
+) -> Registry[I] raise CircuitError {
   self.with_targets(Iter::singleton(other.items))
 }
 
 ///|
 /// Look up a wire's index.
-pub fn[Q : Qid] Registry::get(self : Registry[Q], qid : Q) -> Int32? {
+pub fn[I : Id] Registry::get(self : Registry[I], qid : I) -> Int32? {
   self.indices.get(qid)
 }
 
 ///|
 /// Look up the wire at an index. Return `None` outside the registry.
-pub fn[Q] Registry::at(self : Registry[Q], index : Int32) -> Q? {
+pub fn[I] Registry::at(self : Registry[I], index : Int32) -> I? {
   self.items.get(index)
 }
 
 ///|
 /// Return the wire dimension at a valid index.
-pub fn[Q : Qid] Registry::dim_at(self : Registry[Q], index : Int32) -> UInt32 {
+pub fn[I : Qid] Registry::dim_at(self : Registry[I], index : Int32) -> UInt32 {
   self.items[index].dim()
 }
 
 ///|
 /// Return the wire dimensions in basis order.
-pub fn[Q : Qid] Registry::dims(self : Registry[Q]) -> Array[UInt32] {
+pub fn[I : Qid] Registry::dims(self : Registry[I]) -> Array[UInt32] {
   self.items.map(qid => qid.dim())
 }
 
 ///|
-fn[Q : Qid] Registry::index(self : Registry[Q], qid : Q) -> Int32 {
+fn[I : Id] Registry::index(self : Registry[I], qid : I) -> Int32 {
   self.indices[qid]
 }
 
 ///|
 /// Register each group in order. Error positions are local to each group.
-fn[Q : Qid] Registry::with_targets(
-  self : Registry[Q],
-  groups : Iter[Array[Q]],
-) -> Registry[Q] raise CircuitError {
+fn[I : Qid] Registry::with_targets(
+  self : Registry[I],
+  groups : Iter[Array[I]],
+) -> Registry[I] raise CircuitError {
   let mut items = self.items
   let mut indices = self.indices
   let original_count = items.length()

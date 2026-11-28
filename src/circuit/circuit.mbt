@@ -1,10 +1,10 @@
 ///|
-/// Represent a quantum circuit which shares the operation sequence.
+/// A quantum circuit and its ordered instruction sequence.
 struct Circuit[Q] {
   /// Logical wire identifiers in basis order.
   mut wires : Registry[Q]
   /// Instruction sequence in execution order.
-  mut ops : @vector.Vector[Instruction[Q]]
+  ops : Array[Instruction[Q]]
   /// The union of names from every effect in current circuit.
   mut parameter_names : @hashset.HashSet[String]
 }
@@ -12,11 +12,7 @@ struct Circuit[Q] {
 ///|
 /// Create an empty circuit over an ordered list of distinct logical IDs.
 pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise CircuitError {
-  {
-    wires: Registry::new(qids),
-    ops: @vector.empty(),
-    parameter_names: @hashset.empty(),
-  }
+  { wires: Registry::new(qids), ops: [], parameter_names: @hashset.empty(), }
 }
 
 ///|
@@ -32,7 +28,11 @@ pub fn[Q : Qid] Circuit::from_op(
 ///|
 /// Copy this circuit.
 pub fn[Q] Circuit::copy(self : Circuit[Q]) -> Circuit[Q] {
-  { wires: self.wires, ops: self.ops, parameter_names: self.parameter_names, }
+  {
+    wires: self.wires,
+    ops: self.ops.copy(),
+    parameter_names: self.parameter_names,
+  }
 }
 
 ///|
@@ -51,15 +51,15 @@ pub fn[Q : Qid] Circuit::extend_ops(
   operations : Array[Operation[Q]],
 ) -> Unit raise CircuitError {
   let wires = self.wires.with_targets(operations.iter().map(op => op.wires))
-  let mut ops = self.ops
   let mut parameter_names = self.parameter_names
   for operation in operations {
-    ops = ops.push(Operation(operation))
     parameter_names = add_names(parameter_names, operation.effect.parameters())
   }
   self.wires = wires
-  self.ops = ops
   self.parameter_names = parameter_names
+  for operation in operations {
+    self.ops.push(Operation(operation))
+  }
 }
 
 ///|
@@ -78,8 +78,8 @@ pub fn[Q : Qid] Circuit::dim(self : Circuit[Q]) -> Array[UInt32] {
 /// Iterate over top-level quantum operations. Use instructions() to visit
 /// control flow as well.
 pub fn[Q] Circuit::operations(self : Circuit[Q]) -> Iter[Operation[Q]] {
-  self.ops
-  .iter()
+  self
+  .instructions()
   .filter_map(i => {
     match i {
       Operation(op) => Some(op)
@@ -91,7 +91,8 @@ pub fn[Q] Circuit::operations(self : Circuit[Q]) -> Iter[Operation[Q]] {
 ///|
 /// Iterate over the full sequence, including circuit-level branches.
 pub fn[Q] Circuit::instructions(self : Circuit[Q]) -> Iter[Instruction[Q]] {
-  self.ops.iter()
+  let ops = self.ops
+  Int32::until(0, ops.length()).map(index => ops[index])
 }
 
 ///|
@@ -113,11 +114,13 @@ pub fn[Q : Qid] Circuit::compile(
   name~ : String = "circuit",
 ) -> Program {
   let wires = self.wires
-  let ops = self.ops
+  let ops = self.instructions()
   {
     label: name,
     shape: @internal.Shape::new(wires.dims()),
-    ops: map_instructions(ops, q => wires.index(q)),
+    ops: ops
+    .map(instruction => instruction.map_wires(q => wires.index(q)))
+    .collect(),
   }
 }
 
@@ -130,7 +133,7 @@ pub fn[Q : Qid] Circuit::concat(
 ) -> Circuit[Q] raise CircuitError {
   {
     wires: self.wires.merge(other.wires),
-    ops: self.ops.concat(other.ops),
+    ops: self.ops + other.ops,
     parameter_names: self.parameter_names.union(other.parameter_names),
   }
 }
@@ -142,7 +145,7 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
   map : (Q) -> R,
 ) -> Circuit[R] raise CircuitError {
   let registry = self.wires
-  let ops = self.ops
+  let ops = self.instructions()
   let parameter_names = self.parameter_names
   let wires = registry.items.map(map)
   for i, qid in wires {
@@ -152,10 +155,13 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
       raise DimensionMismatch(i, expected, dim)
     }
   }
-  let result = Circuit::new(wires)
-  result.ops = map_instructions(ops, q => wires[registry.index(q)])
-  result.parameter_names = parameter_names
-  result
+  {
+    wires: Registry::new(wires),
+    ops: ops
+    .map(instruction => instruction.map_wires(q => wires[registry.index(q)]))
+    .collect(),
+    parameter_names,
+  }
 }
 
 ///|
@@ -201,13 +207,13 @@ pub fn[Q : Qid] Circuit::with_noise(
   self : Circuit[Q],
   model : &NoiseModel,
 ) -> Circuit[Q] raise CircuitError {
-  self.noisy_body(self.ops, self.wires.items, model)
+  self.noisy_body(self.instructions(), self.wires.items, model)
 }
 
 ///|
 fn[Q : Qid] Circuit::noisy_body(
   self : Circuit[Q],
-  body : @vector.Vector[Instruction[Q]],
+  body : Iter[Instruction[Q]],
   wires : Array[Q],
   model : &NoiseModel,
 ) -> Circuit[Q] raise CircuitError {
@@ -218,15 +224,18 @@ fn[Q : Qid] Circuit::noisy_body(
       IfElse(branch) =>
         result.if_else(
           branch.condition,
-          self.noisy_body(branch.on_true, [], model),
-          self.noisy_body(branch.on_false, [], model),
+          self.noisy_body(branch.on_true.iter(), [], model),
+          self.noisy_body(branch.on_false.iter(), [], model),
         )
       ForLoop(block) =>
-        result.for_loop(block.count, self.noisy_body(block.body, [], model))
+        result.for_loop(
+          block.count,
+          self.noisy_body(block.body.iter(), [], model),
+        )
       WhileLoop(block) =>
         result.while_loop(
           block.condition,
-          self.noisy_body(block.body, [], model),
+          self.noisy_body(block.body.iter(), [], model),
           max_iterations=block.max_iterations,
         )
     }
@@ -282,7 +291,7 @@ fn[Q : Qid] Circuit::append_noisy_gate(
 ///|
 fn[Q : Qid] adjoint_body(
   wires : Array[Q],
-  body : @vector.Vector[Instruction[Q]],
+  body : Array[Instruction[Q]],
 ) -> Circuit[Q] raise CircuitError {
   let result = Circuit::new(wires)
   for i = body.length() - 1; i >= 0; i = i - 1 {
@@ -293,7 +302,7 @@ fn[Q : Qid] adjoint_body(
         if block.count > 0 {
           result.for_loop(block.count, adjoint_body([], block.body))
         } else {
-          result.ops = result.ops.push(body[i])
+          result.ops.push(body[i])
         }
       Operation(operation) => {
         guard operation.effect.try_adjoint() is Some(inverse) else {
@@ -318,7 +327,7 @@ fn[Q : Qid] adjoint_body(
 /// ```
 pub impl[Q : Qid + Show] Show for Circuit[Q] with fn output(self, logger) {
   let wires = self.wires
-  let ops = self.ops
+  let ops = self.instructions()
   let labels = wires.items.map(wire => Show::to_string(wire))
   let label_width = labels.fold(init=0, (width, label) => {
     width.max(label.length())

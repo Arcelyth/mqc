@@ -3,8 +3,8 @@
 /// The branch bodies capture the circuits as they were when if_else was called.
 struct IfElse[Q] {
   condition : &Condition
-  on_true : @vector.Vector[Instruction[Q]]
-  on_false : @vector.Vector[Instruction[Q]]
+  on_true : Array[Instruction[Q]]
+  on_false : Array[Instruction[Q]]
   names : Array[String]
   width : Int32
 }
@@ -27,8 +27,8 @@ pub fn[Q : Qid] Circuit::if_else(
   names.sort_by(String::lexical_compare)
   let branch = IfElse::{
     condition,
-    on_true: on_true.ops,
-    on_false: on_false.ops,
+    on_true: on_true.ops.copy(),
+    on_false: on_false.ops.copy(),
     names,
     width: on_true.record_width().max(on_false.record_width()),
   }
@@ -93,7 +93,7 @@ fn[Q] Circuit::record_width(self : Circuit[Q]) -> Int32 raise CircuitError {
 /// A counted loop captures its body at construction. 
 struct ForLoop[Q] {
   count : Int32
-  body : @vector.Vector[Instruction[Q]]
+  body : Array[Instruction[Q]]
   names : Array[String]
   width : Int32
 }
@@ -113,7 +113,7 @@ pub fn[Q : Qid] Circuit::for_loop(
   let (names, width) = body.loop_metadata(count)
   self.append_block(
     body.wires,
-    ForLoop({ count, body: body.ops, names, width, }),
+    ForLoop({ count, body: body.ops.copy(), names, width, }),
   )
 }
 
@@ -139,7 +139,7 @@ fn[Q : Qid] Circuit::append_block(
     self.parameter_names,
     instruction.parameters(),
   )
-  self.ops = self.ops.push(instruction)
+  self.ops.push(instruction)
 }
 
 ///|
@@ -148,7 +148,7 @@ fn[Q : Qid] Circuit::append_block(
 struct WhileLoop[Q] {
   condition : &Condition
   max_iterations : Int32
-  body : @vector.Vector[Instruction[Q]]
+  body : Array[Instruction[Q]]
   names : Array[String]
   width : Int32
 }
@@ -169,7 +169,13 @@ pub fn[Q : Qid] Circuit::while_loop(
   let (names, width) = body.loop_metadata(max_iterations)
   self.append_block(
     body.wires,
-    WhileLoop({ condition, max_iterations, body: body.ops, names, width, }),
+    WhileLoop({
+      condition,
+      max_iterations,
+      body: body.ops.copy(),
+      names,
+      width,
+    }),
   )
 }
 

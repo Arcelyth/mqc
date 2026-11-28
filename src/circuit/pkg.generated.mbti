@@ -76,6 +76,16 @@ pub fn[Q : Qid] Circuit::while_loop(Self[Q], &Condition, Self[Q], max_iterations
 pub fn[Q : Qid] Circuit::with_noise(Self[Q], &NoiseModel) -> Self[Q] raise CircuitError
 pub impl[Q : Qid + Show] Show for Circuit[Q]
 
+#alias(Clbit)
+#derive(Eq, Hash, @debug.Debug)
+pub(all) struct ClbitId(UInt32)
+pub fn ClbitId::id(Self) -> UInt32
+pub fn ClbitId::name(Self) -> String
+pub fn ClbitId::output(Self, &Logger) -> Unit
+pub fn ClbitId::to_string(Self) -> String
+pub impl Id for ClbitId
+pub impl Show for ClbitId
+
 pub struct ConditionalEffect {
   inner : &Effect
   condition : &Condition
@@ -179,6 +189,7 @@ pub fn QubitId::op_lt(Self, Self) -> Bool
 pub fn QubitId::output(Self, &Logger) -> Unit
 pub fn QubitId::to_repr(Self) -> @debug.Repr
 pub fn QubitId::to_string(Self) -> String
+pub impl Id for QubitId
 pub impl Qid for QubitId
 pub impl Show for QubitId
 
@@ -196,21 +207,22 @@ pub fn QuditId::not_equal(Self, Self) -> Bool
 pub fn QuditId::output(Self, &Logger) -> Unit
 pub fn QuditId::to_repr(Self) -> @debug.Repr
 pub fn QuditId::to_string(Self) -> String
+pub impl Id for QuditId
 pub impl Qid for QuditId
 pub impl Show for QuditId
 
-pub struct Registry[Q] {
+pub struct Registry[I] {
   // private fields
 }
-pub fn[Q : Qid] Registry::add(Self[Q], Q) -> Self[Q] raise CircuitError
-pub fn[Q] Registry::at(Self[Q], Int32) -> Q?
-pub fn[Q : Qid] Registry::dim_at(Self[Q], Int32) -> UInt32
-pub fn[Q : Qid] Registry::dims(Self[Q]) -> Array[UInt32]
-pub fn[Q : Qid] Registry::get(Self[Q], Q) -> Int32?
-pub fn[Q] Registry::is_empty(Self[Q]) -> Bool
-pub fn[Q] Registry::len(Self[Q]) -> Int32
-pub fn[Q : Qid] Registry::merge(Self[Q], Self[Q]) -> Self[Q] raise CircuitError
-pub fn[Q : Qid] Registry::new(Array[Q]) -> Self[Q] raise CircuitError
+pub fn[I : Id] Registry::add(Self[I], I) -> Self[I] raise CircuitError
+pub fn[I] Registry::at(Self[I], Int32) -> I?
+pub fn[I : Qid] Registry::dim_at(Self[I], Int32) -> UInt32
+pub fn[I : Qid] Registry::dims(Self[I]) -> Array[UInt32]
+pub fn[I : Id] Registry::get(Self[I], I) -> Int32?
+pub fn[I] Registry::is_empty(Self[I]) -> Bool
+pub fn[I] Registry::len(Self[I]) -> Int32
+pub fn[I : Qid] Registry::merge(Self[I], Self[I]) -> Self[I] raise CircuitError
+pub fn[I : Id] Registry::new(Array[I]) -> Self[I] raise CircuitError
 
 type WhileLoop[Q]
 pub fn[Q] WhileLoop::body(Self[Q]) -> Iter[Instruction[Q]]
@@ -251,6 +263,11 @@ pub(open) trait Effect {
   fn parameters(Self) -> Array[String] = _
 }
 
+pub(open) trait Id : Eq + Hash {
+  fn name(Self) -> String
+  fn id(Self) -> UInt32
+}
+
 pub(open) trait MeasurementRecord {
   fn latest(Self, String) -> ArrayView[Int32] raise CircuitError
 }
@@ -259,9 +276,7 @@ pub(open) trait NoiseModel {
   fn after_gate(Self, Gate, ArrayView[Int32]) -> Array[(Channel, Array[Int32])] raise CircuitError
 }
 
-pub(open) trait Qid : Eq + Hash {
-  fn name(Self) -> String
-  fn id(Self) -> UInt32
+pub(open) trait Qid : Id {
   fn dim(Self) -> UInt32
   fn is_dim(Self, UInt32) -> Bool = _
 }

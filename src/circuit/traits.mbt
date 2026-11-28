@@ -1,9 +1,13 @@
 ///|
-/// Identifies a quantum object. Equal IDs must have the same, fixed dimension.
-/// Dimensions must be at least two.
-pub(open) trait Qid: Eq + Hash {
+pub(open) trait Id: Eq + Hash {
   fn name(Self) -> String
   fn id(Self) -> UInt32
+}
+
+///|
+/// Identifies a quantum object. Equal IDs must have the same, fixed dimension.
+/// Dimensions must be at least two.
+pub(open) trait Qid: Id {
   fn dim(Self) -> UInt32
   fn is_dim(Self, UInt32) -> Bool = _
 }
