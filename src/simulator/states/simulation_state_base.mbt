@@ -20,7 +20,7 @@ pub fn SimulationStateBase::new(seed? : UInt64) -> SimulationStateBase {
 pub fn SimulationStateBase::copy(
   self : SimulationStateBase,
 ) -> SimulationStateBase {
-  { rng: self.rng.clone(), history: self.history.copy(), }
+  { rng: self.rng.copy(), history: self.history.copy(), }
 }
 
 ///|

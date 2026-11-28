@@ -6,5 +6,5 @@ struct ParamBinding {
 
 ///|
 pub fn ParamBinding::empty() -> ParamBinding {
-  { values: @hashmap.HashMap::new(), }
+  { values: @hashmap.HashMap::empty(), }
 }

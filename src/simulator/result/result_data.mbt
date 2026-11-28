@@ -26,7 +26,7 @@ pub struct ResultData {
 
 ///|
 pub fn ResultData::new() -> ResultData {
-  { values: @hashmap.HashMap::new(), }
+  { values: @hashmap.HashMap::empty(), }
 }
 
 ///|

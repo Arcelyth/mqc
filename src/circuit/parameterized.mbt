@@ -6,7 +6,7 @@ fn add_names(
 ) -> @hashset.HashSet[String] {
   let mut result = names
   for name in additional {
-    result = result.add(name)
+    result = result.insert(name)
   }
   result
 }
