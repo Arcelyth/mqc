@@ -3,6 +3,7 @@ package "Arcelyth/mqc/circuit"
 
 import {
   "Arcelyth/mqc/circuit/kernel",
+  "Arcelyth/mqc/circuit/parameter",
   "Arcelyth/mqc/internal",
   "Arcelyth/mqc/maths",
   "moonbitlang/core/debug",
@@ -237,6 +238,14 @@ pub using @kernel {type DenseKernel}
 pub using @kernel {type KernelArgs}
 
 pub using @kernel {type MonomialKernel}
+
+pub using @parameter {type ParamExpr}
+
+pub using @parameter {type Parameter}
+
+pub using @parameter {type ParameterError}
+
+pub using @parameter {type ParameterId}
 
 pub using @kernel {type ScaledKernel}
 

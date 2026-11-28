@@ -36,3 +36,8 @@ pub impl Hash for Parameter with fn hash_combine(self, hasher) {
 pub impl Debug for Parameter with fn to_repr(self) {
   Debug::to_repr(self.label)
 }
+
+///|
+pub fn Parameter::expr(self : Parameter) -> ParamExpr {
+  Symbol(self)
+}

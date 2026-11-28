@@ -16,7 +16,20 @@ pub(all) suberror ParameterError {
 pub fn ParameterError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
+type ParamExpr
+pub fn ParamExpr::assign(Self, Map[Parameter, Self]) -> Self raise ParameterError
+pub fn ParamExpr::constant(Double) -> Self
+pub fn ParamExpr::constant_value(Self) -> Double?
+pub fn ParamExpr::parameters(Self) -> Array[Parameter]
+pub fn ParamExpr::value(Self) -> Double raise ParameterError
+pub impl Add for ParamExpr
+pub impl Div for ParamExpr
+pub impl Mul for ParamExpr
+pub impl Neg for ParamExpr
+pub impl Sub for ParamExpr
+
 type Parameter
+pub fn Parameter::expr(Self) -> ParamExpr
 pub fn Parameter::id(Self) -> ParameterId
 pub fn Parameter::name(Self) -> String
 pub fn Parameter::new(String, id? : ParameterId) -> Self

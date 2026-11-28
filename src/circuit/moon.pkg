@@ -2,6 +2,7 @@ import {
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/internal",
   "Arcelyth/mqc/circuit/kernel",
+  "Arcelyth/mqc/circuit/parameter",
   "moonbitlang/core/immut/hashset",
   "moonbitlang/core/immut/hashmap",
 }
