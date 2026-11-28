@@ -6,7 +6,7 @@ using @mqc {
   measure,
   type Circuit,
   type QubitId,
-  type QError,
+  type CircuitError,
   type StateVectorSimulator,
 }
 
@@ -17,7 +17,7 @@ fn oracle(
   f1 : Bool,
   input : QubitId,
   target : QubitId,
-) -> Array[@mqc.Operation[QubitId]] raise QError {
+) -> Array[@mqc.Operation[QubitId]] raise CircuitError {
   let ops = []
   if f0 {
     ops.push(x(target))
@@ -30,8 +30,8 @@ fn oracle(
 
 ///|
 fn classify(
-  query : (QubitId, QubitId) -> Array[@mqc.Operation[QubitId]] raise QError,
-) -> String raise QError {
+  query : (QubitId, QubitId) -> Array[@mqc.Operation[QubitId]] raise CircuitError,
+) -> String raise {
   let input = QubitId(0U)
   let target = QubitId(1U)
   // Prepare |+> on the input and |-> on the target. Flipping |-> changes its sign.

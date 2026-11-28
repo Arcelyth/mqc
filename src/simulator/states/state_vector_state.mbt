@@ -23,7 +23,7 @@ pub fn StateVectorState::new(
 pub fn StateVectorState::from_state(
   state : StateVector,
   seed? : UInt64,
-) -> StateVectorState raise @error.QError {
+) -> StateVectorState raise StateError {
   validate_norm(state)
   {
     base: SimulationStateBase::new(seed?),
@@ -67,7 +67,7 @@ pub fn StateVectorState::records(
 ///|
 pub fn StateVectorState::validate(
   self : StateVectorState,
-) -> Unit raise @error.QError {
+) -> Unit raise StateError {
   validate_norm(self.vector)
 }
 
@@ -76,7 +76,7 @@ pub fn StateVectorState::validate(
 pub fn StateVectorState::apply(
   self : StateVectorState,
   instruction : @circuit.Instruction[Int32],
-) -> Unit raise @error.QError {
+) -> Unit raise {
   check_instruction(instruction)
   guard self.base.dispatch(instruction, child => self.apply(child))
     is Some((effect, targets)) else {
@@ -112,7 +112,7 @@ pub fn StateVectorState::apply_channel(
   self : StateVectorState,
   channel : @circuit.Channel,
   targets : Array[Int32],
-) -> Unit raise @error.QError {
+) -> Unit raise StateError {
   let state = self.vector
   check_target_shape(channel.shape(), targets, state.shape)
   if channel.mixture_terms() is Some(terms) {
@@ -165,7 +165,7 @@ fn StateVectorState::measure(
   self : StateVectorState,
   targets : Array[Int32],
   key : String,
-) -> Unit raise @error.QError {
+) -> Unit raise {
   let probabilities = self.vector.marginal_probabilities(targets)
   let outcome = sample_outcome(probabilities, self.base.draw())
   let digits = measurement_digits(self.vector.shape, targets, outcome)

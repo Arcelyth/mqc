@@ -20,26 +20,26 @@ struct DensityMatrix {
 
 ///|
 /// Check representable dimensions and entry count before allocating a matrix.
-fn density_size(shape : @internal.Shape) -> Int32 raise @error.QError {
+fn density_size(shape : @internal.Shape) -> Int32 raise StateError {
   let mut size = 1
   for i in 0..<shape.length() {
     let dimension = shape[i]
     if dimension == 0U {
-      raise @error.InvalidDimension(dimension)
+      raise InvalidDimension(dimension)
     }
     if dimension > (2147483647 / size).reinterpret_as_uint() {
-      raise @error.SizeLimit(2147483647)
+      raise SizeLimit(2147483647)
     }
     size *= dimension.reinterpret_as_int()
   }
   if size > 2147483647 / size {
-    raise @error.SizeLimit(2147483647)
+    raise SizeLimit(2147483647)
   }
   size
 }
 
 ///|
-fn empty_density(shape : @internal.Shape) -> DensityMatrix raise @error.QError {
+fn empty_density(shape : @internal.Shape) -> DensityMatrix raise StateError {
   let size = density_size(shape)
   {
     shape,
@@ -51,7 +51,7 @@ fn empty_density(shape : @internal.Shape) -> DensityMatrix raise @error.QError {
 ///|
 pub fn DensityMatrix::zero(
   dimensions : Array[UInt32],
-) -> DensityMatrix raise @error.QError {
+) -> DensityMatrix raise StateError {
   DensityMatrix::basis(dimensions, 0)
 }
 
@@ -59,11 +59,11 @@ pub fn DensityMatrix::zero(
 pub fn DensityMatrix::basis(
   dimensions : Array[UInt32],
   index : Int32,
-) -> DensityMatrix raise @error.QError {
+) -> DensityMatrix raise StateError {
   let shape = @internal.Shape::new(dimensions)
   let size = density_size(shape)
   if index < 0 || index >= size {
-    raise @error.InvalidBasis(index)
+    raise InvalidBasis(index)
   }
   let matrix = empty_density(shape)
   matrix.re[index * size + index] = 1.0
@@ -78,7 +78,7 @@ pub fn DensityMatrix::basis(
 /// $$
 pub fn DensityMatrix::from_state(
   state : StateVector,
-) -> DensityMatrix raise @error.QError {
+) -> DensityMatrix raise StateError {
   validate_norm(state)
   let matrix = empty_density(state.shape)
   matrix.add_pure(state, 1.0)
@@ -96,23 +96,21 @@ pub fn DensityMatrix::from_state(
 pub fn DensityMatrix::from_mixture(
   states : Array[StateVector],
   weights : Array[Double],
-) -> DensityMatrix raise @error.QError {
+) -> DensityMatrix raise StateError {
   if states.is_empty() || states.length() != weights.length() {
-    raise @error.InvalidState("mixture needs one weight per state")
+    raise InvalidState("mixture needs one weight per state")
   }
   let shape = states[0].shape
   let mut total = 0.0
   let mut correction = 0.0
   for i, state in states {
     if state.shape != shape {
-      raise @error.RegisterMismatch
+      raise RegisterMismatch
     }
     validate_norm(state)
     let weight = weights[i]
     if weight.is_nan() || weight.is_inf() || weight < 0.0 {
-      raise @error.InvalidState(
-        "mixture weights must be finite and nonnegative",
-      )
+      raise InvalidState("mixture weights must be finite and nonnegative")
     }
     let term = weight - correction
     let next = total + term
@@ -120,7 +118,7 @@ pub fn DensityMatrix::from_mixture(
     total = next
   }
   if total.is_nan() || total.is_inf() || (total - 1.0).abs() > 1.0e-10 {
-    raise @error.InvalidState("mixture weights must sum to one")
+    raise InvalidState("mixture weights must sum to one")
   }
   let matrix = empty_density(shape)
   for i, state in states {
@@ -177,13 +175,13 @@ pub fn DensityMatrix::entry(
   self : DensityMatrix,
   row : Int32,
   column : Int32,
-) -> @maths.Complex raise @error.QError {
+) -> @maths.Complex raise StateError {
   let size = self.size()
   if row < 0 || row >= size {
-    raise @error.InvalidBasis(row)
+    raise InvalidBasis(row)
   }
   if column < 0 || column >= size {
-    raise @error.InvalidBasis(column)
+    raise InvalidBasis(column)
   }
   let index = row * size + column
   @maths.Complex::new(self.re[index], self.im[index])
@@ -208,7 +206,7 @@ pub fn DensityMatrix::probabilities(self : DensityMatrix) -> Array[Double] {
 pub fn DensityMatrix::marginal_probabilities(
   self : DensityMatrix,
   targets : Array[Int32],
-) -> Array[Double] raise @error.QError {
+) -> Array[Double] raise ShapeError {
   let size = self.size()
   let probabilities = Array::make(self.shape.selected_size(targets), 0.0)
   let corrections = Array::make(probabilities.length(), 0.0)

@@ -12,9 +12,9 @@ struct PerTargetNoise {
 /// Build a per-target noise model from a channel acting on one wire.
 pub fn PerTargetNoise::new(
   channel : @circuit.Channel,
-) -> PerTargetNoise raise @error.QError {
+) -> PerTargetNoise raise NoiseError {
   if channel.arity() != 1 {
-    raise @error.TargetCount(1, channel.arity())
+    raise TargetCount(1, channel.arity())
   }
   { channel, }
 }

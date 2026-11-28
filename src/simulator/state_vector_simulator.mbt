@@ -32,7 +32,7 @@ pub fn StateVectorSimulator::simulate(
   self : StateVectorSimulator,
   program : @circuit.Program,
   initial_state? : StateVectorState,
-) -> TrialResult[StateVectorState] raise @error.QError {
+) -> TrialResult[StateVectorState] raise {
   self.engine.simulate(program, initial_state?)
 }
 
@@ -40,9 +40,9 @@ pub fn StateVectorSimulator::simulate(
 pub fn StateVectorSimulator::simulate_steps(
   self : StateVectorSimulator,
   program : @circuit.Program,
-  visit : (StepResult[StateVectorState]) -> Unit raise @error.QError,
+  visit : (StepResult[StateVectorState]) -> Unit raise,
   initial_state? : StateVectorState,
-) -> TrialResult[StateVectorState] raise @error.QError {
+) -> TrialResult[StateVectorState] raise {
   self.engine.simulate_steps(program, visit, initial_state?)
 }
 
@@ -50,7 +50,7 @@ pub fn StateVectorSimulator::simulate_steps(
 pub fn StateVectorSimulator::simulate_batch(
   self : StateVectorSimulator,
   programs : Array[@circuit.Program],
-) -> Array[Result[TrialResult[StateVectorState], @error.QError]] {
+) -> Array[Result[TrialResult[StateVectorState], Error]] {
   self.engine.simulate_batch(programs)
 }
 
@@ -59,7 +59,7 @@ pub impl Sampler for StateVectorSimulator with fn run(
   self,
   program,
   repetitions?,
-) -> SamplerResult raise @error.QError {
+) -> SamplerResult raise {
   let repetitions = repetitions.unwrap_or(1)
   match sampling_plan(program, repetitions, sample_channels=true) {
     Terminal(targets, layout) =>

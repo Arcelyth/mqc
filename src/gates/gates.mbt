@@ -93,9 +93,9 @@ pub fn t() -> @circuit.Gate {
 
 ///|
 /// Require a finite rotation angle before computing gate coefficients.
-fn check_angle(angle : Double) -> Unit raise @error.QError {
+fn check_angle(angle : Double) -> Unit raise GateError {
   if angle.is_nan() || angle.is_inf() {
-    raise @error.QError::InvalidGate("angle must be finite")
+    raise InvalidAngle("angle must be finite")
   }
 }
 
@@ -106,7 +106,7 @@ fn check_angle(angle : Double) -> Unit raise @error.QError {
 /// $$
 /// R_x(\theta) = e^{-i\theta X/2} = \begin{bmatrix}c & -is \\ -is & c\end{bmatrix},\qquad c=\cos(\theta/2),\quad s=\sin(\theta/2)
 /// $$
-pub fn rx(angle : Double) -> @circuit.Gate raise @error.QError {
+pub fn rx(angle : Double) -> @circuit.Gate raise {
   check_angle(angle)
   let c = real(@math.cos(angle / 2.0))
   let s : @maths.Complex = { re: 0.0, im: -@math.sin(angle / 2.0), }
@@ -120,7 +120,7 @@ pub fn rx(angle : Double) -> @circuit.Gate raise @error.QError {
 /// $$
 /// R_y(\theta) = e^{-i\theta Y/2} = \begin{bmatrix}c & -s \\ s & c\end{bmatrix},\qquad c=\cos(\theta/2),\quad s=\sin(\theta/2)
 /// $$
-pub fn ry(angle : Double) -> @circuit.Gate raise @error.QError {
+pub fn ry(angle : Double) -> @circuit.Gate raise {
   check_angle(angle)
   let c = real(@math.cos(angle / 2.0))
   let s = real(@math.sin(angle / 2.0))
@@ -134,7 +134,7 @@ pub fn ry(angle : Double) -> @circuit.Gate raise @error.QError {
 /// $$
 /// R_z(\theta) = e^{-i\theta Z/2} = \begin{bmatrix}e^{-i\theta/2} & 0 \\ 0 & e^{i\theta/2}\end{bmatrix}
 /// $$
-pub fn rz(angle : Double) -> @circuit.Gate raise @error.QError {
+pub fn rz(angle : Double) -> @circuit.Gate raise {
   check_angle(angle)
   @circuit.Gate::unitary("Rz", [2U], [
     @maths.Complex::phase(-angle / 2.0),
@@ -154,7 +154,7 @@ pub fn rz(angle : Double) -> @circuit.Gate raise @error.QError {
 ///
 /// The first diagonal entry is exactly one. The global phase relative to the
 /// Z rotation affects the result when adding a control.
-pub fn phase(angle : Double) -> @circuit.Gate raise @error.QError {
+pub fn phase(angle : Double) -> @circuit.Gate raise {
   check_angle(angle)
   @circuit.Gate::unitary("Phase", [2U], [
     real(1.0),

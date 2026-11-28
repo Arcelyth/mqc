@@ -9,7 +9,7 @@ struct Operation[Q] {
 pub fn[Q : Qid] Operation::new(
   effect : &Effect,
   targets : Array[Q],
-) -> Operation[Q] raise @error.QError {
+) -> Operation[Q] raise CircuitError {
   let shape = effect.dim()
   if shape.length() != targets.length() {
     raise TargetCount(shape.length(), targets.length())
@@ -35,7 +35,7 @@ pub fn[Q : Qid] Operation::new(
 pub fn[Q] Operation::when(
   self : Operation[Q],
   conditions : &Condition,
-) -> Operation[Q] raise @error.QError {
+) -> Operation[Q] raise CircuitError {
   if self.effect.measurement_key() is Some(_) {
     raise InvalidCondition("measurements must execute on every shot")
   }

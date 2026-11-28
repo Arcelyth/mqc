@@ -30,11 +30,11 @@ pub fn StateVector::zero(dimensions : Array[UInt32]) -> StateVector {
 pub fn StateVector::basis(
   dimensions : Array[UInt32],
   index : Int32,
-) -> StateVector raise @error.QError {
+) -> StateVector raise StateError {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
   if index < 0 || index >= size {
-    raise @error.QError::InvalidBasis(index)
+    raise InvalidBasis(index)
   }
   let re = Array::make(size, 0.0)
   re[index] = 1.0
@@ -49,7 +49,7 @@ pub fn StateVector::from_amplitudes(
   dimensions : Array[UInt32],
   amplitudes : Array[@maths.Complex],
   tolerance~ : Double = 1.0e-10,
-) -> StateVector raise @error.QError {
+) -> StateVector raise StateError {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
   if amplitudes.length() != size ||
@@ -57,13 +57,13 @@ pub fn StateVector::from_amplitudes(
     tolerance.is_inf() ||
     tolerance <= 0.0 ||
     tolerance > 1.0e-6 {
-    raise @error.QError::InvalidState("invalid amplitude count or tolerance")
+    raise InvalidState("invalid amplitude count or tolerance")
   }
   let mut norm = 0.0
   let mut correction = 0.0
   for amp in amplitudes {
     if !amp.is_finite() {
-      raise @error.QError::InvalidState("amplitudes must be finite")
+      raise InvalidState("amplitudes must be finite")
     }
     let term = amp.norm_squared() - correction
     let next = norm + term
@@ -71,7 +71,7 @@ pub fn StateVector::from_amplitudes(
     norm = next
   }
   if norm.is_nan() || norm.is_inf() || (norm - 1.0).abs() > tolerance {
-    raise @error.QError::InvalidState("amplitudes must have unit norm")
+    raise InvalidState("amplitudes must have unit norm")
   }
   let scale = 1.0 / norm.sqrt()
   {
@@ -101,9 +101,9 @@ pub fn StateVector::size(self : StateVector) -> Int32 {
 pub fn StateVector::amplitude(
   self : StateVector,
   index : Int32,
-) -> @maths.Complex raise @error.QError {
+) -> @maths.Complex raise StateError {
   if index < 0 || index >= self.re.length() {
-    raise @error.QError::InvalidBasis(index)
+    raise InvalidBasis(index)
   }
   { re: self.re[index], im: self.im[index], }
 }
@@ -153,9 +153,9 @@ pub fn StateVector::norm_squared(self : StateVector) -> Double {
 pub fn StateVector::inner_product(
   self : StateVector,
   other : StateVector,
-) -> @maths.Complex raise @error.QError {
+) -> @maths.Complex raise StateError {
   if self.shape != other.shape {
-    raise @error.QError::RegisterMismatch
+    raise RegisterMismatch
   }
   let mut re = 0.0
   let mut im = 0.0
@@ -176,7 +176,7 @@ pub fn StateVector::inner_product(
 pub fn StateVector::marginal_probabilities(
   self : StateVector,
   targets : Array[Int32],
-) -> Array[Double] raise @error.QError {
+) -> Array[Double] raise ShapeError {
   let size = self.shape.selected_size(targets)
   let prob = Array::make(size, 0.0)
   let corrections = Array::make(size, 0.0)

@@ -45,7 +45,7 @@ pub fn SimulationStateBase::record(
 fn SimulationStateBase::resolve(
   self : SimulationStateBase,
   effect : &@circuit.Effect,
-) -> &@circuit.Effect? raise @error.QError {
+) -> &@circuit.Effect? raise @circuit.CircuitError {
   guard effect.try_conditional() is Some(guarded) else { return Some(effect) }
   let inner = self.resolve(guarded.inner)
   if guarded.condition.evaluate(self.history) {
@@ -82,8 +82,8 @@ pub extend SimulationStateBase with @circuit.MeasurementRecord::{latest}
 fn SimulationStateBase::dispatch(
   self : SimulationStateBase,
   instruction : @circuit.Instruction[Int32],
-  apply : (@circuit.Instruction[Int32]) -> Unit raise @error.QError,
-) -> (&@circuit.Effect, Array[Int32])? raise @error.QError {
+  apply : (@circuit.Instruction[Int32]) -> Unit raise,
+) -> (&@circuit.Effect, Array[Int32])? raise {
   match instruction {
     Operation(op) =>
       self.resolve(op.effect()).map(effect => (effect, op.targets()))
@@ -100,7 +100,7 @@ fn SimulationStateBase::dispatch(
       let mut iterations = 0
       while block.condition().evaluate(self.history) {
         if iterations == block.max_iterations() {
-          raise @error.IterationLimit(iterations)
+          raise StateError::IterationLimit(iterations)
         }
         for child in block.body() {
           apply(child)

@@ -11,7 +11,7 @@ struct Circuit[Q] {
 
 ///|
 /// Create an empty circuit over an ordered list of distinct logical IDs.
-pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise @error.QError {
+pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise CircuitError {
   {
     wires: Registry::new(qids),
     ops: @vector.empty(),
@@ -23,7 +23,7 @@ pub fn[Q : Qid] Circuit::new(qids : Array[Q]) -> Circuit[Q] raise @error.QError 
 /// Build a circuit from bound operations in execution order.
 pub fn[Q : Qid] Circuit::from_op(
   operations : Array[Operation[Q]],
-) -> Circuit[Q] raise @error.QError {
+) -> Circuit[Q] raise CircuitError {
   let circuit = Circuit::new([])
   circuit.extend_ops(operations)
   circuit
@@ -40,7 +40,7 @@ pub fn[Q] Circuit::copy(self : Circuit[Q]) -> Circuit[Q] {
 pub fn[Q : Qid] Circuit::append(
   self : Circuit[Q],
   operation : Operation[Q],
-) -> Unit raise @error.QError {
+) -> Unit raise CircuitError {
   self.extend_ops([operation])
 }
 
@@ -49,7 +49,7 @@ pub fn[Q : Qid] Circuit::append(
 pub fn[Q : Qid] Circuit::extend_ops(
   self : Circuit[Q],
   operations : Array[Operation[Q]],
-) -> Unit raise @error.QError {
+) -> Unit raise CircuitError {
   let wires = self.wires.with_targets(operations.iter().map(op => op.wires))
   let mut ops = self.ops
   let mut parameter_names = self.parameter_names
@@ -127,7 +127,7 @@ pub fn[Q : Qid] Circuit::compile(
 pub fn[Q : Qid] Circuit::concat(
   self : Circuit[Q],
   other : Circuit[Q],
-) -> Circuit[Q] raise @error.QError {
+) -> Circuit[Q] raise CircuitError {
   {
     wires: self.wires.merge(other.wires),
     ops: self.ops.concat(other.ops),
@@ -140,7 +140,7 @@ pub fn[Q : Qid] Circuit::concat(
 pub fn[Q : Qid, R : Qid] Circuit::remap(
   self : Circuit[Q],
   map : (Q) -> R,
-) -> Circuit[R] raise @error.QError {
+) -> Circuit[R] raise CircuitError {
   let registry = self.wires
   let ops = self.ops
   let parameter_names = self.parameter_names
@@ -167,7 +167,7 @@ pub fn[Q : Qid, R : Qid] Circuit::remap(
 /// $$
 pub fn[Q : Qid] Circuit::adjoint(
   self : Circuit[Q],
-) -> Circuit[Q] raise @error.QError {
+) -> Circuit[Q] raise CircuitError {
   adjoint_body(self.wires.items, self.ops)
 }
 
@@ -176,7 +176,7 @@ pub fn[Q : Qid] Circuit::adjoint(
 fn[Q] Circuit::loop_metadata(
   self : Circuit[Q],
   count : Int32,
-) -> (Array[String], Int32) raise @error.QError {
+) -> (Array[String], Int32) raise CircuitError {
   let names : Array[String] = []
   let mut width = 0
   if count > 0 {
@@ -200,7 +200,7 @@ fn[Q] Circuit::loop_metadata(
 pub fn[Q : Qid] Circuit::with_noise(
   self : Circuit[Q],
   model : &NoiseModel,
-) -> Circuit[Q] raise @error.QError {
+) -> Circuit[Q] raise CircuitError {
   self.noisy_body(self.ops, self.wires.items, model)
 }
 
@@ -210,7 +210,7 @@ fn[Q : Qid] Circuit::noisy_body(
   body : @vector.Vector[Instruction[Q]],
   wires : Array[Q],
   model : &NoiseModel,
-) -> Circuit[Q] raise @error.QError {
+) -> Circuit[Q] raise CircuitError {
   let result = Circuit::new(wires)
   for instruction in body {
     match instruction {
@@ -240,7 +240,7 @@ fn[Q : Qid] Circuit::append_noisy_gate(
   result : Circuit[Q],
   op : Operation[Q],
   model : &NoiseModel,
-) -> Unit raise @error.QError {
+) -> Unit raise CircuitError {
   let mut effect = op.effect
   let guards = []
   while effect.try_conditional() is Some(guarded) {
@@ -283,7 +283,7 @@ fn[Q : Qid] Circuit::append_noisy_gate(
 fn[Q : Qid] adjoint_body(
   wires : Array[Q],
   body : @vector.Vector[Instruction[Q]],
-) -> Circuit[Q] raise @error.QError {
+) -> Circuit[Q] raise CircuitError {
   let result = Circuit::new(wires)
   for i = body.length() - 1; i >= 0; i = i - 1 {
     match body[i] {

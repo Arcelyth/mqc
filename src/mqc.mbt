@@ -1,5 +1,6 @@
 ///|
 pub using @circuit {
+  type CircuitError,
   trait Qid,
   trait Effect,
   trait Condition,
@@ -23,17 +24,16 @@ pub using @circuit {
 }
 
 ///|
-pub using @error {
-  type QError,
-  /// Alias of QError.
-  type QuantumError,
-}
+pub using @gates {type GateError}
 
 ///|
 pub using @maths {type Complex}
 
 ///|
 pub using @simulator {
+  type ShapeError,
+  type SimulatorError,
+  type StateError,
   type StateVector,
   type DensityMatrix,
   type DensityMatrixState,

@@ -32,7 +32,7 @@ fn main {
 }
 
 ///|
-fn measure_parity() -> Unit raise @mqc.QuantumError {
+fn measure_parity() -> Unit raise {
   let a = QubitId(0U)
   let b = QubitId(1U)
   let output = QubitId(2U)

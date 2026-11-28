@@ -1,5 +1,4 @@
 import {
-  "Arcelyth/mqc/error",
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/maths",
   "moonbitlang/core/math",

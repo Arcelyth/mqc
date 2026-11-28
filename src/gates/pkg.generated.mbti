@@ -3,7 +3,7 @@ package "Arcelyth/mqc/gates"
 
 import {
   "Arcelyth/mqc/circuit",
-  "Arcelyth/mqc/error",
+  "moonbitlang/core/debug",
 }
 
 // Values
@@ -18,13 +18,13 @@ pub fn h() -> @circuit.Gate
 
 pub fn i() -> @circuit.Gate
 
-pub fn phase(Double) -> @circuit.Gate raise @error.QError
+pub fn phase(Double) -> @circuit.Gate raise
 
-pub fn rx(Double) -> @circuit.Gate raise @error.QError
+pub fn rx(Double) -> @circuit.Gate raise
 
-pub fn ry(Double) -> @circuit.Gate raise @error.QError
+pub fn ry(Double) -> @circuit.Gate raise
 
-pub fn rz(Double) -> @circuit.Gate raise @error.QError
+pub fn rz(Double) -> @circuit.Gate raise
 
 pub fn s() -> @circuit.Gate
 
@@ -39,6 +39,11 @@ pub fn y() -> @circuit.Gate
 pub fn z() -> @circuit.Gate
 
 // Errors
+#derive(@debug.Debug)
+pub(all) suberror GateError {
+  InvalidAngle(String)
+}
+pub fn GateError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 

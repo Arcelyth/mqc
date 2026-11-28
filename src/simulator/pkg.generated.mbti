@@ -3,24 +3,32 @@ package "Arcelyth/mqc/simulator"
 
 import {
   "Arcelyth/mqc/circuit",
-  "Arcelyth/mqc/error",
+  "Arcelyth/mqc/internal",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator/result",
   "Arcelyth/mqc/simulator/states",
+  "moonbitlang/core/debug",
 }
 
 // Values
 
 // Errors
+#derive(@debug.Debug)
+pub(all) suberror SimulatorError {
+  RegisterMismatch
+  InvalidState(String)
+  SizeLimit(Int32)
+}
+pub fn SimulatorError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 type DensityMatrixSimulator
 pub fn DensityMatrixSimulator::name(Self) -> String
 pub fn DensityMatrixSimulator::new(seed? : UInt64) -> Self
-pub fn DensityMatrixSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @error.QError
-pub fn DensityMatrixSimulator::simulate(Self, @circuit.Program, initial_state? : @states.DensityMatrixState) -> TrialResult[@states.DensityMatrixState] raise @error.QError
-pub fn DensityMatrixSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@states.DensityMatrixState], @error.QError]]
-pub fn DensityMatrixSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@states.DensityMatrixState]) -> Unit raise @error.QError, initial_state? : @states.DensityMatrixState) -> TrialResult[@states.DensityMatrixState] raise @error.QError
+pub fn DensityMatrixSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise
+pub fn DensityMatrixSimulator::simulate(Self, @circuit.Program, initial_state? : @states.DensityMatrixState) -> TrialResult[@states.DensityMatrixState] raise
+pub fn DensityMatrixSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@states.DensityMatrixState], Error]]
+pub fn DensityMatrixSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@states.DensityMatrixState]) -> Unit raise, initial_state? : @states.DensityMatrixState) -> TrialResult[@states.DensityMatrixState] raise
 pub fn DensityMatrixSimulator::simulator(Self) -> Simulator[@states.DensityMatrixState]
 pub impl Sampler for DensityMatrixSimulator
 
@@ -52,18 +60,18 @@ pub impl Show for SamplerResult
 
 type Simulator[S]
 pub fn[S] Simulator::name(Self[S]) -> String
-pub fn[S] Simulator::new(String, (Array[UInt32]) -> S raise @error.QError) -> Self[S]
-pub fn[S : SimulationState] Simulator::simulate(Self[S], @circuit.Program, initial_state? : S) -> TrialResult[S] raise @error.QError
-pub fn[S : SimulationState] Simulator::simulate_batch(Self[S], Array[@circuit.Program]) -> Array[Result[TrialResult[S], @error.QError]]
-pub fn[S : SimulationState] Simulator::simulate_steps(Self[S], @circuit.Program, (StepResult[S]) -> Unit raise @error.QError, initial_state? : S) -> TrialResult[S] raise @error.QError
+pub fn[S] Simulator::new(String, (Array[UInt32]) -> S raise) -> Self[S]
+pub fn[S : SimulationState] Simulator::simulate(Self[S], @circuit.Program, initial_state? : S) -> TrialResult[S] raise
+pub fn[S : SimulationState] Simulator::simulate_batch(Self[S], Array[@circuit.Program]) -> Array[Result[TrialResult[S], Error]]
+pub fn[S : SimulationState] Simulator::simulate_steps(Self[S], @circuit.Program, (StepResult[S]) -> Unit raise, initial_state? : S) -> TrialResult[S] raise
 
 type StateVectorSimulator
 pub fn StateVectorSimulator::name(Self) -> String
 pub fn StateVectorSimulator::new(seed? : UInt64) -> Self
-pub fn StateVectorSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @error.QError
-pub fn StateVectorSimulator::simulate(Self, @circuit.Program, initial_state? : @states.StateVectorState) -> TrialResult[@states.StateVectorState] raise @error.QError
-pub fn StateVectorSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@states.StateVectorState], @error.QError]]
-pub fn StateVectorSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@states.StateVectorState]) -> Unit raise @error.QError, initial_state? : @states.StateVectorState) -> TrialResult[@states.StateVectorState] raise @error.QError
+pub fn StateVectorSimulator::run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise
+pub fn StateVectorSimulator::simulate(Self, @circuit.Program, initial_state? : @states.StateVectorState) -> TrialResult[@states.StateVectorState] raise
+pub fn StateVectorSimulator::simulate_batch(Self, Array[@circuit.Program]) -> Array[Result[TrialResult[@states.StateVectorState], Error]]
+pub fn StateVectorSimulator::simulate_steps(Self, @circuit.Program, (StepResult[@states.StateVectorState]) -> Unit raise, initial_state? : @states.StateVectorState) -> TrialResult[@states.StateVectorState] raise
 pub fn StateVectorSimulator::simulator(Self) -> Simulator[@states.StateVectorState]
 pub impl Sampler for StateVectorSimulator
 
@@ -93,7 +101,11 @@ pub using @result {type ResultData}
 
 pub using @result {type ResultError}
 
+pub using @internal {type ShapeError}
+
 pub using @states {type SimulationStateBase}
+
+pub using @states {type StateError}
 
 pub using @states {type StateVector}
 
@@ -103,15 +115,15 @@ pub using @result {trait ResultValue}
 
 // Traits
 pub(open) trait Sampler {
-  fn run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise @error.QError
+  fn run(Self, @circuit.Program, repetitions? : Int32) -> SamplerResult raise
 }
 
 pub(open) trait SimulationState {
   fn dim(Self) -> Array[UInt32]
-  fn apply(Self, @circuit.Instruction[Int32]) -> Unit raise @error.QError
+  fn apply(Self, @circuit.Instruction[Int32]) -> Unit raise
   fn copy(Self) -> Self
   fn records(Self) -> @maths.Array3[Int32]
-  fn validate(Self) -> Unit raise @error.QError
+  fn validate(Self) -> Unit raise
 }
 pub impl SimulationState for @states.DensityMatrixState
 pub impl SimulationState for @states.StateVectorState

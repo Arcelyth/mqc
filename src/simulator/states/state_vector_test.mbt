@@ -41,11 +41,11 @@ test "marginal probabilities sum unmeasured wires and preserve requested digit o
   let duplicate = Ok(state.marginal_probabilities([1, 1])) catch {
     error => Err(error)
   }
-  assert_true(duplicate is Err(@error.QError::DuplicateQid(1)))
+  assert_true(duplicate is Err(@states.ShapeError::DuplicateQid(1)))
 
   // Reject wire indices outside the shape [2, 3].
   let invalid = Ok(state.marginal_probabilities([2])) catch {
     error => Err(error)
   }
-  assert_true(invalid is Err(@error.QError::InvalidBasis(2)))
+  assert_true(invalid is Err(@states.ShapeError::InvalidBasis(2)))
 }

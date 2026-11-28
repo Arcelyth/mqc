@@ -31,23 +31,23 @@ priv enum ChannelRepresentation {
 /// \sum_k K_k^\dagger K_k = I.
 /// $$
 ///
-/// Invalid dimensions or matrices raise `QError`.
+/// Invalid dimensions or matrices raise `CircuitError`.
 pub fn Channel::kraus(
   name : String,
   dimensions : Array[UInt32],
   operators : Array[Array[@maths.Complex]],
-) -> Channel raise @error.QError {
+) -> Channel raise CircuitError {
   guard operators.get(0) is Some(first) else {
-    raise @error.InvalidChannel("at least one Kraus matrix is required")
+    raise InvalidChannel("at least one Kraus matrix is required")
   }
   let entries = first.length()
   let size = kraus_size(dimensions, entries)
   for matrix in operators {
     if matrix.length() != entries {
-      raise @error.InvalidChannel("Kraus matrix size does not match the shape")
+      raise InvalidChannel("Kraus matrix size does not match the shape")
     }
     if !matrix.all(entry => entry.is_finite()) {
-      raise @error.InvalidChannel("Kraus matrix entries must be finite")
+      raise InvalidChannel("Kraus matrix entries must be finite")
     }
   }
   check_trace_preserving(operators, size)
@@ -65,19 +65,19 @@ pub fn Channel::kraus(
 fn kraus_size(
   dimensions : Array[UInt32],
   entries : Int32,
-) -> Int32 raise @error.QError {
+) -> Int32 raise CircuitError {
   let mut size = 1
   for dimension in dimensions {
     if dimension < 2U {
-      raise @error.InvalidDimension(dimension)
+      raise InvalidDimension(dimension)
     }
     if dimension > (entries / size).reinterpret_as_uint() {
-      raise @error.InvalidChannel("Kraus matrix size does not match the shape")
+      raise InvalidChannel("Kraus matrix size does not match the shape")
     }
     size *= dimension.reinterpret_as_int()
   }
   if entries / size != size || entries % size != 0 {
-    raise @error.InvalidChannel("Kraus matrix size does not match the shape")
+    raise InvalidChannel("Kraus matrix size does not match the shape")
   }
   size
 }
@@ -87,7 +87,7 @@ fn check_trace_preserving(
   operators : Array[Array[@maths.Complex]],
   size : Int32,
   tolerance~ : Double = 1.0e-10,
-) -> Unit raise @error.QError {
+) -> Unit raise CircuitError {
   for column in 0..<size {
     for other in column..<size {
       let mut re = 0.0
@@ -102,7 +102,7 @@ fn check_trace_preserving(
       }
       let expected = if column == other { 1.0 } else { 0.0 }
       if !((re - expected).abs() <= tolerance && im.abs() <= tolerance) {
-        raise @error.InvalidChannel("Kraus matrices must preserve trace")
+        raise InvalidChannel("Kraus matrices must preserve trace")
       }
     }
   }
@@ -124,9 +124,9 @@ fn check_trace_preserving(
 /// $$
 pub fn Channel::amplitude_damp(
   probability : Double,
-) -> Channel raise @error.QError {
+) -> Channel raise CircuitError {
   if !(probability >= 0.0 && probability <= 1.0) {
-    raise @error.InvalidChannel("damping probability must be in [0, 1]")
+    raise InvalidChannel("damping probability must be in [0, 1]")
   }
   let zero = @maths.Complex::real(0.0)
   Channel::kraus("AmplitudeDamping", [2U], [
@@ -190,7 +190,7 @@ pub fn Channel::mixture(
   terms : Array[(Double, Gate)],
   name~ : String = "Mixture",
   tolerance~ : Double = 1.0e-10,
-) -> Channel raise @error.QError {
+) -> Channel raise CircuitError {
   guard terms.get(0) is Some((_, first)) else {
     raise InvalidChannel("a unitary mixture needs at least one gate")
   }
@@ -306,12 +306,12 @@ pub extend Channel with Effect::{
 ///
 /// Resetting one wire of an entangled state preserves the reduced state
 /// of the other wires. The channel produces no measurement record.
-pub fn Channel::reset(d : UInt32) -> Channel raise @error.QError {
+pub fn Channel::reset(d : UInt32) -> Channel raise CircuitError {
   if d < 2U {
-    raise @error.InvalidDimension(d)
+    raise InvalidDimension(d)
   }
   if d > 2147483647U / d {
-    raise @error.SizeLimit(2147483647)
+    raise SizeLimit(2147483647)
   }
   let size = d.reinterpret_as_int()
   let zero = @maths.Complex::real(0.0)

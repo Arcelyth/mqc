@@ -33,7 +33,7 @@ pub fn DensityMatrixSimulator::simulate(
   self : DensityMatrixSimulator,
   program : @circuit.Program,
   initial_state? : DensityMatrixState,
-) -> TrialResult[DensityMatrixState] raise @error.QError {
+) -> TrialResult[DensityMatrixState] raise {
   self.engine.simulate(program, initial_state?)
 }
 
@@ -41,9 +41,9 @@ pub fn DensityMatrixSimulator::simulate(
 pub fn DensityMatrixSimulator::simulate_steps(
   self : DensityMatrixSimulator,
   program : @circuit.Program,
-  visit : (StepResult[DensityMatrixState]) -> Unit raise @error.QError,
+  visit : (StepResult[DensityMatrixState]) -> Unit raise,
   initial_state? : DensityMatrixState,
-) -> TrialResult[DensityMatrixState] raise @error.QError {
+) -> TrialResult[DensityMatrixState] raise {
   self.engine.simulate_steps(program, visit, initial_state?)
 }
 
@@ -51,7 +51,7 @@ pub fn DensityMatrixSimulator::simulate_steps(
 pub fn DensityMatrixSimulator::simulate_batch(
   self : DensityMatrixSimulator,
   programs : Array[@circuit.Program],
-) -> Array[Result[TrialResult[DensityMatrixState], @error.QError]] {
+) -> Array[Result[TrialResult[DensityMatrixState], Error]] {
   self.engine.simulate_batch(programs)
 }
 
@@ -61,7 +61,7 @@ pub impl Sampler for DensityMatrixSimulator with fn run(
   self,
   program,
   repetitions?,
-) -> SamplerResult raise @error.QError {
+) -> SamplerResult raise {
   let repetitions = repetitions.unwrap_or(1)
   match sampling_plan(program, repetitions) {
     Terminal(targets, layout) =>
@@ -88,12 +88,14 @@ pub impl Sampler for DensityMatrixSimulator with fn run(
 /// Evolve the density matrix without collapsing terminal measurements or drawing randomness.
 fn density_terminal_probabilities(
   program : @circuit.Program,
-) -> Array[Double] raise @error.QError {
+) -> Array[Double] raise {
   let state = DensityMatrixState::new(program.dim(), seed=0UL)
   for instruction in program.instructions(expand_loops=true) {
     if instruction is Operation(op) && op.effect().measurement_key() is Some(_) {
       if !op.effect().parameters().is_empty() {
-        raise @error.InvalidState("unbound parameters are not supported")
+        raise SimulatorError::InvalidState(
+          "unbound parameters are not supported",
+        )
       }
     } else {
       state.apply(instruction)

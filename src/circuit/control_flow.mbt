@@ -18,7 +18,7 @@ pub fn[Q : Qid] Circuit::if_else(
   condition : &Condition,
   on_true : Circuit[Q],
   on_false : Circuit[Q],
-) -> Unit raise @error.QError {
+) -> Unit raise CircuitError {
   let wires = on_true.wires.merge(on_false.wires)
   let names = on_true.parameter_names
     .union(on_false.parameter_names)
@@ -40,7 +40,7 @@ pub fn[Q : Qid] Circuit::if_else(
 pub fn[Q] IfElse::select(
   self : IfElse[Q],
   record : &MeasurementRecord,
-) -> Iter[Instruction[Q]] raise @error.QError {
+) -> Iter[Instruction[Q]] raise CircuitError {
   if self.condition.evaluate(record) {
     self.on_true.iter()
   } else {
@@ -77,7 +77,7 @@ pub fn[Q] Instruction::record_width(self : Instruction[Q]) -> Int32 {
 }
 
 ///|
-fn[Q] Circuit::record_width(self : Circuit[Q]) -> Int32 raise @error.QError {
+fn[Q] Circuit::record_width(self : Circuit[Q]) -> Int32 raise CircuitError {
   let mut width = 0
   for instruction in self.instructions() {
     let count = instruction.record_width()
@@ -106,7 +106,7 @@ pub fn[Q : Qid] Circuit::for_loop(
   self : Circuit[Q],
   count : Int32,
   body : Circuit[Q],
-) -> Unit raise @error.QError {
+) -> Unit raise CircuitError {
   if count < 0 {
     raise InvalidState("loop count must be nonnegative")
   }
@@ -133,7 +133,7 @@ fn[Q : Qid] Circuit::append_block(
   self : Circuit[Q],
   body_wires : Registry[Q],
   instruction : Instruction[Q],
-) -> Unit raise @error.QError {
+) -> Unit raise CircuitError {
   self.wires = self.wires.merge(body_wires)
   self.parameter_names = add_names(
     self.parameter_names,
@@ -162,7 +162,7 @@ pub fn[Q : Qid] Circuit::while_loop(
   condition : &Condition,
   body : Circuit[Q],
   max_iterations~ : Int32,
-) -> Unit raise @error.QError {
+) -> Unit raise CircuitError {
   if max_iterations < 0 {
     raise InvalidState("max_iterations must be nonnegative")
   }

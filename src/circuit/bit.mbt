@@ -39,7 +39,7 @@ struct QuditId {
 pub fn QuditId::new(
   id : UInt32,
   dimension : UInt32,
-) -> QuditId raise @error.QError {
+) -> QuditId raise CircuitError {
   if dimension < 2U {
     raise InvalidDimension(dimension)
   }

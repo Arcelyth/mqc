@@ -14,7 +14,7 @@ fn main {
 }
 
 ///|
-fn print_measurement() -> Unit raise @mqc.QuantumError {
+fn print_measurement() -> Unit raise {
   let a = QubitId(0U)
   let c = Circuit::from_op([x(a), h(a), measure([a])])
 

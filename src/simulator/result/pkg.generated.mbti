@@ -3,7 +3,6 @@ package "Arcelyth/mqc/simulator/result"
 
 import {
   "Arcelyth/mqc/circuit",
-  "Arcelyth/mqc/error",
   "Arcelyth/mqc/simulator/states",
   "moonbitlang/core/debug",
   "moonbitlang/core/immut/hashmap",
@@ -43,8 +42,8 @@ type ExperimentResult
 pub fn ExperimentResult::completed(@circuit.Program, ResultData) -> Self
 pub fn ExperimentResult::data(Self) -> ResultData
 pub fn ExperimentResult::dim(Self) -> Array[UInt32]
-pub fn ExperimentResult::error(Self) -> @error.QError?
-pub fn ExperimentResult::failed(@circuit.Program, @error.QError) -> Self
+pub fn ExperimentResult::error(Self) -> Error?
+pub fn ExperimentResult::failed(@circuit.Program, Error) -> Self
 pub fn ExperimentResult::is_completed(Self) -> Bool
 pub fn ExperimentResult::name(Self) -> String
 pub fn ExperimentResult::status(Self) -> ExecutionStatus

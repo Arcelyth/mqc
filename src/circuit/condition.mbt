@@ -3,7 +3,7 @@
 /// Implement this trait to compare digits across keys 
 /// or to supply a different rule for selecting a branch.
 pub(open) trait Condition {
-  fn evaluate(Self, &MeasurementRecord) -> Bool raise @error.QError
+  fn evaluate(Self, &MeasurementRecord) -> Bool raise CircuitError
   fn name(Self) -> String = _
 }
 

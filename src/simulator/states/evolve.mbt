@@ -1,24 +1,20 @@
 ///|
 /// Execute unitary kernels. Terminal measurements leave the returned state unchanged.
 /// The first wire is the most significant basis digit.
-pub fn evolve(program : @circuit.Program) -> StateVector raise @error.QError {
+pub fn evolve(program : @circuit.Program) -> StateVector raise StateError {
   // This path skips measurements and never draws random values.
   let state = StateVectorState::new(program.dim(), seed=0UL)
   let mut measuring = false
   for instruction in program.instructions(expand_loops=true) {
     guard instruction is Operation(op) && op.effect().try_conditional() is None else {
-      raise @error.InvalidCondition(
-        "evolve cannot evaluate measurement conditions",
-      )
+      raise InvalidCondition("evolve cannot evaluate measurement conditions")
     }
     check_instruction(instruction)
     if op.effect().measurement_key() is Some(_) {
       measuring = true
     } else {
       if measuring {
-        raise @error.QError::InvalidState(
-          "evolve requires terminal measurements",
-        )
+        raise InvalidState("evolve requires terminal measurements")
       }
       execute_gate(state.vector, state.strides, op.effect(), op.targets())
     }
@@ -34,7 +30,7 @@ fn execute_gate(
   strides : Array[Int32],
   effect : &@circuit.Effect,
   targets : Array[Int32],
-) -> Unit raise @error.QError {
+) -> Unit raise StateError {
   let gate = checked_unitary(effect, targets, state.shape)
   apply_local(state.re, state.im, state.shape, strides, gate.kernel(), targets)
 }
@@ -44,9 +40,9 @@ fn checked_unitary(
   effect : &@circuit.Effect,
   targets : Array[Int32],
   shape : @internal.Shape,
-) -> @circuit.Gate raise @error.QError {
+) -> @circuit.Gate raise StateError {
   guard effect.try_unitary() is Some(gate) else {
-    raise @error.QError::InvalidGate("unsupported effect: " + effect.name())
+    raise InvalidGate("unsupported effect: " + effect.name())
   }
 
   check_target_shape(gate.shape(), targets, shape)
@@ -59,26 +55,26 @@ fn check_target_shape(
   target_shape : @internal.Shape,
   targets : Array[Int32],
   shape : @internal.Shape,
-) -> Unit raise @error.QError {
+) -> Unit raise StateError {
   if target_shape.length() != targets.length() {
-    raise @error.QError::TargetCount(target_shape.length(), targets.length())
+    raise TargetCount(target_shape.length(), targets.length())
   }
 
   for i, target in targets {
     if target < 0 || target >= shape.length() {
-      raise @error.InvalidBasis(target)
+      raise InvalidBasis(target)
     }
     if target_shape[i] != shape[target] {
-      raise @error.QError::DimensionMismatch(i, target_shape[i], shape[target])
+      raise DimensionMismatch(i, target_shape[i], shape[target])
     }
   }
 }
 
 ///|
-fn validate_norm(state : StateVector) -> Unit raise @error.QError {
+fn validate_norm(state : StateVector) -> Unit raise StateError {
   let norm = state.norm_squared()
   if norm.is_nan() || norm.is_inf() || (norm - 1.0).abs() > 1.0e-6 {
-    raise @error.QError::InvalidState("kernel output must have unit norm")
+    raise InvalidState("kernel output must have unit norm")
   }
 }
 

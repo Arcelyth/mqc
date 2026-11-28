@@ -1,9 +1,9 @@
 ///|
 fn expect_invalid_gate(
-  make : () -> @circuit.Gate raise @error.QError,
+  make : () -> @circuit.Gate raise @circuit.CircuitError,
 ) -> Unit raise {
   let result = Ok(make()) catch { error => Err(error) }
-  assert_true(result is Err(@error.QError::InvalidGate(_)))
+  assert_true(result is Err(@circuit.CircuitError::InvalidGate(_)))
 }
 
 ///|
@@ -61,5 +61,5 @@ test "controlled gate construction validates control shapes and values" {
   let mismatch = Ok(gate.controlled(control_values=[])) catch {
     error => Err(error)
   }
-  assert_true(mismatch is Err(@error.QError::TargetCount(1, 0)))
+  assert_true(mismatch is Err(@circuit.CircuitError::TargetCount(1, 0)))
 }

@@ -11,7 +11,6 @@ using @mqc {
   type QubitId,
   type StateVectorSimulator,
   type MeasurementCondition,
-  type QError,
 }
 
 ///|
@@ -20,7 +19,7 @@ fn main {
 }
 
 ///|
-fn teleport() -> Unit raise QError {
+fn teleport() -> Unit raise {
   let input = QubitId(0U)
   let alice = QubitId(1U)
   let bob = QubitId(2U)
@@ -56,7 +55,7 @@ fn teleport() -> Unit raise QError {
     let flip_bit = records.get(shot, 0, 1).unwrap()
     let check = records.get(shot, 0, 2).unwrap()
     if check != 0 {
-      raise QError::InvalidState("receiver check failed on shot \{shot}")
+      fail("receiver check failed on shot \{shot}")
     }
     counts[2 * phase_bit + flip_bit] += 1
   }

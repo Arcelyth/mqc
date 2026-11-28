@@ -3,64 +3,77 @@ package "Arcelyth/mqc/circuit"
 
 import {
   "Arcelyth/mqc/circuit/kernel",
-  "Arcelyth/mqc/error",
   "Arcelyth/mqc/internal",
   "Arcelyth/mqc/maths",
   "moonbitlang/core/debug",
 }
 
 // Values
-pub fn[Q : Qid] measure(Array[Q], key? : String) -> Operation[Q] raise @error.QError
+pub fn[Q : Qid] measure(Array[Q], key? : String) -> Operation[Q] raise CircuitError
 
 // Errors
+#derive(@debug.Debug)
+pub(all) suberror CircuitError {
+  InvalidDimension(UInt32)
+  SizeLimit(Int32)
+  InvalidGate(String)
+  InvalidChannel(String)
+  DuplicateQid(Int32)
+  TargetCount(Int32, Int32)
+  DimensionMismatch(Int32, UInt32, UInt32)
+  InvalidBasis(Int32)
+  InvalidState(String)
+  InvalidCondition(String)
+}
+pub fn CircuitError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 pub(all) struct ChainedCondition(Array[&Condition])
 
 type Channel
-pub fn Channel::amplitude_damp(Double) -> Self raise @error.QError
+pub fn Channel::amplitude_damp(Double) -> Self raise CircuitError
 pub fn Channel::arity(Self) -> Int32
 pub fn Channel::dim(Self) -> Array[UInt32]
 pub fn Channel::kernels(Self) -> Iter[&@kernel.LinearKernel]
-pub fn Channel::kraus(String, Array[UInt32], Array[Array[@maths.Complex]]) -> Self raise @error.QError
+pub fn Channel::kraus(String, Array[UInt32], Array[Array[@maths.Complex]]) -> Self raise CircuitError
 pub fn Channel::kraus_operators(Self) -> Iter[ArrayView[@maths.Complex]]
 pub fn Channel::measurement_key(Self) -> String?
-pub fn Channel::mixture(Array[(Double, Gate)], name? : String, tolerance? : Double) -> Self raise @error.QError
+pub fn Channel::mixture(Array[(Double, Gate)], name? : String, tolerance? : Double) -> Self raise CircuitError
 pub fn Channel::mixture_terms(Self) -> ArrayView[(Double, Gate)]?
 pub fn Channel::name(Self) -> String
 pub fn Channel::parameters(Self) -> Array[String]
-pub fn Channel::reset(UInt32) -> Self raise @error.QError
+pub fn Channel::reset(UInt32) -> Self raise CircuitError
 pub fn Channel::shape(Self) -> @internal.Shape
 pub fn Channel::size(Self) -> Int32
-pub fn Channel::try_adjoint(Self) -> &Effect? raise @error.QError
+pub fn Channel::try_adjoint(Self) -> &Effect? raise CircuitError
 pub fn Channel::try_channel(Self) -> Self?
 pub fn Channel::try_conditional(Self) -> ConditionalEffect?
-pub fn Channel::try_decompose(Self) -> Program? raise @error.QError
+pub fn Channel::try_decompose(Self) -> Program? raise CircuitError
 pub fn Channel::try_unitary(Self) -> Gate?
 pub impl Effect for Channel
 
 type Circuit[Q]
-pub fn[Q : Qid] Circuit::adjoint(Self[Q]) -> Self[Q] raise @error.QError
-pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise @error.QError
+pub fn[Q : Qid] Circuit::adjoint(Self[Q]) -> Self[Q] raise CircuitError
+pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise CircuitError
 pub fn[Q : Qid] Circuit::compile(Self[Q], name? : String) -> Program
-pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise @error.QError
+pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise CircuitError
 pub fn[Q] Circuit::copy(Self[Q]) -> Self[Q]
 pub fn[Q : Qid] Circuit::dim(Self[Q]) -> Array[UInt32]
-pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise @error.QError
-pub fn[Q : Qid] Circuit::for_loop(Self[Q], Int32, Self[Q]) -> Unit raise @error.QError
-pub fn[Q : Qid] Circuit::from_op(Array[Operation[Q]]) -> Self[Q] raise @error.QError
-pub fn[Q : Qid] Circuit::if_else(Self[Q], &Condition, Self[Q], Self[Q]) -> Unit raise @error.QError
+pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise CircuitError
+pub fn[Q : Qid] Circuit::for_loop(Self[Q], Int32, Self[Q]) -> Unit raise CircuitError
+pub fn[Q : Qid] Circuit::from_op(Array[Operation[Q]]) -> Self[Q] raise CircuitError
+pub fn[Q : Qid] Circuit::if_else(Self[Q], &Condition, Self[Q], Self[Q]) -> Unit raise CircuitError
 pub fn[Q : Qid] Circuit::index_of(Self[Q], Q) -> Int32?
 pub fn[Q] Circuit::instructions(Self[Q]) -> Iter[Instruction[Q]]
 pub fn[Q] Circuit::length(Self[Q]) -> Int32
-pub fn[Q : Qid] Circuit::new(Array[Q]) -> Self[Q] raise @error.QError
+pub fn[Q : Qid] Circuit::new(Array[Q]) -> Self[Q] raise CircuitError
 pub fn[Q] Circuit::operations(Self[Q]) -> Iter[Operation[Q]]
 pub fn[Q : Qid + Show] Circuit::output(Self[Q], &Logger) -> Unit
 pub fn[Q] Circuit::qids(Self[Q]) -> Array[Q]
-pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise @error.QError
+pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise CircuitError
 pub fn[Q : Qid + Show] Circuit::to_string(Self[Q]) -> String
-pub fn[Q : Qid] Circuit::while_loop(Self[Q], &Condition, Self[Q], max_iterations~ : Int32) -> Unit raise @error.QError
-pub fn[Q : Qid] Circuit::with_noise(Self[Q], &NoiseModel) -> Self[Q] raise @error.QError
+pub fn[Q : Qid] Circuit::while_loop(Self[Q], &Condition, Self[Q], max_iterations~ : Int32) -> Unit raise CircuitError
+pub fn[Q : Qid] Circuit::with_noise(Self[Q], &NoiseModel) -> Self[Q] raise CircuitError
 pub impl[Q : Qid + Show] Show for Circuit[Q]
 
 pub struct ConditionalEffect {
@@ -72,10 +85,10 @@ pub fn ConditionalEffect::dim(Self) -> Array[UInt32]
 pub fn ConditionalEffect::measurement_key(Self) -> String?
 pub fn ConditionalEffect::name(Self) -> String
 pub fn ConditionalEffect::parameters(Self) -> Array[String]
-pub fn ConditionalEffect::try_adjoint(Self) -> &Effect? raise @error.QError
+pub fn ConditionalEffect::try_adjoint(Self) -> &Effect? raise CircuitError
 pub fn ConditionalEffect::try_channel(Self) -> Channel?
 pub fn ConditionalEffect::try_conditional(Self) -> Self?
-pub fn ConditionalEffect::try_decompose(Self) -> Program? raise @error.QError
+pub fn ConditionalEffect::try_decompose(Self) -> Program? raise CircuitError
 pub fn ConditionalEffect::try_unitary(Self) -> Gate?
 pub impl Effect for ConditionalEffect
 
@@ -86,24 +99,24 @@ pub fn[Q] ForLoop::count(Self[Q]) -> Int32
 type Gate
 pub fn Gate::adjoint(Self) -> Self
 pub fn Gate::arity(Self) -> Int32
-pub fn Gate::controlled(Self, control_dimensions? : Array[UInt32], control_values? : Array[UInt32]) -> Self raise @error.QError
-pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex]) -> Self raise @error.QError
+pub fn Gate::controlled(Self, control_dimensions? : Array[UInt32], control_values? : Array[UInt32]) -> Self raise CircuitError
+pub fn Gate::diagonal(String, Array[UInt32], Array[@maths.Complex]) -> Self raise CircuitError
 pub fn Gate::dim(Self) -> Array[UInt32]
-pub fn Gate::from_kernel(String, Array[UInt32], &@kernel.UnitaryKernel) -> Self raise @error.QError
+pub fn Gate::from_kernel(String, Array[UInt32], &@kernel.UnitaryKernel) -> Self raise CircuitError
 pub fn Gate::kernel(Self) -> &@kernel.UnitaryKernel
 pub fn Gate::measurement_key(Self) -> String?
-pub fn Gate::monomial(String, Array[UInt32], Array[Int32], Array[@maths.Complex]) -> Self raise @error.QError
+pub fn Gate::monomial(String, Array[UInt32], Array[Int32], Array[@maths.Complex]) -> Self raise CircuitError
 pub fn Gate::name(Self) -> String
 pub fn Gate::parameters(Self) -> Array[String]
 pub fn Gate::shape(Self) -> @internal.Shape
 pub fn Gate::size(Self) -> Int32
 pub fn Gate::to_repr(Self) -> @debug.Repr
-pub fn Gate::try_adjoint(Self) -> &Effect? raise @error.QError
+pub fn Gate::try_adjoint(Self) -> &Effect? raise CircuitError
 pub fn Gate::try_channel(Self) -> Channel?
 pub fn Gate::try_conditional(Self) -> ConditionalEffect?
-pub fn Gate::try_decompose(Self) -> Program? raise @error.QError
+pub fn Gate::try_decompose(Self) -> Program? raise CircuitError
 pub fn Gate::try_unitary(Self) -> Self?
-pub fn Gate::unitary(String, Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise @error.QError
+pub fn Gate::unitary(String, Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise CircuitError
 pub impl Effect for Gate
 pub impl @debug.Debug for Gate
 
@@ -111,7 +124,7 @@ type IfElse[Q]
 pub fn[Q] IfElse::condition(Self[Q]) -> &Condition
 pub fn[Q] IfElse::on_false(Self[Q]) -> Iter[Instruction[Q]]
 pub fn[Q] IfElse::on_true(Self[Q]) -> Iter[Instruction[Q]]
-pub fn[Q] IfElse::select(Self[Q], &MeasurementRecord) -> Iter[Instruction[Q]] raise @error.QError
+pub fn[Q] IfElse::select(Self[Q], &MeasurementRecord) -> Iter[Instruction[Q]] raise CircuitError
 
 pub enum Instruction[Q] {
   Operation(Operation[Q])
@@ -128,17 +141,17 @@ pub(all) enum MeasurementCondition {
   Or(&Condition, &Condition)
   Not(&Condition)
 }
-pub fn MeasurementCondition::evaluate(Self, &MeasurementRecord) -> Bool raise @error.QError
+pub fn MeasurementCondition::evaluate(Self, &MeasurementRecord) -> Bool raise CircuitError
 pub fn MeasurementCondition::name(Self) -> String
 pub impl Condition for MeasurementCondition
 
 type Operation[Q]
 pub fn[Q] Operation::effect(Self[Q]) -> &Effect
 pub fn[Q] Operation::gate(Self[Q]) -> Gate?
-pub fn[Q : Qid] Operation::new(&Effect, Array[Q]) -> Self[Q] raise @error.QError
+pub fn[Q : Qid] Operation::new(&Effect, Array[Q]) -> Self[Q] raise CircuitError
 pub fn[Q] Operation::targets(Self[Q]) -> Array[Q]
 pub fn[Q : @debug.Debug] Operation::to_repr(Self[Q]) -> @debug.Repr
-pub fn[Q] Operation::when(Self[Q], &Condition) -> Self[Q] raise @error.QError
+pub fn[Q] Operation::when(Self[Q], &Condition) -> Self[Q] raise CircuitError
 pub impl[Q : @debug.Debug] @debug.Debug for Operation[Q]
 
 type Program
@@ -178,7 +191,7 @@ pub fn QuditId::hash(Self) -> Int32
 pub fn QuditId::hash_combine(Self, Hasher) -> Unit
 pub fn QuditId::id(Self) -> UInt32
 pub fn QuditId::name(Self) -> String
-pub fn QuditId::new(UInt32, UInt32) -> Self raise @error.QError
+pub fn QuditId::new(UInt32, UInt32) -> Self raise CircuitError
 pub fn QuditId::not_equal(Self, Self) -> Bool
 pub fn QuditId::output(Self, &Logger) -> Unit
 pub fn QuditId::to_repr(Self) -> @debug.Repr
@@ -189,15 +202,15 @@ pub impl Show for QuditId
 pub struct Registry[Q] {
   // private fields
 }
-pub fn[Q : Qid] Registry::add(Self[Q], Q) -> Self[Q] raise @error.QError
+pub fn[Q : Qid] Registry::add(Self[Q], Q) -> Self[Q] raise CircuitError
 pub fn[Q] Registry::at(Self[Q], Int32) -> Q?
 pub fn[Q : Qid] Registry::dim_at(Self[Q], Int32) -> UInt32
 pub fn[Q : Qid] Registry::dims(Self[Q]) -> Array[UInt32]
 pub fn[Q : Qid] Registry::get(Self[Q], Q) -> Int32?
 pub fn[Q] Registry::is_empty(Self[Q]) -> Bool
 pub fn[Q] Registry::len(Self[Q]) -> Int32
-pub fn[Q : Qid] Registry::merge(Self[Q], Self[Q]) -> Self[Q] raise @error.QError
-pub fn[Q : Qid] Registry::new(Array[Q]) -> Self[Q] raise @error.QError
+pub fn[Q : Qid] Registry::merge(Self[Q], Self[Q]) -> Self[Q] raise CircuitError
+pub fn[Q : Qid] Registry::new(Array[Q]) -> Self[Q] raise CircuitError
 
 type WhileLoop[Q]
 pub fn[Q] WhileLoop::body(Self[Q]) -> Iter[Instruction[Q]]
@@ -221,7 +234,7 @@ pub using @kernel {trait UnitaryKernel}
 
 // Traits
 pub(open) trait Condition {
-  fn evaluate(Self, &MeasurementRecord) -> Bool raise @error.QError
+  fn evaluate(Self, &MeasurementRecord) -> Bool raise CircuitError
   fn name(Self) -> String = _
 }
 
@@ -233,17 +246,17 @@ pub(open) trait Effect {
   fn try_conditional(Self) -> ConditionalEffect? = _
   fn try_unitary(Self) -> Gate? = _
   fn try_channel(Self) -> Channel? = _
-  fn try_decompose(Self) -> Program? raise @error.QError = _
-  fn try_adjoint(Self) -> &Effect? raise @error.QError = _
+  fn try_decompose(Self) -> Program? raise CircuitError = _
+  fn try_adjoint(Self) -> &Effect? raise CircuitError = _
   fn parameters(Self) -> Array[String] = _
 }
 
 pub(open) trait MeasurementRecord {
-  fn latest(Self, String) -> ArrayView[Int32] raise @error.QError
+  fn latest(Self, String) -> ArrayView[Int32] raise CircuitError
 }
 
 pub(open) trait NoiseModel {
-  fn after_gate(Self, Gate, ArrayView[Int32]) -> Array[(Channel, Array[Int32])] raise @error.QError
+  fn after_gate(Self, Gate, ArrayView[Int32]) -> Array[(Channel, Array[Int32])] raise CircuitError
 }
 
 pub(open) trait Qid : Eq + Hash {

@@ -9,7 +9,7 @@ pub impl SimulationState for @states.StateVectorState with fn dim(self) -> Array
 pub impl SimulationState for @states.StateVectorState with fn apply(
   self,
   instruction,
-) -> Unit raise @error.QError {
+) -> Unit raise {
   self.apply(instruction)
 }
 
@@ -26,6 +26,6 @@ pub impl SimulationState for @states.StateVectorState with fn records(self) -> @
 }
 
 ///|
-pub impl SimulationState for @states.StateVectorState with fn validate(self) -> Unit raise @error.QError {
+pub impl SimulationState for @states.StateVectorState with fn validate(self) -> Unit raise {
   self.validate()
 }

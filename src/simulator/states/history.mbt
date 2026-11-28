@@ -55,7 +55,9 @@ fn MeasurementHistory::to_array3(
 ///|
 impl @circuit.MeasurementRecord for MeasurementHistory with fn latest(self, key) {
   guard self.ranges.get(key) is Some(spans) else {
-    raise @error.InvalidCondition("no measurement recorded for " + key)
+    raise @circuit.CircuitError::InvalidCondition(
+      "no measurement recorded for " + key,
+    )
   }
   let (start, width) = spans[spans.length() - 1]
   self.digits[start:start + width]

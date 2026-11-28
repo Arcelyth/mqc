@@ -9,7 +9,7 @@ pub struct Registry[Q] {
 /// Register distinct wires in the supplied order.
 pub fn[Q : Qid] Registry::new(
   qids : Array[Q],
-) -> Registry[Q] raise @error.QError {
+) -> Registry[Q] raise CircuitError {
   let items = qids.copy()
   let mut indices = @hashmap.empty()
   for i, qid in items {
@@ -26,7 +26,7 @@ pub fn[Q : Qid] Registry::new(
 pub fn[Q : Qid] Registry::add(
   self : Registry[Q],
   qid : Q,
-) -> Registry[Q] raise @error.QError {
+) -> Registry[Q] raise CircuitError {
   if self.get(qid) is Some(_) {
     raise DuplicateQid(self.len())
   }
@@ -49,7 +49,7 @@ pub fn[Q] Registry::is_empty(self : Registry[Q]) -> Bool {
 pub fn[Q : Qid] Registry::merge(
   self : Registry[Q],
   other : Registry[Q],
-) -> Registry[Q] raise @error.QError {
+) -> Registry[Q] raise CircuitError {
   self.with_targets(Iter::singleton(other.items))
 }
 
@@ -87,7 +87,7 @@ fn[Q : Qid] Registry::index(self : Registry[Q], qid : Q) -> Int32 {
 fn[Q : Qid] Registry::with_targets(
   self : Registry[Q],
   groups : Iter[Array[Q]],
-) -> Registry[Q] raise @error.QError {
+) -> Registry[Q] raise CircuitError {
   let mut items = self.items
   let mut indices = self.indices
   let original_count = items.length()

@@ -87,6 +87,6 @@ test "while_loop reports a condition still true at the bound" {
   ]
   for sampler in samplers {
     let result = Ok(sampler.run(circuit.compile())) catch { err => Err(err) }
-    assert_true(result is Err(@error.IterationLimit(1)))
+    assert_true(result is Err(@states.StateError::IterationLimit(1)))
   }
 }

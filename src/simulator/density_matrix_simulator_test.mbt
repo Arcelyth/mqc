@@ -115,7 +115,7 @@ test "density simulator evolves mixtures without mutating the initial state" {
   let mismatch = Ok(simulator.simulate(circuit.compile(), initial_state=wrong)) catch {
     error => Err(error)
   }
-  assert_true(mismatch is Err(@error.RegisterMismatch))
+  assert_true(mismatch is Err(@simulator.SimulatorError::RegisterMismatch))
 }
 
 ///|

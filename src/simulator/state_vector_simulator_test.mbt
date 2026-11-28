@@ -88,6 +88,6 @@ test "gates after repeated measurements use the collapsed state in every shot" {
   let unsupported_fast_path = Ok(@states.evolve(program)) catch {
     error => Err(error)
   }
-  assert_true(unsupported_fast_path is Err(@error.QError::InvalidState(_)))
+  assert_true(unsupported_fast_path is Err(@states.StateError::InvalidState(_)))
   assert_eq(simulator.run(program, repetitions=0).records.shape(), (0, 1, 2))
 }

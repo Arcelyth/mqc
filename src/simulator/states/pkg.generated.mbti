@@ -3,48 +3,62 @@ package "Arcelyth/mqc/simulator/states"
 
 import {
   "Arcelyth/mqc/circuit",
-  "Arcelyth/mqc/error",
   "Arcelyth/mqc/internal",
   "Arcelyth/mqc/maths",
+  "moonbitlang/core/debug",
 }
 
 // Values
-pub fn evolve(@circuit.Program) -> StateVector raise @error.QError
+pub fn evolve(@circuit.Program) -> StateVector raise StateError
 
 // Errors
+#derive(@debug.Debug)
+pub(all) suberror StateError {
+  InvalidDimension(UInt32)
+  SizeLimit(Int32)
+  InvalidBasis(Int32)
+  TargetCount(Int32, Int32)
+  DimensionMismatch(Int32, UInt32, UInt32)
+  RegisterMismatch
+  InvalidState(String)
+  InvalidGate(String)
+  InvalidCondition(String)
+  IterationLimit(Int32)
+}
+pub fn StateError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 type DensityMatrix
-pub fn DensityMatrix::basis(Array[UInt32], Int32) -> Self raise @error.QError
+pub fn DensityMatrix::basis(Array[UInt32], Int32) -> Self raise StateError
 pub fn DensityMatrix::copy(Self) -> Self
 pub fn DensityMatrix::dim(Self) -> Array[UInt32]
 pub fn DensityMatrix::entries(Self) -> Array[@maths.Complex]
-pub fn DensityMatrix::entry(Self, Int32, Int32) -> @maths.Complex raise @error.QError
-pub fn DensityMatrix::from_mixture(Array[StateVector], Array[Double]) -> Self raise @error.QError
-pub fn DensityMatrix::from_state(StateVector) -> Self raise @error.QError
-pub fn DensityMatrix::marginal_probabilities(Self, Array[Int32]) -> Array[Double] raise @error.QError
+pub fn DensityMatrix::entry(Self, Int32, Int32) -> @maths.Complex raise StateError
+pub fn DensityMatrix::from_mixture(Array[StateVector], Array[Double]) -> Self raise StateError
+pub fn DensityMatrix::from_state(StateVector) -> Self raise StateError
+pub fn DensityMatrix::marginal_probabilities(Self, Array[Int32]) -> Array[Double] raise @internal.ShapeError
 pub fn DensityMatrix::probabilities(Self) -> Array[Double]
 pub fn DensityMatrix::purity(Self) -> Double
 pub fn DensityMatrix::size(Self) -> Int32
 pub fn DensityMatrix::trace(Self) -> Double
-pub fn DensityMatrix::zero(Array[UInt32]) -> Self raise @error.QError
+pub fn DensityMatrix::zero(Array[UInt32]) -> Self raise StateError
 
 type DensityMatrixState
-pub fn DensityMatrixState::apply(Self, @circuit.Instruction[Int32]) -> Unit raise @error.QError
+pub fn DensityMatrixState::apply(Self, @circuit.Instruction[Int32]) -> Unit raise
 pub fn DensityMatrixState::copy(Self) -> Self
 pub fn DensityMatrixState::density_matrix(Self) -> DensityMatrix
 pub fn DensityMatrixState::dim(Self) -> Array[UInt32]
-pub fn DensityMatrixState::from_density(DensityMatrix, seed? : UInt64) -> Self raise @error.QError
+pub fn DensityMatrixState::from_density(DensityMatrix, seed? : UInt64) -> Self raise StateError
 pub fn DensityMatrixState::measurement_layout(Self) -> Map[String, Array[(Int32, Int32)]]
-pub fn DensityMatrixState::new(Array[UInt32], seed? : UInt64) -> Self raise @error.QError
+pub fn DensityMatrixState::new(Array[UInt32], seed? : UInt64) -> Self raise StateError
 pub fn DensityMatrixState::probabilities(Self) -> Array[Double]
 pub fn DensityMatrixState::records(Self) -> @maths.Array3[Int32]
-pub fn DensityMatrixState::validate(Self) -> Unit raise @error.QError
+pub fn DensityMatrixState::validate(Self) -> Unit raise StateError
 
 type SimulationStateBase
 pub fn SimulationStateBase::copy(Self) -> Self
 pub fn SimulationStateBase::draw(Self) -> Double
-pub fn SimulationStateBase::latest(Self, String) -> ArrayView[Int32] raise @error.QError
+pub fn SimulationStateBase::latest(Self, String) -> ArrayView[Int32] raise @circuit.CircuitError
 pub fn SimulationStateBase::new(seed? : UInt64) -> Self
 pub fn SimulationStateBase::record(Self, ArrayView[Int32], key? : String) -> Unit
 pub fn SimulationStateBase::records(Self) -> @maths.Array3[Int32]
@@ -55,31 +69,33 @@ pub struct StateVector {
   re : Array[Double]
   im : Array[Double]
 }
-pub fn StateVector::amplitude(Self, Int32) -> @maths.Complex raise @error.QError
+pub fn StateVector::amplitude(Self, Int32) -> @maths.Complex raise StateError
 pub fn StateVector::amplitudes(Self) -> Array[@maths.Complex]
-pub fn StateVector::basis(Array[UInt32], Int32) -> Self raise @error.QError
+pub fn StateVector::basis(Array[UInt32], Int32) -> Self raise StateError
 pub fn StateVector::dim(Self) -> Array[UInt32]
-pub fn StateVector::from_amplitudes(Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise @error.QError
-pub fn StateVector::inner_product(Self, Self) -> @maths.Complex raise @error.QError
-pub fn StateVector::marginal_probabilities(Self, Array[Int32]) -> Array[Double] raise @error.QError
+pub fn StateVector::from_amplitudes(Array[UInt32], Array[@maths.Complex], tolerance? : Double) -> Self raise StateError
+pub fn StateVector::inner_product(Self, Self) -> @maths.Complex raise StateError
+pub fn StateVector::marginal_probabilities(Self, Array[Int32]) -> Array[Double] raise @internal.ShapeError
 pub fn StateVector::norm_squared(Self) -> Double
 pub fn StateVector::probabilities(Self) -> Array[Double]
 pub fn StateVector::size(Self) -> Int32
 pub fn StateVector::zero(Array[UInt32]) -> Self
 
 type StateVectorState
-pub fn StateVectorState::apply(Self, @circuit.Instruction[Int32]) -> Unit raise @error.QError
-pub fn StateVectorState::apply_channel(Self, @circuit.Channel, Array[Int32]) -> Unit raise @error.QError
+pub fn StateVectorState::apply(Self, @circuit.Instruction[Int32]) -> Unit raise
+pub fn StateVectorState::apply_channel(Self, @circuit.Channel, Array[Int32]) -> Unit raise StateError
 pub fn StateVectorState::copy(Self) -> Self
 pub fn StateVectorState::dim(Self) -> Array[UInt32]
-pub fn StateVectorState::from_state(StateVector, seed? : UInt64) -> Self raise @error.QError
+pub fn StateVectorState::from_state(StateVector, seed? : UInt64) -> Self raise StateError
 pub fn StateVectorState::measurement_layout(Self) -> Map[String, Array[(Int32, Int32)]]
 pub fn StateVectorState::new(Array[UInt32], seed? : UInt64) -> Self
 pub fn StateVectorState::records(Self) -> @maths.Array3[Int32]
 pub fn StateVectorState::statevector(Self) -> StateVector
-pub fn StateVectorState::validate(Self) -> Unit raise @error.QError
+pub fn StateVectorState::validate(Self) -> Unit raise StateError
 
 // Type aliases
 pub type MeasurementLayout = Map[String, Array[(Int32, Int32)]]
+
+pub using @internal {type ShapeError}
 
 // Traits

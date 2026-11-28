@@ -15,7 +15,7 @@ fn main {
 }
 
 ///|
-fn compare_damping() -> Unit raise @mqc.QError {
+fn compare_damping() -> Unit raise {
   let q = QubitId(0U)
   let preparation = Circuit::from_op([x(q)])
   let damping = Channel::amplitude_damp(0.25)

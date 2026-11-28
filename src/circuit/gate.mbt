@@ -22,7 +22,7 @@ pub fn Gate::unitary(
   dimensions : Array[UInt32],
   matrix : Array[@maths.Complex],
   tolerance~ : Double = 1.0e-10,
-) -> Gate raise @error.QError {
+) -> Gate raise CircuitError {
   if tolerance.is_nan() ||
     tolerance.is_inf() ||
     tolerance <= 0.0 ||
@@ -69,7 +69,7 @@ pub fn Gate::from_kernel(
   name : String,
   dimensions : Array[UInt32],
   kernel : &UnitaryKernel,
-) -> Gate raise @error.QError {
+) -> Gate raise CircuitError {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
   if LinearKernel::size(kernel) != size {
@@ -85,7 +85,7 @@ pub fn Gate::monomial(
   dimensions : Array[UInt32],
   columns : Array[Int32],
   phases : Array[@maths.Complex],
-) -> Gate raise @error.QError {
+) -> Gate raise CircuitError {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
   if columns.length() != size || phases.length() != size {
@@ -118,7 +118,7 @@ pub fn Gate::diagonal(
   name : String,
   dimensions : Array[UInt32],
   phases : Array[@maths.Complex],
-) -> Gate raise @error.QError {
+) -> Gate raise CircuitError {
   let shape = @internal.Shape::new(dimensions)
   let size = shape.size()
   Gate::monomial(name, dimensions, Array::makei(size, fn(i) { i }), phases)
@@ -178,7 +178,7 @@ pub fn Gate::controlled(
   self : Gate,
   control_dimensions~ : Array[UInt32] = [2U],
   control_values? : Array[UInt32],
-) -> Gate raise @error.QError {
+) -> Gate raise CircuitError {
   let shape = control_dimensions.copy()
   for i in 0..<self.shape.length() {
     shape.push(self.shape[i])

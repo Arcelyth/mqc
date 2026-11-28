@@ -3,22 +3,28 @@ package "Arcelyth/mqc/noise"
 
 import {
   "Arcelyth/mqc/circuit",
-  "Arcelyth/mqc/error",
+  "moonbitlang/core/debug",
 }
 
 // Values
-pub fn bit_flip(Double) -> @circuit.Channel raise @error.QError
+pub fn bit_flip(Double) -> @circuit.Channel raise @circuit.CircuitError
 
-pub fn depolarize(Double) -> @circuit.Channel raise @error.QError
+pub fn depolarize(Double) -> @circuit.Channel raise
 
-pub fn phase_flip(Double) -> @circuit.Channel raise @error.QError
+pub fn phase_flip(Double) -> @circuit.Channel raise @circuit.CircuitError
 
 // Errors
+#derive(@debug.Debug)
+pub(all) suberror NoiseError {
+  InvalidChannel(String)
+  TargetCount(Int32, Int32)
+}
+pub fn NoiseError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 type PerTargetNoise
-pub fn PerTargetNoise::after_gate(Self, @circuit.Gate, ArrayView[Int32]) -> Array[(@circuit.Channel, Array[Int32])] raise @error.QError
-pub fn PerTargetNoise::new(@circuit.Channel) -> Self raise @error.QError
+pub fn PerTargetNoise::after_gate(Self, @circuit.Gate, ArrayView[Int32]) -> Array[(@circuit.Channel, Array[Int32])] raise @circuit.CircuitError
+pub fn PerTargetNoise::new(@circuit.Channel) -> Self raise NoiseError
 pub impl @circuit.NoiseModel for PerTargetNoise
 
 // Type aliases

@@ -2,13 +2,13 @@
 /// Execute programs using a backend state implementation.
 struct Simulator[S] {
   label : String
-  initialize : (Array[UInt32]) -> S raise @error.QError
+  initialize : (Array[UInt32]) -> S raise
 }
 
 ///|
 pub fn[S] Simulator::new(
   name : String,
-  initialize : (Array[UInt32]) -> S raise @error.QError,
+  initialize : (Array[UInt32]) -> S raise,
 ) -> Simulator[S] {
   { label: name, initialize, }
 }
@@ -23,7 +23,7 @@ pub fn[S : SimulationState] Simulator::simulate(
   self : Simulator[S],
   program : @circuit.Program,
   initial_state? : S,
-) -> TrialResult[S] raise @error.QError {
+) -> TrialResult[S] raise {
   self.execute(program, initial_state?)
 }
 
@@ -32,9 +32,9 @@ pub fn[S : SimulationState] Simulator::simulate(
 pub fn[S : SimulationState] Simulator::simulate_steps(
   self : Simulator[S],
   program : @circuit.Program,
-  visit : (StepResult[S]) -> Unit raise @error.QError,
+  visit : (StepResult[S]) -> Unit raise,
   initial_state? : S,
-) -> TrialResult[S] raise @error.QError {
+) -> TrialResult[S] raise {
   self.execute(program, visit~, initial_state?)
 }
 
@@ -42,16 +42,16 @@ pub fn[S : SimulationState] Simulator::simulate_steps(
 fn[S : SimulationState] Simulator::execute(
   self : Simulator[S],
   program : @circuit.Program,
-  visit? : (StepResult[S]) -> Unit raise @error.QError,
+  visit? : (StepResult[S]) -> Unit raise,
   initial_state? : S,
-) -> TrialResult[S] raise @error.QError {
+) -> TrialResult[S] raise {
   let dim = program.dim()
   let state = match initial_state {
     Some(state) => state.copy()
     None => (self.initialize)(dim)
   }
   if state.dim() != dim {
-    raise @error.QError::RegisterMismatch
+    raise SimulatorError::RegisterMismatch
   }
   state.validate()
 
@@ -73,7 +73,7 @@ fn[S : SimulationState] Simulator::execute(
 pub fn[S : SimulationState] Simulator::simulate_batch(
   self : Simulator[S],
   programs : Array[@circuit.Program],
-) -> Array[Result[TrialResult[S], @error.QError]] {
+) -> Array[Result[TrialResult[S], Error]] {
   programs.map(fn(program) {
     Ok(self.simulate(program)) catch {
       error => Err(error)

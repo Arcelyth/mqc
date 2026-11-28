@@ -30,7 +30,7 @@ fn density_state(matrix : DensityMatrix, seed : UInt64?) -> DensityMatrixState {
 pub fn DensityMatrixState::new(
   dimensions : Array[UInt32],
   seed? : UInt64,
-) -> DensityMatrixState raise @error.QError {
+) -> DensityMatrixState raise StateError {
   density_state(DensityMatrix::zero(dimensions), seed)
 }
 
@@ -38,7 +38,7 @@ pub fn DensityMatrixState::new(
 pub fn DensityMatrixState::from_density(
   matrix : DensityMatrix,
   seed? : UInt64,
-) -> DensityMatrixState raise @error.QError {
+) -> DensityMatrixState raise StateError {
   validate_density(matrix)
   density_state(matrix.copy(), seed)
 }
@@ -85,7 +85,7 @@ pub fn DensityMatrixState::records(
 ///|
 pub fn DensityMatrixState::validate(
   self : DensityMatrixState,
-) -> Unit raise @error.QError {
+) -> Unit raise StateError {
   validate_density(self.matrix)
 }
 
@@ -100,7 +100,7 @@ pub fn DensityMatrixState::validate(
 pub fn DensityMatrixState::apply(
   self : DensityMatrixState,
   instruction : @circuit.Instruction[Int32],
-) -> Unit raise @error.QError {
+) -> Unit raise {
   check_instruction(instruction)
   guard self.base.dispatch(instruction, child => self.apply(child))
     is Some((effect, targets)) else {
@@ -150,7 +150,7 @@ fn DensityMatrixState::measure(
   self : DensityMatrixState,
   targets : Array[Int32],
   key : String,
-) -> Unit raise @error.QError {
+) -> Unit raise {
   let probabilities = self.matrix.marginal_probabilities(targets)
   let outcome = sample_outcome(probabilities, self.base.draw())
   self.collapse_measurement(targets, outcome, probabilities[outcome])
@@ -203,15 +203,15 @@ fn DensityMatrixState::measurement_index(
 
 ///|
 /// Physical constructors check positivity. Evolution checks finite entries, trace, and symmetry.
-fn validate_density(matrix : DensityMatrix) -> Unit raise @error.QError {
+fn validate_density(matrix : DensityMatrix) -> Unit raise StateError {
   let size = matrix.size()
   let trace = matrix.trace()
   if trace.is_nan() || trace.is_inf() || (trace - 1.0).abs() > 1.0e-6 {
-    raise @error.InvalidState("density matrix must have unit trace")
+    raise InvalidState("density matrix must have unit trace")
   }
   for row in 0..<size {
     if matrix.re[row * size + row] < -1.0e-10 {
-      raise @error.InvalidState("density matrix has a negative probability")
+      raise InvalidState("density matrix has a negative probability")
     }
     for column in 0..<size {
       let index = row * size + column
@@ -220,7 +220,7 @@ fn validate_density(matrix : DensityMatrix) -> Unit raise @error.QError {
       if !value.is_finite() ||
         (value.re - matrix.re[other]).abs() > 1.0e-6 ||
         (value.im + matrix.im[other]).abs() > 1.0e-6 {
-        raise @error.InvalidState("density matrix must be finite and Hermitian")
+        raise InvalidState("density matrix must be finite and Hermitian")
       }
     }
   }

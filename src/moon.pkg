@@ -1,7 +1,7 @@
 import {
-  "Arcelyth/mqc/error",
   "Arcelyth/mqc/circuit",
   "Arcelyth/mqc/maths",
   "Arcelyth/mqc/simulator",
   "Arcelyth/mqc/gates",
+  "Arcelyth/mqc/noise",
 }

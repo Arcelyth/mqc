@@ -8,7 +8,7 @@ struct ExperimentResult {
   /// Explicitly saved values from a successful experiment.
   outputs : ResultData
   /// Error cause when current experiment failed.
-  failure : @error.QError?
+  failure : Error?
 }
 
 ///|
@@ -61,7 +61,7 @@ pub fn ExperimentResult::data(self : ExperimentResult) -> ResultData {
 ///|
 pub fn ExperimentResult::failed(
   program : @circuit.Program,
-  error : @error.QError,
+  error : Error,
 ) -> ExperimentResult {
   {
     program_name: program.name(),
@@ -72,6 +72,6 @@ pub fn ExperimentResult::failed(
 }
 
 ///|
-pub fn ExperimentResult::error(self : ExperimentResult) -> @error.QError? {
+pub fn ExperimentResult::error(self : ExperimentResult) -> Error? {
   self.failure
 }

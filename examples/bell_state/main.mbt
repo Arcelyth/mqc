@@ -14,7 +14,7 @@ fn main {
 }
 
 ///|
-fn measure_bell() -> Unit raise @mqc.QuantumError {
+fn measure_bell() -> Unit raise {
   let a = QubitId(0U)
   let b = QubitId(1U)
   let bell = Circuit::from_op([h(a), cnot(a, b), measure([a, b], key="bell")])
@@ -26,13 +26,13 @@ fn measure_bell() -> Unit raise @mqc.QuantumError {
 }
 
 ///|
-fn show_result(result : @mqc.SamplerResult) -> Unit raise @mqc.QuantumError {
+fn show_result(result : @mqc.SamplerResult) -> Unit raise Failure {
   let (shots, _, _) = result.records.shape()
   let counts = result.records.histogram("bell")
   let zeros = counts.get_or_default([0, 0], 0)
   let ones = counts.get_or_default([1, 1], 0)
   if zeros + ones != shots {
-    raise @mqc.QuantumError::InvalidState("unexpected Bell measurement")
+    fail("unexpected Bell measurement")
   }
 
   println("Bell pair (\{shots} shots):")

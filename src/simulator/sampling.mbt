@@ -25,9 +25,9 @@ fn sampling_plan(
   program : @circuit.Program,
   repetitions : Int32,
   sample_channels~ : Bool = false,
-) -> SamplingPlan raise @error.QError {
+) -> SamplingPlan raise SimulatorError {
   if repetitions < 0 {
-    raise @error.QError::InvalidState("repetitions must be nonnegative")
+    raise SimulatorError::InvalidState("repetitions must be nonnegative")
   }
 
   let targets : Array[Int32] = []
@@ -38,16 +38,16 @@ fn sampling_plan(
   for instruction in program.instructions() {
     let count = instruction.record_width()
     if count > 2147483647 - width {
-      raise @error.SizeLimit(2147483647)
+      raise SimulatorError::SizeLimit(2147483647)
     }
     width += count
   }
 
   if width == 0 {
-    raise @error.QError::InvalidState("run requires a measurement")
+    raise SimulatorError::InvalidState("run requires a measurement")
   }
   if repetitions > 2147483647 / width {
-    raise @error.QError::SizeLimit(2147483647)
+    raise SimulatorError::SizeLimit(2147483647)
   }
 
   for instruction in program.instructions(expand_loops=true) {
@@ -138,7 +138,7 @@ fn[S : SimulationState] sample_shots(
   repetitions : Int32,
   width : Int32,
   measurement_layout : (S) -> @states.MeasurementLayout,
-) -> SamplerResult raise @error.QError {
+) -> SamplerResult raise {
   let records = @maths.Array3::make(repetitions, 1, width, 0)
   let layouts = []
   for shot in 0..<repetitions {
