@@ -10,32 +10,6 @@ struct IfElse[Q] {
 }
 
 ///|
-/// Append a branch to this circuit. Evaluate the condition once on entry,
-/// execute the selected circuit, then continue after the branch. Either body
-/// can be empty. Measurements in the selected body update the shot's record.
-pub fn[Q : Qid] Circuit::if_else(
-  self : Circuit[Q],
-  condition : &Condition,
-  on_true : Circuit[Q],
-  on_false : Circuit[Q],
-) -> Unit raise CircuitError {
-  let wires = on_true.wires.merge(on_false.wires)
-  let names = on_true.parameter_names
-    .union(on_false.parameter_names)
-    .iter()
-    .collect()
-  names.sort_by(String::lexical_compare)
-  let branch = IfElse::{
-    condition,
-    on_true: on_true.ops.copy(),
-    on_false: on_false.ops.copy(),
-    names,
-    width: on_true.record_width().max(on_false.record_width()),
-  }
-  self.append_block(wires, IfElse(branch))
-}
-
-///|
 /// Evaluate the condition once and iterate the selected arm in circuit order.
 pub fn[Q] IfElse::select(
   self : IfElse[Q],
@@ -64,57 +38,12 @@ pub fn[Q] IfElse::on_false(self : IfElse[Q]) -> Iter[Instruction[Q]] {
 }
 
 ///|
-/// Number of columns this instruction occupies in a shot. 
-/// Both arms of a branch start at the same column and reserve space for the wider arm.
-pub fn[Q] Instruction::record_width(self : Instruction[Q]) -> Int32 {
-  match self {
-    WhileLoop(block) => block.width
-    ForLoop(loop_body) => loop_body.width
-    IfElse(branch) => branch.width
-    Operation(op) if op.effect.measurement_key() is Some(_) => op.wires.length()
-    Operation(_) => 0
-  }
-}
-
-///|
-fn[Q] Circuit::record_width(self : Circuit[Q]) -> Int32 raise CircuitError {
-  let mut width = 0
-  for instruction in self.instructions() {
-    let count = instruction.record_width()
-    if count > 2147483647 - width {
-      raise SizeLimit(2147483647)
-    }
-    width += count
-  }
-  width
-}
-
-///|
 /// A counted loop captures its body at construction. 
 struct ForLoop[Q] {
   count : Int32
   body : Array[Instruction[Q]]
   names : Array[String]
   width : Int32
-}
-
-///|
-/// Append a loop that executes the body exactly count times on the same state.
-/// Each measurement appends its digits in iteration order. A count of zero
-/// skips the body. A negative count raises InvalidState.
-pub fn[Q : Qid] Circuit::for_loop(
-  self : Circuit[Q],
-  count : Int32,
-  body : Circuit[Q],
-) -> Unit raise CircuitError {
-  if count < 0 {
-    raise InvalidState("loop count must be nonnegative")
-  }
-  let (names, width) = body.loop_metadata(count)
-  self.append_block(
-    body.wires,
-    ForLoop({ count, body: body.ops.copy(), names, width, }),
-  )
 }
 
 ///|
@@ -129,20 +58,6 @@ pub fn[Q] ForLoop::body(self : ForLoop[Q]) -> Iter[Instruction[Q]] {
 }
 
 ///|
-fn[Q : Qid] Circuit::append_block(
-  self : Circuit[Q],
-  body_wires : Registry[Q],
-  instruction : Instruction[Q],
-) -> Unit raise CircuitError {
-  self.wires = self.wires.merge(body_wires)
-  self.parameter_names = add_names(
-    self.parameter_names,
-    instruction.parameters(),
-  )
-  self.ops.push(instruction)
-}
-
-///|
 /// A measurement-controlled loop captures its body once. The iteration bound
 /// determines how many measurement columns the loop reserves in each shot.
 struct WhileLoop[Q] {
@@ -151,32 +66,6 @@ struct WhileLoop[Q] {
   body : Array[Instruction[Q]]
   names : Array[String]
   width : Int32
-}
-
-///|
-/// Test the condition before each iteration. Body measurements are available
-/// to the next test. If the condition still holds after max_iterations,
-/// execution raises IterationLimit. Unused record columns contain -1.
-pub fn[Q : Qid] Circuit::while_loop(
-  self : Circuit[Q],
-  condition : &Condition,
-  body : Circuit[Q],
-  max_iterations~ : Int32,
-) -> Unit raise CircuitError {
-  if max_iterations < 0 {
-    raise InvalidState("max_iterations must be nonnegative")
-  }
-  let (names, width) = body.loop_metadata(max_iterations)
-  self.append_block(
-    body.wires,
-    WhileLoop({
-      condition,
-      max_iterations,
-      body: body.ops.copy(),
-      names,
-      width,
-    }),
-  )
 }
 
 ///|

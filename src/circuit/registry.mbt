@@ -55,6 +55,26 @@ pub fn[I : Qid] Registry::merge(
 }
 
 ///|
+fn[I : Id] Registry::union(
+  self : Registry[I],
+  other : Registry[I],
+) -> Registry[I] {
+  guard !self.is_empty() else { return other }
+  let mut items = self.items
+  let mut indices = self.indices
+  for id in other.items {
+    if !indices.contains(id) {
+      if items.length() == self.items.length() {
+        items = items.copy()
+      }
+      indices = indices.insert(id, items.length())
+      items.push(id)
+    }
+  }
+  { items, indices, }
+}
+
+///|
 /// Look up a wire's index.
 pub fn[I : Id] Registry::get(self : Registry[I], qid : I) -> Int32? {
   self.indices.get(qid)

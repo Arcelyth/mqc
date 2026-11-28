@@ -1,10 +1,19 @@
 ///|
+#derive(Eq, Hash)
+priv enum ParameterUse {
+  /// A zero-based index into the circuit's top-level instructions.
+  Instruction(Int32)
+  /// A use in the circuit's global phase expression.
+  GlobalPhase
+}
+
+///|
 /// Tracks one free parameter in a circuit.
 priv struct ParameterInfo {
   /// The symbol returned by parameter lookup.
   param : Parameter
-  /// Zero-based indices of top-level instructions using this parameter.
-  uses : @hashset.HashSet[Int32]
+  /// The locations where the parameter appears.
+  uses : @hashset.HashSet[ParameterUse]
 }
 
 ///|
@@ -26,24 +35,42 @@ pub fn ParameterTable::track(
   parameters : Array[Parameter],
   position : Int32,
 ) -> ParameterTable raise ParameterError {
+  self.track_use(parameters, Instruction(position))
+}
+
+///|
+/// Record the parameters used by the circuit's global phase.
+pub fn ParameterTable::track_phase(
+  self : ParameterTable,
+  parameters : Array[Parameter],
+) -> ParameterTable raise ParameterError {
+  self.track_use(parameters, GlobalPhase)
+}
+
+///|
+fn ParameterTable::track_use(
+  self : ParameterTable,
+  parameters : Array[Parameter],
+  usage : ParameterUse,
+) -> ParameterTable raise ParameterError {
   let mut table = self
   for parameter in parameters {
-    table = table.track_positions(parameter, Iter::singleton(position))
+    table = table.track_uses(parameter, Iter::singleton(usage))
   }
   table
 }
 
 ///|
-fn ParameterTable::track_positions(
+fn ParameterTable::track_uses(
   self : ParameterTable,
   parameter : Parameter,
-  positions : Iter[Int32],
+  usages : Iter[ParameterUse],
 ) -> ParameterTable raise ParameterError {
   let id = parameter.id()
   if self.by_id.get(id) is Some(info) {
     let mut uses = info.uses
-    for position in positions {
-      uses = uses.insert(position)
+    for usage in usages {
+      uses = uses.insert(usage)
     }
     return { ..self, by_id: self.by_id.insert(id, { ..info, uses, }), }
   }
@@ -51,7 +78,7 @@ fn ParameterTable::track_positions(
   if self.by_name.contains(name) {
     raise NameConflict(name)
   }
-  let info = { param: parameter, uses: @hashset.from_iter(positions), }
+  let info = { param: parameter, uses: @hashset.from_iter(usages), }
   {
     by_id: self.by_id.insert(id, info),
     by_name: self.by_name.insert(name, id),
@@ -65,12 +92,30 @@ pub fn ParameterTable::untrack(
   parameters : Array[Parameter],
   position : Int32,
 ) -> ParameterTable {
+  self.untrack_use(parameters, Instruction(position))
+}
+
+///|
+/// Remove the uses from the circuit's global phase.
+pub fn ParameterTable::untrack_phase(
+  self : ParameterTable,
+  parameters : Array[Parameter],
+) -> ParameterTable {
+  self.untrack_use(parameters, GlobalPhase)
+}
+
+///|
+fn ParameterTable::untrack_use(
+  self : ParameterTable,
+  parameters : Array[Parameter],
+  usage : ParameterUse,
+) -> ParameterTable {
   let mut by_id = self.by_id
   let mut by_name = self.by_name
   for parameter in parameters {
     let id = parameter.id()
     if by_id.get(id) is Some(info) {
-      let remaining = info.uses.remove(position)
+      let remaining = info.uses.remove(usage)
       if remaining.is_empty() {
         by_id = by_id.remove(id)
         by_name = by_name.remove(info.param.name())
@@ -91,8 +136,15 @@ pub fn ParameterTable::concat(
 ) -> ParameterTable raise ParameterError {
   let mut table = self
   for info in other.by_id.values() {
-    let positions = info.uses.iter().map(position => position + offset)
-    table = table.track_positions(info.param, positions)
+    let uses = info.uses
+      .iter()
+      .map(usage => {
+        match usage {
+          Instruction(position) => Instruction(position + offset)
+          GlobalPhase => GlobalPhase
+        }
+      })
+    table = table.track_uses(info.param, uses)
   }
   table
 }
@@ -122,10 +174,10 @@ pub fn ParameterTable::positions(
   parameters : Iter[Parameter],
   strict : Bool,
 ) -> Array[Int32] raise ParameterError {
-  let mut positions = @hashset.empty()
+  let mut uses = @hashset.empty()
   for parameter in parameters {
     match self.by_id.get(parameter.id()) {
-      Some(info) => positions = positions.union(info.uses)
+      Some(info) => uses = uses.union(info.uses)
       None if strict =>
         raise InvalidParameter(
           "parameter is absent from the circuit: " + parameter.name(),
@@ -133,7 +185,15 @@ pub fn ParameterTable::positions(
       None => ()
     }
   }
-  let ordered = positions.iter().collect()
-  ordered.sort()
-  ordered
+  let positions = uses
+    .iter()
+    .filter_map(usage => {
+      match usage {
+        Instruction(position) => Some(position)
+        GlobalPhase => None
+      }
+    })
+    .collect()
+  positions.sort()
+  positions
 }

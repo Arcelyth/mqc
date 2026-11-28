@@ -79,6 +79,16 @@ pub impl Effect for ConditionalEffect with fn parameters(self) {
 }
 
 ///|
+pub impl Effect for ConditionalEffect with fn parameter_symbols(self) {
+  self.inner.parameter_symbols()
+}
+
+///|
+pub impl Effect for ConditionalEffect with fn assign_parameters(self, bindings) {
+  ConditionalEffect::{ ..self, inner: self.inner.assign_parameters(bindings), }
+}
+
+///|
 pub impl Effect for ConditionalEffect with fn try_conditional(self) {
   Some(self)
 }

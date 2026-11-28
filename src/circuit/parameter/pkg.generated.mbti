@@ -47,7 +47,9 @@ pub fn ParameterTable::get_by_name(Self, String) -> Parameter?
 pub fn ParameterTable::parameters(Self) -> Array[Parameter]
 pub fn ParameterTable::positions(Self, Iter[Parameter], Bool) -> Array[Int32] raise ParameterError
 pub fn ParameterTable::track(Self, Array[Parameter], Int32) -> Self raise ParameterError
+pub fn ParameterTable::track_phase(Self, Array[Parameter]) -> Self raise ParameterError
 pub fn ParameterTable::untrack(Self, Array[Parameter], Int32) -> Self
+pub fn ParameterTable::untrack_phase(Self, Array[Parameter]) -> Self
 
 // Type aliases
 

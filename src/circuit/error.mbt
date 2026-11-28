@@ -22,6 +22,8 @@ pub(all) suberror CircuitError {
   InvalidState(String)
   /// A measurement condition is invalid or reads an unavailable result.
   InvalidCondition(String)
+  /// A circuit's parameter expressions or indexes are invalid.
+  Parameter(ParameterError)
 }
 
 ///|

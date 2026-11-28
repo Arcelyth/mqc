@@ -25,6 +25,7 @@ pub(all) suberror CircuitError {
   InvalidBasis(Int32)
   InvalidState(String)
   InvalidCondition(String)
+  Parameter(@parameter.ParameterError)
 }
 pub fn CircuitError::to_repr(Self) -> @debug.Repr
 
@@ -54,8 +55,13 @@ pub fn Channel::try_unitary(Self) -> Gate?
 pub impl Effect for Channel
 
 type Circuit[Q]
+pub fn[Q] Circuit::add_clbit(Self[Q], ClbitId) -> Unit raise CircuitError
 pub fn[Q : Qid] Circuit::adjoint(Self[Q]) -> Self[Q] raise CircuitError
 pub fn[Q : Qid] Circuit::append(Self[Q], Operation[Q]) -> Unit raise CircuitError
+pub fn[Q] Circuit::assign_parameters(Self[Q], Map[@parameter.Parameter, @parameter.ParamExpr], strict? : Bool) -> Unit raise
+pub fn[Q] Circuit::bind(Self[Q], Map[@parameter.Parameter, Double], strict? : Bool) -> Unit raise
+pub fn[Q] Circuit::clbit_index(Self[Q], ClbitId) -> Int32?
+pub fn[Q] Circuit::clbits(Self[Q]) -> Array[ClbitId]
 pub fn[Q : Qid] Circuit::compile(Self[Q], name? : String) -> Program
 pub fn[Q : Qid] Circuit::concat(Self[Q], Self[Q]) -> Self[Q] raise CircuitError
 pub fn[Q] Circuit::copy(Self[Q]) -> Self[Q]
@@ -63,15 +69,19 @@ pub fn[Q : Qid] Circuit::dim(Self[Q]) -> Array[UInt32]
 pub fn[Q : Qid] Circuit::extend_ops(Self[Q], Array[Operation[Q]]) -> Unit raise CircuitError
 pub fn[Q : Qid] Circuit::for_loop(Self[Q], Int32, Self[Q]) -> Unit raise CircuitError
 pub fn[Q : Qid] Circuit::from_op(Array[Operation[Q]]) -> Self[Q] raise CircuitError
+pub fn[Q] Circuit::get_parameter(Self[Q], String) -> @parameter.Parameter?
+pub fn[Q] Circuit::global_phase(Self[Q]) -> @parameter.ParamExpr
 pub fn[Q : Qid] Circuit::if_else(Self[Q], &Condition, Self[Q], Self[Q]) -> Unit raise CircuitError
 pub fn[Q : Qid] Circuit::index_of(Self[Q], Q) -> Int32?
 pub fn[Q] Circuit::instructions(Self[Q]) -> Iter[Instruction[Q]]
 pub fn[Q] Circuit::length(Self[Q]) -> Int32
-pub fn[Q : Qid] Circuit::new(Array[Q]) -> Self[Q] raise CircuitError
+pub fn[Q : Qid] Circuit::new(Array[Q], clbits? : Array[ClbitId]) -> Self[Q] raise CircuitError
 pub fn[Q] Circuit::operations(Self[Q]) -> Iter[Operation[Q]]
 pub fn[Q : Qid + Show] Circuit::output(Self[Q], &Logger) -> Unit
+pub fn[Q] Circuit::parameters(Self[Q]) -> Array[@parameter.Parameter]
 pub fn[Q] Circuit::qids(Self[Q]) -> Array[Q]
 pub fn[Q : Qid, R : Qid] Circuit::remap(Self[Q], (Q) -> R) -> Self[R] raise CircuitError
+pub fn[Q] Circuit::set_global_phase(Self[Q], @parameter.ParamExpr) -> Unit raise @parameter.ParameterError
 pub fn[Q : Qid + Show] Circuit::to_string(Self[Q]) -> String
 pub fn[Q : Qid] Circuit::while_loop(Self[Q], &Condition, Self[Q], max_iterations~ : Int32) -> Unit raise CircuitError
 pub fn[Q : Qid] Circuit::with_noise(Self[Q], &NoiseModel) -> Self[Q] raise CircuitError
@@ -270,6 +280,8 @@ pub(open) trait Effect {
   fn try_decompose(Self) -> Program? raise CircuitError = _
   fn try_adjoint(Self) -> &Effect? raise CircuitError = _
   fn parameters(Self) -> Array[String] = _
+  fn parameter_symbols(Self) -> Array[@parameter.Parameter] = _
+  fn assign_parameters(Self, Map[@parameter.Parameter, @parameter.ParamExpr]) -> &Effect raise = _
 }
 
 pub(open) trait Id : Eq + Hash {

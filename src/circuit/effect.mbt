@@ -44,6 +44,12 @@ pub(open) trait Effect {
   /// Free parameter names, without duplicates, in lexical order.
   /// Parameters let you build a circuit with values you will supply later, such as a rotation angle.
   fn parameters(Self) -> Array[String] = _
+
+  /// Free symbols used by the effect's expressions.
+  fn parameter_symbols(Self) -> Array[Parameter] = _
+
+  /// Apply bindings while keeping the effect's dimensions and measurement key.
+  fn assign_parameters(Self, Map[Parameter, ParamExpr]) -> &Effect raise = _
 }
 
 ///|
@@ -72,8 +78,28 @@ impl Effect with fn try_adjoint(_self) -> &Effect? raise CircuitError {
 }
 
 ///|
-impl Effect with fn parameters(_self) -> Array[String] {
+impl Effect with fn parameters(self) -> Array[String] {
+  let symbols = self.parameter_symbols()
+  guard !symbols.is_empty() else { return [] }
+  let mut names = @hashset.empty()
+  for parameter in symbols {
+    names = names.insert(parameter.name())
+  }
+  let ordered = names.iter().collect()
+  ordered.sort_by(String::lexical_compare)
+  ordered
+}
+
+///|
+impl Effect with fn parameter_symbols(_) -> Array[Parameter] {
   []
+}
+
+///|
+impl Effect with fn assign_parameters(self, _) -> &Effect raise {
+  raise @parameter.InvalidParameter(
+    "effect does not support assignment: " + self.name(),
+  )
 }
 
 ///|

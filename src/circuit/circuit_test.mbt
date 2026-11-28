@@ -108,3 +108,48 @@ test "concatenation retains idle wires and remapping preserves local target posi
   joined.append(@circuit.measure([c], key="later"))
   assert_eq(mapped.length(), 2)
 }
+
+///|
+test "circuit tracks global phase and captured instructions across concat and binding" {
+  let q = @circuit.QubitId(0U)
+  let a = @circuit.Clbit(0U)
+  let b = @circuit.Clbit(1U)
+  let theta = @circuit.Parameter::new("theta")
+  let first = @circuit.Circuit::new([q], clbits=[a])
+  first.set_global_phase(theta.expr())
+  first.for_loop(0, @circuit.Circuit::new([]))
+  let body = @circuit.Circuit::new([q], clbits=[b])
+  body.set_global_phase(theta.expr() + @circuit.ParamExpr::constant(0.25))
+  let second = @circuit.Circuit::new([q], clbits=[a])
+  second.for_loop(2, body)
+  let circuit = first.concat(second)
+  let original = circuit.copy()
+  assert_eq(circuit.clbits(), [a, b])
+  assert_eq(circuit.clbit_index(b), Some(1))
+  assert_eq(circuit.get_parameter("theta"), Some(theta))
+
+  let same_name = @circuit.Parameter::new("theta")
+  let result = Ok(circuit.set_global_phase(same_name.expr())) catch {
+    error => Err(error)
+  }
+  assert_true(result is Err(@circuit.ParameterError::NameConflict("theta")))
+  assert_eq(circuit.parameters(), [theta])
+
+  circuit.bind(Map([(theta, 0.5)]))
+  assert_eq(circuit.global_phase().value(), 0.5)
+  assert_eq(circuit.parameters(), [])
+  assert_eq(original.parameters(), [theta])
+  let instructions = circuit.compile().instructions(expand_loops=true).collect()
+  assert_eq(instructions.length(), 3)
+  let angles = [0.5, 0.75, 0.75]
+  for i, instruction in instructions {
+    guard instruction is Operation(op) && op.gate() is Some(gate) else {
+      fail("expected a bound phase operation")
+    }
+    assert_eq(op.targets(), [])
+    assert_amplitudes(
+      apply_kernel(gate.kernel(), [@maths.Complex::real(1.0)]),
+      [@maths.Complex::phase(angles[i])],
+    )
+  }
+}

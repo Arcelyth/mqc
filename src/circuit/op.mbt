@@ -63,9 +63,52 @@ pub fn[Q] Operation::targets(self : Operation[Q]) -> Array[Q] {
 }
 
 ///|
+fn[Q] Operation::assign_parameters(
+  self : Operation[Q],
+  bindings : Map[Parameter, ParamExpr],
+) -> Operation[Q] raise {
+  let effect = self.effect.assign_parameters(bindings)
+  if effect.dim() != self.effect.dim() ||
+    effect.measurement_key() != self.effect.measurement_key() {
+    raise InvalidGate(
+      "assigning parameters changed the effect's dimensions or measurement key",
+    )
+  }
+  { ..self, effect, }
+}
+
+///|
 pub impl[Q : Debug] Debug for Operation[Q] with fn to_repr(self) {
   Debug::to_repr((self.effect.name(), self.wires))
 }
 
 ///|
 pub extend Operation with Debug::{to_repr}
+
+///|
+fn[Q : Qid] Operation::draw_column(
+  self : Operation[Q],
+  rows : Array[StringBuilder],
+  wires : Registry[Q],
+) -> Unit {
+  let (label, measurement) = match self.effect.measurement_key() {
+    Some(key) => ("M(\{key.escape()})", true)
+    None => (self.effect.name(), false)
+  }
+  let symbols : Map[Int32, String] = Map([])
+  let mut width = label.length()
+  for index, wire in self.wires {
+    let symbol = if index == 0 {
+      label
+    } else if measurement {
+      "M"
+    } else {
+      "#\{index + 1}"
+    }
+    symbols[wires.index(wire)] = symbol
+    width = width.max(symbol.length())
+  }
+  for wire, row in rows {
+    row.write_string(symbols.get_or_default(wire, "").pad_end(width + 3, '─'))
+  }
+}
